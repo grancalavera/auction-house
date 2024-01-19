@@ -7,7 +7,7 @@
 
 ## User and Account
 
-- Implicitly a namespace
+- maybe wrap it in a namespace
 
 ```mermaid
 
@@ -68,17 +68,18 @@ class UserValidator {
 Organisation --* User
 AccountStatus --* User
 
-User <.. UserBuilder: optional
+User <.. UserBuilder: optional (overloaded constructor)
 UserValidator <.. UserBuilder
 ```
 
-## Bid
+## Auction
 
 ```mermaid
 classDiagram
 
 class Auction {
   int id
+  int ownerId
   String symbol
   int quantity
   BigDecimal price
@@ -97,38 +98,52 @@ class Bid {
   BigDecimal amount
   Instant timestamp
 }
-```
 
-## Front Office
+%% back office stuff
+class AuctionReport {
+  int id
+  int auctionId
+  BigDecimal revenue
+  int totalQuantitySold
+  Iterable~Bid~ winningBids
+  %% some other date type maybe
+  Instant closingTime
+}
 
-```mermaid
-classDiagram
-note for FrontOffice "There is always an implicit active user \nfigure out how to make the ids"
-class FrontOffice {
+note for AuctionHouse "There is always an implicit active user \nfigure out how to make the ids"
+class AuctionHouse {
   %% throws if the auction validation fails
-  %% throws if the user is an admin (does it?)
   void openAuction(Auction auction)
-  %% and the thing is how to construct the objects as usual
-  void closeAuction(int id) // throws if the auction is open and doesn't belong to the active user
-  %% throws if auction belongs to user, throws if auction doesn't exist
+  %% throws if the auction is open and doesn't belong to the active user
+  void closeAuction(int id)
+  %% throws if auction belongs to user
+  %% throws if auction doesn't exist
+  %% throws if auction is closed
   void placeBid(int auctionId, BigDecimal amount)
 }
 
 ```
 
-## Back Office
+## Admin Panel
+
+- Probably in Java you don't pass IDs but objects, so you don't have to run expensive operations
+  dereferencing data you already have. But then you have the potential issue that you might be
+  trying to modify something that has changed after you got hold of the object.
 
 ```mermaid
 classDiagram
-note for BackOffice "There is always an implicit active user"
-class BackOffice {
+note for AdminPanel "There is always an implicit active user"
+class AdminPanel {
   Iterable~User~ listUsers()
   Iterable~Organisation~ listOrganisations()
   Optional~User~ findUserById(int id)
   %% how do we enforce the user has an id?
-  %% how do we enforce the user has an id?
+  %% the builder should resolve the id if one is not given
+  %% and upsert user should create the user if it exists and update the user if it doesn't
+  %% but then you have a problem, which is validating if the username is unique, which
+  %% currently is done by UserBuilder but maybe should be done by AdminPanel
   void upsertUser(UserBuilder userBuilder)
-  %% throws
+  %% throws if userId doesn't exist
   void blockUserAccount(int userId)
 }
 
