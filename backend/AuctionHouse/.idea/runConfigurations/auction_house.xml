@@ -1,10 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Auction House: Sanity Check" type="Application" factoryName="Application">
+  <configuration default="false" name="auction-house" type="Application" factoryName="Application">
     <option name="ALTERNATIVE_JRE_PATH" value="zulu-21" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="MAIN_CLASS_NAME" value="works.quiet.Main" />
+    <option name="MAIN_CLASS_NAME" value="works.quiet.AuctionHouse" />
     <module name="AuctionHouse.main" />
-    <option name="PROGRAM_PARAMETERS" value="-V" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
