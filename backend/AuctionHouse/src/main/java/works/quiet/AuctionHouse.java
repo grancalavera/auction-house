@@ -1,6 +1,5 @@
 package works.quiet;
 
-
 import picocli.CommandLine;
 import works.quiet.cli.Program;
 

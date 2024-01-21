@@ -6,10 +6,11 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name="create-user",
-        description = "Creates a new user",
+        description = "Creates a new user.",
         mixinStandardHelpOptions = true
 )
 public class CreateUser implements Callable {
+
     @CommandLine.Option(
             names = {"-u", "--username"}, required = true,
             description = "alpha-numerical string (no spaces or special characters)" +

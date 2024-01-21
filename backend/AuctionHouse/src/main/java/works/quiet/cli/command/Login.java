@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name ="login",
-        description = "Login with username and password",
+        description = "Login with username and password, and persist session.",
         mixinStandardHelpOptions = true
 )
 public class Login implements Callable {
