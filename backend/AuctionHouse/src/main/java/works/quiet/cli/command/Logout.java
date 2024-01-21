@@ -6,7 +6,7 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name = "logout",
-        description = "Terminates the current user's session",
+        description = "Terminates the current user's session.",
         mixinStandardHelpOptions = true
 )
 public class Logout implements Callable {

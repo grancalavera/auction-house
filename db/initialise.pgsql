@@ -29,10 +29,12 @@ insert into ah_organisations (org_name) values ('Optimistic Traders') on conflic
 insert into ah_organisations (org_name) values ('Institutional Investors') on conflict do nothing;
 insert into ah_organisations (org_name) values ('The Bank of England') on conflict do nothing;
 
-insert into ah_accountstatus (status_name) values ('active') on conflict do nothing;
-insert into ah_accountstatus (status_name) values ('blocked') on conflict do nothing;
+insert into ah_accountstatus (status_name) values ('ACTIVE') on conflict do nothing;
+insert into ah_accountstatus (status_name) values ('BLOCKED') on conflict do nothing;
 
-insert into ah_roles (role_name) values ('admin') on conflict do nothing;
-insert into ah_roles (role_name) values ('user') on conflict do nothing;
+insert into ah_roles (role_name) values ('ADMIN') on conflict do nothing;
+insert into ah_roles (role_name) values ('USER') on conflict do nothing;
 
 insert into ah_users (username, password, first_name, last_name, organisation_id, account_status_id, role_id) values ('admin', 'admin', 'admin', 'admin', 1, 1, 1) on conflict do nothing;
+
+
