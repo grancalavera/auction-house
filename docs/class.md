@@ -7,7 +7,7 @@
 
 ## User and Account
 
-- maybe wrap it in a namespace
+- maybe wrap it in a namespace (package)
 
 ```mermaid
 
@@ -22,6 +22,7 @@ class User {
   + String password
   + String firstName
   + String lastName
+  + Role role
   + Organisation organisation
   + AccountStatus accountStatus
 }
@@ -30,6 +31,12 @@ class AccountStatus {
   <<Enumeration>>
   Active
   Blocked
+}
+
+class Role {
+  <<Enumeration>>
+  Admin
+  User
 }
 
 class Organisation {
@@ -67,6 +74,7 @@ class UserValidator {
 
 Organisation --* User
 AccountStatus --* User
+Role --* User
 
 User <.. UserBuilder: optional (overloaded constructor)
 UserValidator <.. UserBuilder
