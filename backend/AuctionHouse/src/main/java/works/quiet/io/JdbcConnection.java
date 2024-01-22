@@ -7,8 +7,15 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class JdbcConnection {
+// implements AutoCloseable
+public class JdbcConnection{
     private static final Logger LOGGER = Logger.getLogger(JdbcConnection.class.getName());
+
+    // Optional allocates so for low latency is not ok
+    // Also is a reference
+    // low latency uses null
+    // can be garbage collected so too many allocs can hicup gc (stop the world pause)
+    // Optional: reference data: maybe ok, matching engine: bad bad
     private static Optional<Connection> connection = Optional.empty();
 
     public static Optional<Connection> getConnection() {
@@ -25,5 +32,12 @@ public class JdbcConnection {
         }
         return connection;
     }
+
+//    @Override
+//    public void close() throws Exception {
+//        connection.ifPresent(conn ->{
+//            conn.close();
+//        });
+//    }
 }
 
