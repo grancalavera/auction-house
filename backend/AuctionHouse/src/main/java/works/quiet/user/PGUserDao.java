@@ -1,14 +1,14 @@
-package works.quiet.io;
+package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.domain.User;
+import works.quiet.io.DBConnection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Log
-public class PGUserDao implements UserDao{
+public class PGUserDao implements UserDao {
     private final DBConnection connection;
 
     public PGUserDao(DBConnection connection) {
@@ -16,15 +16,15 @@ public class PGUserDao implements UserDao{
     }
 
     @Override
-    public Optional<User> findWithCredentials(String username, String password) {
-        AtomicReference<User> nullableUser = new AtomicReference<User>(null);
+    public Optional<UserModel> findWithCredentials(String username, String password) {
+        AtomicReference<UserModel> nullableUser = new AtomicReference<UserModel>(null);
 
         String query = "SELECT username FROM ah_users WHERE username='" + username + "' AND password='" + password +"' LIMIT 1";
 
         connection.getConnection().ifPresent(conn->{
             try (ResultSet resultSet = conn.createStatement().executeQuery(query)){
                 if (resultSet.next()) {
-                    User user = deserialize(resultSet);
+                    UserModel user = deserialize(resultSet);
                     nullableUser.set(user);
                 }
             }catch(SQLException ex){
@@ -35,14 +35,12 @@ public class PGUserDao implements UserDao{
         return Optional.ofNullable(nullableUser.get());
     }
 
-    private User deserialize(ResultSet resultSet) {
-        User user = null;
+    private UserModel deserialize(ResultSet resultSet) {
+        UserModel user = null;
 
         try {
-            User.UserBuilder builder = User.builder();
-//            builder.id(resultSet.getInt("id"));
+            UserModel.UserModelBuilder builder = UserModel.builder();
             user = builder.build();
-
         } catch (Exception ex) {
             log.severe("failed to deserialize user: " + ex.toString());
         }
@@ -50,8 +48,4 @@ public class PGUserDao implements UserDao{
         return user;
     }
 
-    @Override
-    public void close() throws Exception {
-        connection.close();
-    }
 }

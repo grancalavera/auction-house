@@ -1,4 +1,4 @@
-package works.quiet.domain;
+package works.quiet.user;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @ToString
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class User {
+public class UserModel {
     // small i integer is primitive "stack allocated"
     // while Integer is an object reference that needs
     // to be de-ref from the heap 🐢
