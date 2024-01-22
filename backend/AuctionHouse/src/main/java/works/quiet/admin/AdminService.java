@@ -12,12 +12,10 @@ import java.util.Optional;
 @Log
 public class AdminService {
     private final UserDao userDao;
-
     public AdminService(UserDao userDao) {
         this.userDao = userDao;
     }
-    private static final String SESSION_FILE = ".ah-session";
-    private static final String HOME = System.getProperty("user.home");
+    private static final Path SESSION_PATH = Path.of(System.getProperty("user.home"), ".ah-session");
 
     public void login(String username, String password) throws Exception{
         Optional<UserModel> maybeUser=userDao.findWithCredentials(username, password);
@@ -28,11 +26,10 @@ public class AdminService {
         }
 
         try {
-            Path path =Path.of(HOME, SESSION_FILE);
-            Files.deleteIfExists(path);
-            Files.createFile(path);
-            Files.write(path, username.getBytes(), StandardOpenOption.WRITE);
-            log.info("session written to: " + path.toAbsolutePath());
+            Files.deleteIfExists(SESSION_PATH);
+            Files.createFile(SESSION_PATH);
+            Files.write(SESSION_PATH, username.getBytes(), StandardOpenOption.WRITE);
+            log.info("session written to: " + SESSION_PATH.toAbsolutePath());
         } catch(Exception ex) {
             log.severe(ex.toString());
             throw new Exception("Failed to initialize user session.");
@@ -41,12 +38,22 @@ public class AdminService {
 
     public void logout() throws Exception {
         try {
-            Path path = Path.of(HOME, SESSION_FILE);
-            Files.deleteIfExists(path);
-            log.info("session destroyed at: " + path.toAbsolutePath());
+            Files.deleteIfExists(SESSION_PATH);
+            log.info("session destroyed at: " + SESSION_PATH.toAbsolutePath());
         } catch(Exception ex) {
             log.severe(ex.toString());
             throw new Exception("Failed to destroy user session.");
+        }
+    }
+
+    public Optional<UserModel> currentUser (){
+        try{
+            String username = Files.readString(SESSION_PATH);
+            log.info("current username: '" + username + "'");
+            return Optional.empty();
+        }catch (Exception ex){
+            log.info("user session does not exist");
+            return Optional.empty();
         }
     }
 }

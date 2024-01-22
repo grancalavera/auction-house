@@ -35,11 +35,13 @@ insert into ah_accountstatus (status_name) values ('BLOCKED') on conflict do not
 insert into ah_roles (role_name) values ('ADMIN') on conflict do nothing;
 insert into ah_roles (role_name) values ('USER') on conflict do nothing;
 
-insert into ah_users (username, password, first_name, last_name, organisation_id, account_status_id, role_id) values ('admin', 'admin', 'admin', 'admin', 1, 1, 1) on conflict do nothing;
+insert into ah_users (username, password, first_name, last_name, organisation_id, account_status_id, role_id) values ('admin', 'admin', 'Pinche', 'Pancho', 1, 1, 1) on conflict do nothing;
 
 select 
     u.id, u.username, 
     u.password, 
+    u.first_name, 
+    u.last_name,
     a.status_name as status,
     r.role_name as role, 
     o.org_name as organisation

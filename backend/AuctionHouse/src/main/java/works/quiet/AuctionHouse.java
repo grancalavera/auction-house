@@ -16,7 +16,6 @@ import works.quiet.user.UserDao;
 @Log
 class AuctionHouse {
     public static void main(String ... argv) {
-
         DBConnection connection = new PGConnection("jdbc:postgresql://localhost:5432/auction-house","grancalavera");
         UserDao userDao = new PGUserDao(connection);
         AdminService adminService = new AdminService(userDao);

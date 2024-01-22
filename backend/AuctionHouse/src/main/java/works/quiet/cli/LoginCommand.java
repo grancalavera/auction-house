@@ -34,6 +34,7 @@ public class LoginCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
+            adminService.currentUser();
             adminService.login(username, password);
             System.out.printf("Logged in as '%s'.\n",username);
             return 0;
