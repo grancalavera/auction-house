@@ -1,13 +1,11 @@
 package works.quiet.cli.command;
 
 import picocli.CommandLine;
-import works.quiet.io.JdbcConnection;
+import works.quiet.io.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.concurrent.Callable;
 import java.util.logging.Logger;
 
@@ -29,48 +27,25 @@ public class Login implements Callable {
 
     @Override
     public Integer call() throws Exception {
-        ResultCode exitCode = new ResultCode();
+        ExitCode exitCode = new ExitCode(1);
 
-        JdbcConnection.getConnection().ifPresent(conn -> {
-            String query = "SELECT username FROM ah_users WHERE username='" + username + "' AND password='" + password +"' LIMIT 1";
+        DBConnection connection = new PGConnection("jdbc:postgresql://localhost:5432/auction-house","grancalavera");
+        UserDao userDao = new PGUserDao(connection);
 
-            try (
-                ResultSet resultSet = conn.createStatement().executeQuery(query)
-            ) {
-                if (resultSet.next()) {
-                    System.out.printf("Logged in as %s\n", resultSet.getString("username"));
-                    exitCode.set(0);
-                }
-            } catch(SQLException ex){
-                System.out.println("Unable to authenticate, please try again.");
-            }
-        });
-
-        if (exitCode.get() == 0) {
+        userDao.findWithCredentials(username, password).ifPresentOrElse((user) ->{
             try {
-                String content = username;
-                Path path = Files.createTempFile("authenticated", null);
-                Files.write(path, content.getBytes(), StandardOpenOption.WRITE);
+                Path path = Files.createTempFile("ah-session", null);
+                Files.write(path, username.getBytes(), StandardOpenOption.WRITE);
+                System.out.printf("Logged in as %s\n",username);
+                exitCode.set(0);
             } catch(Exception ex) {
                 System.out.println("Unable to authenticate, please try again.");
-                exitCode.set(1);
             }
-        } else {
+        }, ()->{
             System.out.println("Wrong username or password.");
-        }
+        });
 
         return exitCode.get();
     }
 
-    private static final class ResultCode {
-        private int code;
-
-        public void set(int i) {
-            code = i;
-        }
-
-        public int get() {
-            return code;
-        }
-    }
 }

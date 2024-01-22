@@ -53,6 +53,5 @@ public class PGConnection implements DBConnection{
                 throw ex;
             }
         }
-
     }
 }
