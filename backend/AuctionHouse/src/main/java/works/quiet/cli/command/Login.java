@@ -6,13 +6,9 @@ import works.quiet.io.JdbcConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 @CommandLine.Command(
@@ -21,6 +17,8 @@ import java.util.logging.Logger;
         mixinStandardHelpOptions = true
 )
 public class Login implements Callable {
+
+
     private static final Logger LOGGER = Logger.getLogger(JdbcConnection.class.getName());
 
     @CommandLine.Option(names = {"-u", "--username"}, required = true)
@@ -31,7 +29,7 @@ public class Login implements Callable {
 
     @Override
     public Integer call() throws Exception {
-        AtomicReference<Integer> exitCode = new AtomicReference<Integer>(1);
+        ResultCode exitCode = new ResultCode();
 
         JdbcConnection.getConnection().ifPresent(conn -> {
             String query = "SELECT username FROM ah_users WHERE username='" + username + "' AND password='" + password +"' LIMIT 1";
@@ -44,7 +42,7 @@ public class Login implements Callable {
                     exitCode.set(0);
                 }
             } catch(SQLException ex){
-                System.out.println("Wrong username or password.");
+                System.out.println("Unable to authenticate, please try again.");
             }
         });
 
@@ -57,8 +55,22 @@ public class Login implements Callable {
                 System.out.println("Unable to authenticate, please try again.");
                 exitCode.set(1);
             }
+        } else {
+            System.out.println("Wrong username or password.");
         }
 
         return exitCode.get();
+    }
+
+    private static final class ResultCode {
+        private int code;
+
+        public void set(int i) {
+            code = i;
+        }
+
+        public int get() {
+            return code;
+        }
     }
 }
