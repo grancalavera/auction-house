@@ -10,14 +10,20 @@ import works.quiet.cli.LoginCommand;
 import works.quiet.cli.LogoutCommand;
 import works.quiet.io.DBConnection;
 import works.quiet.io.PGConnection;
-import works.quiet.user.PGUserDao;
-import works.quiet.user.UserDao;
+import works.quiet.user.*;
+
+import java.util.Map;
 
 @Log
 class AuctionHouse {
     public static void main(String ... argv) {
         DBConnection connection = new PGConnection("jdbc:postgresql://localhost:5432/auction-house","grancalavera");
-        UserDao userDao = new PGUserDao(connection);
+
+        // Move to a reference data class or something;
+        OrganisationDao organisationDao = new PGOrganisationDao(connection);
+        Map<Integer, OrganisationModel> organisations = organisationDao.getAll();
+
+        UserDao userDao = new PGUserDao(connection, organisations);
         AdminService adminService = new AdminService(userDao);
 
         CommandLine mainProgram = new CommandLine(new MainProgram());

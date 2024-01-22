@@ -8,13 +8,16 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Map;
 
 @Log
 public class PGUserDao implements UserDao {
     private final DBConnection connection;
+    private final Map<Integer, OrganisationModel> organisations;
 
-    public PGUserDao(DBConnection connection) {
+    public PGUserDao(DBConnection connection, Map<Integer, OrganisationModel> organisations) {
         this.connection = connection;
+        this.organisations = organisations;
     }
 
     @Override
@@ -48,13 +51,13 @@ public class PGUserDao implements UserDao {
                     .builder()
                     .id(resultSet.getInt("id"))
                     .username(resultSet.getString("username"))
-                    .password("********")
+                    .password(resultSet.getString("password"))
                     .firstName(resultSet.getString("first_name"))
                     .lastName(resultSet.getString("last_name"))
                     .accountStatus(AccountStatus.ofInt(resultSet.getInt("account_status_id")))
                     .role(Role.ofInt(resultSet.getInt("role_id")))
+                    .organisation(organisations.get(resultSet.getInt("organisation_id")))
                     .build();
-
             log.info(user.toString());
         } catch (Exception ex) {
             log.severe("failed to deserialize user: " + ex.toString());
