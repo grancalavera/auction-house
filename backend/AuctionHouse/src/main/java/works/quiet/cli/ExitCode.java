@@ -1,4 +1,4 @@
-package works.quiet.cli.command;
+package works.quiet.cli;
 
 final class ExitCode {
     private int code;

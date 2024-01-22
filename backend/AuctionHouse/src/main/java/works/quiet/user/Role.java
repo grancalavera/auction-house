@@ -1,4 +1,4 @@
-package works.quiet.domain;
+package works.quiet.user;
 
 public enum Role {
     ADMIN,

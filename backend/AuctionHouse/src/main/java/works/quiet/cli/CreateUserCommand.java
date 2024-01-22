@@ -1,4 +1,4 @@
-package works.quiet.cli.command;
+package works.quiet.cli;
 
 import picocli.CommandLine;
 
@@ -9,7 +9,7 @@ import java.util.concurrent.Callable;
         description = "Creates a new user.",
         mixinStandardHelpOptions = true
 )
-public class CreateUser implements Callable {
+public class CreateUserCommand implements Callable {
 
     @CommandLine.Option(
             names = {"-u", "--username"}, required = true,
