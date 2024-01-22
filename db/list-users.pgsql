@@ -1,6 +1,8 @@
 select 
     u.id, u.username, 
     u.password, 
+    u.first_name, 
+    u.last_name,
     a.status_name as status,
     r.role_name as role, 
     o.org_name as organisation
