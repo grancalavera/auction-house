@@ -31,7 +31,7 @@ public class Session {
             throw new Exception("Failed to close session.");
         }
     }
-    
+
     public Optional<String> getUsername () {
         try{
             String username = Files.readString(SESSION_PATH);

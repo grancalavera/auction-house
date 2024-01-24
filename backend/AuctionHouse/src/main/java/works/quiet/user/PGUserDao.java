@@ -1,6 +1,7 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
+import works.quiet.etc.FunctionThrows;
 import works.quiet.io.DBConnection;
 import works.quiet.reference.OrganisationModel;
 
@@ -11,10 +12,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 
-@FunctionalInterface
-interface ThrowingFunction<T, R, E extends Exception> {
-    R apply(T t) throws E;
-}
 @Log
 public class PGUserDao implements UserDao {
     private final DBConnection connection;
@@ -46,19 +43,16 @@ public class PGUserDao implements UserDao {
         return Optional.ofNullable(result.getFirst());
     }
 
-    private ArrayList<UserModel> queryUsers(ThrowingFunction<Connection, PreparedStatement, Exception>statement) {
+    private ArrayList<UserModel> queryUsers(FunctionThrows<Connection, PreparedStatement, Exception> statement) {
         ArrayList<UserModel> users = new ArrayList<>();
         connection.getConnection().ifPresent(conn-> {
-            try {
-                PreparedStatement st = statement.apply(conn);
-                ResultSet rs = st.executeQuery();
-
+            try (
+                    PreparedStatement st = statement.apply(conn);
+                    ResultSet rs = st.executeQuery()
+            ){
                 while (rs.next()) {
                     users.add(deserialize(rs));
                 }
-
-                st.close();
-                rs.close();
             } catch (Exception ex) {
                 log.severe(ex.toString());
             }

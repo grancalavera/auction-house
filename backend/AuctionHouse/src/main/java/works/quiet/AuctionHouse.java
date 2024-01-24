@@ -21,7 +21,10 @@ import java.util.Map;
 class AuctionHouse {
     public static void main(String ... argv) {
 
-        DBConnection connection = new PGConnection("jdbc:postgresql://localhost:5432/auction-house","grancalavera");
+        DBConnection connection = new PGConnection(
+                "jdbc:postgresql://localhost:5432/admin",
+                "admin",
+                "admin");
 
         OrganisationDao organisationDao = new PGOrganisationDao(connection);
         Map<Integer, OrganisationModel> organisations = organisationDao.getAll();
