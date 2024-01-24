@@ -1,16 +1,8 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
-import works.quiet.admin.AdminService;
-import works.quiet.io.*;
-import works.quiet.user.PGUserDao;
-import works.quiet.user.UserDao;
-import works.quiet.user.UserModel;
+import works.quiet.user.AdminService;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
@@ -34,7 +26,6 @@ public class LoginCommand implements Callable<Integer> {
     @Override
     public Integer call() {
         try {
-            adminService.currentUser();
             adminService.login(username, password);
             System.out.printf("Logged in as '%s'.\n",username);
             return 0;

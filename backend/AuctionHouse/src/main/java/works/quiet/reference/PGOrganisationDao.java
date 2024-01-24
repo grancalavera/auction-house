@@ -1,4 +1,4 @@
-package works.quiet.user;
+package works.quiet.reference;
 
 import lombok.extern.java.Log;
 import works.quiet.io.DBConnection;
@@ -7,7 +7,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 public class PGOrganisationDao implements OrganisationDao{

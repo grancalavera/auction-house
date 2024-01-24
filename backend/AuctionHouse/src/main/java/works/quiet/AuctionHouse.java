@@ -2,7 +2,7 @@ package works.quiet;
 
 import lombok.extern.java.Log;
 import picocli.CommandLine;
-import works.quiet.admin.AdminService;
+import works.quiet.user.AdminService;
 import works.quiet.cli.AdminProgram;
 import works.quiet.cli.MainProgram;
 import works.quiet.cli.CreateUserCommand;
@@ -10,6 +10,9 @@ import works.quiet.cli.LoginCommand;
 import works.quiet.cli.LogoutCommand;
 import works.quiet.io.DBConnection;
 import works.quiet.io.PGConnection;
+import works.quiet.reference.OrganisationDao;
+import works.quiet.reference.OrganisationModel;
+import works.quiet.reference.PGOrganisationDao;
 import works.quiet.user.*;
 
 import java.util.Map;
@@ -17,9 +20,9 @@ import java.util.Map;
 @Log
 class AuctionHouse {
     public static void main(String ... argv) {
+
         DBConnection connection = new PGConnection("jdbc:postgresql://localhost:5432/auction-house","grancalavera");
 
-        // Move to a reference data class or something;
         OrganisationDao organisationDao = new PGOrganisationDao(connection);
         Map<Integer, OrganisationModel> organisations = organisationDao.getAll();
 
