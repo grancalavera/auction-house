@@ -22,9 +22,9 @@ class AuctionHouse {
     public static void main(String ... argv) {
 
         DBConnection connection = new PGConnection(
-                "jdbc:postgresql://localhost:5432/admin",
-                "admin",
-                "admin");
+                System.getenv("AH_DB_URL"),
+                System.getenv("AH_DB_USER"),
+                System.getenv("AH_DB_PASSWORD"));
 
         OrganisationDao organisationDao = new PGOrganisationDao(connection);
         Map<Integer, OrganisationModel> organisations = organisationDao.getAll();
