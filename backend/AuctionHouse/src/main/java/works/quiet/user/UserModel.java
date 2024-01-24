@@ -1,6 +1,7 @@
 package works.quiet.user;
 
 import lombok.*;
+import works.quiet.reference.OrganisationModel;
 
 @Getter
 @EqualsAndHashCode

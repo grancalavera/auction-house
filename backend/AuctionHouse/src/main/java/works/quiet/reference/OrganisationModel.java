@@ -1,4 +1,4 @@
-package works.quiet.user;
+package works.quiet.reference;
 
 import lombok.*;
 

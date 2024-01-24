@@ -2,14 +2,19 @@ package works.quiet.user;
 
 import lombok.extern.java.Log;
 import works.quiet.io.DBConnection;
+import works.quiet.reference.OrganisationModel;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 
+@FunctionalInterface
+interface ThrowingFunction<T, R, E extends Exception> {
+    R apply(T t) throws E;
+}
 @Log
 public class PGUserDao implements UserDao {
     private final DBConnection connection;
@@ -22,25 +27,43 @@ public class PGUserDao implements UserDao {
 
     @Override
     public Optional<UserModel> findWithCredentials(String username, String password) {
-        AtomicReference<UserModel> nullableUser = new AtomicReference<UserModel>(null);
+        ArrayList<UserModel> result = queryUsers((conn) -> {
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM ah_users WHERE username=? AND password=?");
+            st.setString(1, username);
+            st.setString(2, password);
+            return st;
+        });
+        return Optional.ofNullable(result.getFirst());
+    }
 
-        String query = "SELECT * FROM ah_users WHERE username='" + username + "' AND password='" + password + "'";
+    @Override
+    public Optional<UserModel> findByUsername(String username) {
+        ArrayList<UserModel> result = queryUsers((conn) -> {
+            PreparedStatement st = conn.prepareStatement("SELECT * FROM ah_users WHERE username=?");
+            st.setString(1, username);
+            return st;
+        });
+        return Optional.ofNullable(result.getFirst());
+    }
 
-        connection.getConnection().ifPresent(conn->{
-            try (
-                    Statement statement = conn.createStatement();
-                    ResultSet resultSet = statement.executeQuery(query)
-            ){
-                if (resultSet.next()) {
-                    UserModel user = deserialize(resultSet);
-                    nullableUser.set(user);
+    private ArrayList<UserModel> queryUsers(ThrowingFunction<Connection, PreparedStatement, Exception>statement) {
+        ArrayList<UserModel> users = new ArrayList<>();
+        connection.getConnection().ifPresent(conn-> {
+            try {
+                PreparedStatement st = statement.apply(conn);
+                ResultSet rs = st.executeQuery();
+
+                while (rs.next()) {
+                    users.add(deserialize(rs));
                 }
-            }catch(SQLException ex){
-                log.severe("failed to findWithCredentials:" + ex.toString());
+
+                st.close();
+                rs.close();
+            } catch (Exception ex) {
+                log.severe(ex.toString());
             }
         });
-
-        return Optional.ofNullable(nullableUser.get());
+        return users;
     }
 
     private UserModel deserialize(ResultSet resultSet) {
@@ -64,10 +87,5 @@ public class PGUserDao implements UserDao {
         }
 
         return user;
-    }
-
-    @Override
-    public Optional<UserModel> findByUsername(String username) {
-        return Optional.empty();
     }
 }

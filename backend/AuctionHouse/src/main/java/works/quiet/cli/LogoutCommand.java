@@ -1,7 +1,7 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
-import works.quiet.admin.AdminService;
+import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
 
