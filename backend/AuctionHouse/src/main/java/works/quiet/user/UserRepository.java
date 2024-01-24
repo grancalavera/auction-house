@@ -1,10 +1,8 @@
 package works.quiet.user;
 
-import works.quiet.user.UserModel;
-
 import java.util.Optional;
 
-public interface UserDao {
+public interface UserRepository {
     Optional<UserModel> findWithCredentials(String username, String password);
     Optional<UserModel> findByUsername(String username);
 }

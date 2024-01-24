@@ -2,22 +2,20 @@ package works.quiet.user;
 
 import lombok.extern.java.Log;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 
 @Log
 public class AdminService {
-    private final UserDao userDao;
+    private final UserRepository userRepository;
     private final Session session;
 
-    public AdminService(UserDao userDao) {
-        this.userDao = userDao;
-        session = new Session();
+    public AdminService(UserRepository userRepository, Session session) {
+        this.userRepository = userRepository;
+        this.session = session;
     }
 
     public void login(String username, String password) throws Exception {
-        Optional<UserModel> maybeUser=userDao.findWithCredentials(username, password);
+        Optional<UserModel> maybeUser= userRepository.findWithCredentials(username, password);
 
         if (maybeUser.isEmpty()) {
             log.info("Login attempt failed with username="+username+".");
@@ -32,6 +30,6 @@ public class AdminService {
     }
 
     public Optional<UserModel> currentUser () {
-        return session.getUsername().flatMap(userDao::findByUsername);
+        return session.getUsername().flatMap(userRepository::findByUsername);
     }
 }

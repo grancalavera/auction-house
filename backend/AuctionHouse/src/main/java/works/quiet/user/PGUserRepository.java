@@ -13,11 +13,11 @@ import java.util.Map;
 import java.util.Optional;
 
 @Log
-public class PGUserDao implements UserDao {
+public class PGUserRepository implements UserRepository {
     private final DBConnection connection;
     private final Map<Integer, OrganisationModel> organisations;
 
-    public PGUserDao(DBConnection connection, Map<Integer, OrganisationModel> organisations) {
+    public PGUserRepository(DBConnection connection, Map<Integer, OrganisationModel> organisations) {
         this.connection = connection;
         this.organisations = organisations;
     }

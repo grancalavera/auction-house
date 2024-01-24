@@ -9,10 +9,10 @@ import java.sql.Statement;
 import java.util.*;
 
 @Log
-public class PGOrganisationDao implements OrganisationDao{
+public class PGOrganisationRepository implements OrganisationRepository {
     private final DBConnection connection;
 
-    public PGOrganisationDao(DBConnection connection) {
+    public PGOrganisationRepository(DBConnection connection) {
         this.connection = connection;
     }
 
