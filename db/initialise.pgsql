@@ -17,11 +17,12 @@ create table if not exists ah_users (
     id serial primary key,
     username varchar(256) unique not null,
     password varchar(256) not null,
+    role_id int references ah_roles(id) not null,
+    
     first_name varchar(256),
     last_name varchar(256),
     organisation_id int references ah_organisations(id),
-    account_status_id int references ah_accountstatus(id),
-    role_id int references ah_roles(id)
+    account_status_id int references ah_accountstatus(id)
 );
 
 insert into ah_organisations (org_name) values ('Auction House Solutions Inc.') on conflict do nothing;

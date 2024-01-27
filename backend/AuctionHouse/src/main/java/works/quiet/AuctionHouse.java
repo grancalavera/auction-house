@@ -26,12 +26,13 @@ class AuctionHouse {
 
         UserRepository userRepository = new PGUserRepository(connection, organisations);
         Session session = new FileSystemSession();
-        AdminService adminService = new AdminService(userRepository, session);
+        UserValidator userValidator = new UserValidator();
+        AdminService adminService = new AdminService(userRepository, session, userValidator);
 
         CommandLine mainProgram = new CommandLine(new MainProgram());
 
         CommandLine adminProgram = new CommandLine(new AdminProgram());
-        adminProgram.addSubcommand("create-user", new CreateUserCommand());
+        adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
         mainProgram.addSubcommand("login", new LoginCommand(adminService));
