@@ -6,10 +6,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Optional;
+import java.util.logging.Level;
 
 @Log
 public class FileSystemSession implements Session {
     private static final Path SESSION_PATH = Path.of(System.getProperty("user.home"), ".ah-session");
+
+    public FileSystemSession(Level logLevel) {
+        log.setLevel(logLevel);
+    }
 
     @Override
     public void open(String username) throws Exception {

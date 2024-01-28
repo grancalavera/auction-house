@@ -14,15 +14,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
     private final DBConnection connection;
     private final Map<Integer, OrganisationModel> organisations;
 
-    public PGUserRepository(DBConnection connection, Map<Integer, OrganisationModel> organisations) {
+    public PGUserRepository(Level logLevel, DBConnection connection, Map<Integer, OrganisationModel> organisations) {
         this.connection = connection;
         this.organisations = organisations;
+        log.setLevel(logLevel);
+    }
+
+
+    @Override
+    public List<UserModel> listUsers() {
+        return queryMany((conn) -> conn.prepareStatement("SELECT * FROM ah_users ORDER BY id"), this::userFromResultSet);
     }
 
     @Override
@@ -61,7 +69,7 @@ public class PGUserRepository implements UserRepository {
         log.info("Create user from prototype: " + prototype);
 
         // refactor to use a wrapper class around int
-        AtomicReference<Integer> generatedKey = new AtomicReference<>();
+        AtomicReference<Integer> idRef = new AtomicReference<>();
         FunctionThrows<Connection, PreparedStatement, Exception> mutation;
 
         var org = prototype.getOrganisation();
@@ -94,7 +102,7 @@ public class PGUserRepository implements UserRepository {
                     try (ResultSet rs = st.getGeneratedKeys()) {
                         if (rs.next()) {
                             var key = rs.getInt("id");
-                            generatedKey.set(rs.getInt(key));
+                            idRef.set(key);
                         }
                     } catch (Exception ex) {
                         log.severe(ex.toString());
@@ -105,12 +113,13 @@ public class PGUserRepository implements UserRepository {
             }
         });
 
-        return Optional.ofNullable(generatedKey.get());
+        return Optional.ofNullable(idRef.get());
     }
 
     private List<UserModel> queryMany(
             FunctionThrows<Connection, PreparedStatement, Exception> statement,
             FunctionThrows<ResultSet, UserModel, Exception> mapper) {
+
         List<UserModel> users = new ArrayList<>();
 
         connection.getConnection().ifPresent(conn -> {
@@ -122,6 +131,8 @@ public class PGUserRepository implements UserRepository {
                 log.severe(ex.toString());
             }
         });
+
+        log.info(users.toString());
         return users;
     }
 
@@ -130,10 +141,15 @@ public class PGUserRepository implements UserRepository {
             FunctionThrows<ResultSet, UserModel, Exception> mapper) {
 
         List<UserModel> queryResult = queryMany(statement, mapper);
-        UserModel maybeUser = queryResult.getFirst();
-        log.info("query result: " + maybeUser);
 
-        return Optional.ofNullable(maybeUser);
+        if (queryResult.isEmpty()) {
+            return Optional.empty();
+        }
+
+        UserModel user = queryResult.getFirst();
+        log.info("query result: " + user);
+
+        return Optional.of(user);
     }
 
 
@@ -144,7 +160,7 @@ public class PGUserRepository implements UserRepository {
             user = UserModel.builder()
                     .id(resultSet.getInt("id"))
                     .username(resultSet.getString("username"))
-                    .password(resultSet.getString("password"))
+                    .password("* redacted *")
                     .firstName(resultSet.getString("first_name"))
                     .lastName(resultSet.getString("last_name"))
                     .accountStatus(AccountStatus.ofInt(resultSet.getInt("account_status_id")))

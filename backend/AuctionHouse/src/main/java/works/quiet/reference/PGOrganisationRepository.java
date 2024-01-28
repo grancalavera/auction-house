@@ -7,12 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
+import java.util.logging.Level;
 
 @Log
 public class PGOrganisationRepository implements OrganisationRepository {
     private final DBConnection connection;
 
-    public PGOrganisationRepository(DBConnection connection) {
+    public PGOrganisationRepository(Level logLevel, DBConnection connection) {
+        log.setLevel(logLevel);
         this.connection = connection;
     }
 

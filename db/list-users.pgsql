@@ -9,4 +9,6 @@ select
 from ah_users u
     join ah_organisations o on u.organisation_id = o.id
     join ah_accountstatus a on u.account_status_id = a.id
-    join ah_roles r on u.role_id = r.id;
+    join ah_roles r on u.role_id = r.id
+order by u.id;
+    

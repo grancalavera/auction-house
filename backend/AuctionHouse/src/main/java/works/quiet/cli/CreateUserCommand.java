@@ -34,7 +34,8 @@ public class CreateUserCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        adminService.createUser(username, password);
+        var createdId = adminService.createUser(username, password);
+        System.out.printf("User created with id=%d\n", createdId);
         return 0;
     }
 }
