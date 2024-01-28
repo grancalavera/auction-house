@@ -7,7 +7,7 @@ import org.w3c.dom.ranges.RangeException;
 public enum AccountStatus {
     ACTIVE(1),
     BLOCKED(2);
-    final int id;
+    private final int id;
     AccountStatus(int id) {
         this.id = id;
     }

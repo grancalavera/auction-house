@@ -59,16 +59,28 @@ public class AdminService {
         return role.get();
     }
 
-    public UserModel createUser(String username, String password, int roleId) throws Exception {
+    public int createUser(String username, String password) throws Exception {
+        assertIsAdmin();
+
         userValidator.validateUsername(username);
         userValidator.validatePassword(password);
-        final Role role = Role.ofInt(roleId);
-        return UserModel
+
+        final UserModel prototype = UserModel
                 .builder()
                 .username(username)
                 .password(password)
-                .role(role)
                 .build();
 
+        Optional<Integer> generatedId = userRepository.createUser(prototype);
+
+        if(generatedId.isEmpty()) {
+            throw new Exception("Failed to create new user");
+        }
+
+        log.info("created user: " + prototype.toBuilder().id(generatedId.get()).build());
+        return generatedId.get();
     }
 }
+
+
+

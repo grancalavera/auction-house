@@ -8,9 +8,12 @@ import works.quiet.reference.OrganisationModel;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Log
 public class PGUserRepository implements UserRepository {
@@ -24,34 +27,96 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<UserModel> findWithCredentials(String username, String password) {
-        ArrayList<UserModel> result = queryUsers((conn) -> {
+        FunctionThrows<Connection, PreparedStatement, Exception> query;
+
+        query = (conn) -> {
             PreparedStatement st = conn.prepareStatement("SELECT * FROM ah_users WHERE username=? AND password=?");
             st.setString(1, username);
             st.setString(2, password);
             return st;
-        });
-        return Optional.ofNullable(result.getFirst());
+        };
+
+        var maybeUser = queryOne(query, this::userFromResultSet);
+        log.info(maybeUser.toString());
+        return maybeUser;
     }
 
     @Override
     public Optional<UserModel> findByUsername(String username) {
-        ArrayList<UserModel> result = queryUsers((conn) -> {
+        FunctionThrows<Connection, PreparedStatement, Exception> query;
+
+        query = (conn) -> {
             PreparedStatement st = conn.prepareStatement("SELECT * FROM ah_users WHERE username=?");
             st.setString(1, username);
             return st;
-        });
-        return Optional.ofNullable(result.getFirst());
+        };
+
+        var maybeUser = queryOne(query, this::userFromResultSet);
+        log.info(maybeUser.toString());
+        return maybeUser;
     }
 
-    private ArrayList<UserModel> queryUsers(FunctionThrows<Connection, PreparedStatement, Exception> statement) {
-        ArrayList<UserModel> users = new ArrayList<>();
-        connection.getConnection().ifPresent(conn-> {
+    @Override
+    public Optional<Integer> createUser(UserModel prototype) {
+        log.info("Create user from prototype: " + prototype);
+
+        // refactor to use a wrapper class around int
+        AtomicReference<Integer> generatedKey = new AtomicReference<>();
+        FunctionThrows<Connection, PreparedStatement, Exception> mutation;
+
+        var org = prototype.getOrganisation();
+
+        mutation = (conn -> {
+            PreparedStatement st = conn.prepareStatement(
+                    "INSERT INTO ah_users ("
+                            + "username, password, first_name, last_name, organisation_id, account_status_id, role_id"
+                            + ") VALUES (?, ?, ?, ?, ?, ?, ?)"
+                    , Statement.RETURN_GENERATED_KEYS
+            );
+            st.setString(1, prototype.getUsername());
+            st.setString(2, prototype.getPassword());
+            st.setString(3, prototype.getFirstName());
+            st.setString(4, prototype.getLastName());
+            st.setInt(5, org == null ? OrganisationModel.UNKNOWN_ORGANISATION : org.getId());
+            st.setInt(6, prototype.getAccountStatus().getId());
+            st.setInt(7, prototype.getRole().getId());
+
+            return st;
+        });
+
+        connection.getConnection().ifPresent(conn -> {
             try (
-                    PreparedStatement st = statement.apply(conn);
-                    ResultSet rs = st.executeQuery()
-            ){
+                    PreparedStatement st = mutation.apply(conn)
+            ) {
+                int rowsInserted = st.executeUpdate();
+                log.info(rowsInserted + " rows inserted.");
+                if (rowsInserted > 0) {
+                    try (ResultSet rs = st.getGeneratedKeys()) {
+                        if (rs.next()) {
+                            var key = rs.getInt("id");
+                            generatedKey.set(rs.getInt(key));
+                        }
+                    } catch (Exception ex) {
+                        log.severe(ex.toString());
+                    }
+                }
+            } catch (Exception ex) {
+                log.severe("Failed to create use from prototype: " + ex);
+            }
+        });
+
+        return Optional.ofNullable(generatedKey.get());
+    }
+
+    private List<UserModel> queryMany(
+            FunctionThrows<Connection, PreparedStatement, Exception> statement,
+            FunctionThrows<ResultSet, UserModel, Exception> mapper) {
+        List<UserModel> users = new ArrayList<>();
+
+        connection.getConnection().ifPresent(conn -> {
+            try (PreparedStatement st = statement.apply(conn); ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    users.add(deserialize(rs));
+                    users.add(mapper.apply(rs));
                 }
             } catch (Exception ex) {
                 log.severe(ex.toString());
@@ -60,12 +125,23 @@ public class PGUserRepository implements UserRepository {
         return users;
     }
 
-    private UserModel deserialize(ResultSet resultSet) {
+    private Optional<UserModel> queryOne(
+            FunctionThrows<Connection, PreparedStatement, Exception> statement,
+            FunctionThrows<ResultSet, UserModel, Exception> mapper) {
+
+        List<UserModel> queryResult = queryMany(statement, mapper);
+        UserModel maybeUser = queryResult.getFirst();
+        log.info("query result: " + maybeUser);
+
+        return Optional.ofNullable(maybeUser);
+    }
+
+
+    private UserModel userFromResultSet(ResultSet resultSet) {
         UserModel user = null;
 
         try {
-            user = UserModel
-                    .builder()
+            user = UserModel.builder()
                     .id(resultSet.getInt("id"))
                     .username(resultSet.getString("username"))
                     .password(resultSet.getString("password"))
@@ -77,7 +153,7 @@ public class PGUserRepository implements UserRepository {
                     .build();
             log.info(user.toString());
         } catch (Exception ex) {
-            log.severe("failed to deserialize user: " + ex.toString());
+            log.severe("failed to map UserModel from ResulSet: " + ex);
         }
 
         return user;

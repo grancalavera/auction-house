@@ -31,20 +31,10 @@ public class CreateUserCommand implements Callable<Integer> {
     }
 
 
-    @CommandLine.Option(
-            names = {"-r", "--roleId"},
-            paramLabel = "<roleId>",
-            defaultValue = "2",
-            description = "The role id for the new user, valid values are 1 (ADMIN), 2 (USER). Default value: ${DEFAULT-VALUE}"
-    )
-    private int roleId;
 
     @Override
     public Integer call() throws Exception {
-        adminService.assertIsAdmin();
-        System.out.printf("create-user username=%s password=%s role=%s\n", username, password, roleId);
-        final UserModel user = adminService.createUser(username, password, roleId);
-        System.out.println("created user: " + user);
+        adminService.createUser(username, password);
         return 0;
     }
 }

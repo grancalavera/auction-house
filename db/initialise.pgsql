@@ -25,6 +25,7 @@ create table if not exists ah_users (
     account_status_id int references ah_accountstatus(id)
 );
 
+insert into ah_organisations (org_name) values ('unknown') on conflict do nothing;
 insert into ah_organisations (org_name) values ('Auction House Solutions Inc.') on conflict do nothing;
 insert into ah_organisations (org_name) values ('Optimistic Traders') on conflict do nothing;
 insert into ah_organisations (org_name) values ('Institutional Investors') on conflict do nothing;
@@ -36,7 +37,7 @@ insert into ah_accountstatus (status_name) values ('BLOCKED') on conflict do not
 insert into ah_roles (role_name) values ('ADMIN') on conflict do nothing;
 insert into ah_roles (role_name) values ('USER') on conflict do nothing;
 
-insert into ah_users (username, password, first_name, last_name, organisation_id, account_status_id, role_id) values ('admin', 'admin', 'Pinche', 'Pancho', 1, 1, 1) on conflict do nothing;
+insert into ah_users (username, password, first_name, last_name, organisation_id, account_status_id, role_id) values ('admin', 'admin', 'Pinche', 'Pancho', 2, 1, 1) on conflict do nothing;
 
 select 
     u.id, u.username, 

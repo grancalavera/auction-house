@@ -4,5 +4,8 @@ import java.util.Optional;
 
 public interface UserRepository {
     Optional<UserModel> findWithCredentials(String username, String password);
+
     Optional<UserModel> findByUsername(String username);
+
+    Optional<Integer> createUser(UserModel prototype);
 }
