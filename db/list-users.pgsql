@@ -7,8 +7,8 @@ select
     r.role_name as role, 
     o.org_name as organisation
 from ah_users u
-    join ah_organisations o on u.organisation_id = o.id
-    join ah_accountstatus a on u.account_status_id = a.id
-    join ah_roles r on u.role_id = r.id
+    left join ah_organisations o on u.organisation_id = o.id
+    left join ah_accountstatus a on u.account_status_id = a.id
+    left join ah_roles r on u.role_id = r.id
 order by u.id;
     

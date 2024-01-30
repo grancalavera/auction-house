@@ -101,6 +101,7 @@ public class PGUserRepository implements UserRepository {
                 if (rowsInserted > 0) {
                     try (ResultSet rs = st.getGeneratedKeys()) {
                         if (rs.next()) {
+                            var user = userFromResultSet(rs);
                             var key = rs.getInt("id");
                             idRef.set(key);
                         }
@@ -160,7 +161,7 @@ public class PGUserRepository implements UserRepository {
             user = UserModel.builder()
                     .id(resultSet.getInt("id"))
                     .username(resultSet.getString("username"))
-                    .password("* redacted *")
+                    .password(resultSet.getString("password"))
                     .firstName(resultSet.getString("first_name"))
                     .lastName(resultSet.getString("last_name"))
                     .accountStatus(AccountStatus.ofInt(resultSet.getInt("account_status_id")))

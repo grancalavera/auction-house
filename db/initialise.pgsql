@@ -18,14 +18,13 @@ create table if not exists ah_users (
     username varchar(256) unique not null,
     password varchar(256) not null,
     role_id int references ah_roles(id) not null,
-    
+    organisation_id int references ah_organisations(id) not null,
+    account_status_id int references ah_accountstatus(id) not null,
     first_name varchar(256),
-    last_name varchar(256),
-    organisation_id int references ah_organisations(id),
-    account_status_id int references ah_accountstatus(id)
+    last_name varchar(256)
 );
 
-insert into ah_organisations (org_name) values ('unknown') on conflict do nothing;
+
 insert into ah_organisations (org_name) values ('Auction House Solutions Inc.') on conflict do nothing;
 insert into ah_organisations (org_name) values ('Optimistic Traders') on conflict do nothing;
 insert into ah_organisations (org_name) values ('Institutional Investors') on conflict do nothing;
@@ -34,20 +33,23 @@ insert into ah_organisations (org_name) values ('The Bank of England') on confli
 insert into ah_accountstatus (status_name) values ('ACTIVE') on conflict do nothing;
 insert into ah_accountstatus (status_name) values ('BLOCKED') on conflict do nothing;
 
-insert into ah_roles (role_name) values ('ADMIN') on conflict do nothing;
 insert into ah_roles (role_name) values ('USER') on conflict do nothing;
+insert into ah_roles (role_name) values ('ADMIN') on conflict do nothing;
 
-insert into ah_users (username, password, first_name, last_name, organisation_id, account_status_id, role_id) values ('admin', 'admin', 'Pinche', 'Pancho', 2, 1, 1) on conflict do nothing;
+insert into ah_users
+        (username, password, first_name, last_name, organisation_id, account_status_id, role_id)
+    values
+        ('admin', 'admin', 'Pinche', 'Pancho', 1, 1, 2);
 
-select 
-    u.id, u.username, 
-    u.password, 
-    u.first_name, 
+select
+    u.id, u.username,
+    u.password,
+    u.first_name,
     u.last_name,
     a.status_name as status,
-    r.role_name as role, 
+    r.role_name as role,
     o.org_name as organisation
 from ah_users u
-    join ah_organisations o on u.organisation_id = o.id
-    join ah_accountstatus a on u.account_status_id = a.id
-    join ah_roles r on u.role_id = r.id;
+    left join ah_organisations o on u.organisation_id = o.id
+    left join ah_accountstatus a on u.account_status_id = a.id
+    left join ah_roles r on u.role_id = r.id;

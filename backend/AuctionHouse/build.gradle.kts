@@ -1,7 +1,6 @@
 plugins {
     id("java")
     // https://docs.gradle.org/current/userguide/application_plugin.html
-    // I think this is doing nothing
     // I expect to have a main class I can launch
     application
     // https://imperceptiblethoughts.com/shadow/getting-started/#default-java-groovy-tasks
@@ -9,6 +8,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version("8.1.1")
 }
 
+// https://docs.gradle.org/current/userguide/application_plugin.html
 application {
     mainClass = "works.quiet.AuctionHouse"
 }
