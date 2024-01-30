@@ -35,10 +35,6 @@ public class AdminService {
         log.info("Logged out.");
     }
 
-    public Optional<String> getCurrentUserUsername() {
-        return session.getUsername();
-    }
-
     public void assertIsUser() throws Exception {
         if (getCurrentUserRole() != Role.USER) {
             throw new Exception("Not an user.");

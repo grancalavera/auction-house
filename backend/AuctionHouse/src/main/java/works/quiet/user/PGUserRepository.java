@@ -19,18 +19,22 @@ import java.util.logging.Level;
 @Log
 public class PGUserRepository implements UserRepository {
     private final DBConnection connection;
-    private final Map<Integer, OrganisationModel> organisations;
 
-    public PGUserRepository(Level logLevel, DBConnection connection, Map<Integer, OrganisationModel> organisations) {
+    public PGUserRepository(Level logLevel, DBConnection connection) {
         this.connection = connection;
-        this.organisations = organisations;
         log.setLevel(logLevel);
     }
 
-
     @Override
     public List<UserModel> listUsers() {
-        return queryMany((conn) -> conn.prepareStatement("SELECT * FROM ah_users ORDER BY id"), this::userFromResultSet);
+        return queryMany((conn) -> conn.prepareStatement(
+                "SELECT u.id, u.username, u.password, u.first_name, u.last_name, a.status_name as account_status, r.role_name as role, u.organisation_id, o.org_name as organisation"
+                        + " FROM ah_users u"
+                        + " LEFT JOIN ah_organisations o on u.organisation_id = o.id"
+                        + " LEFT JOIN ah_accountstatus a on u.account_status_id = a.id"
+                        + " LEFT JOIN ah_roles r on u.role_id = r.id"
+                        + " ORDER BY id"
+        ), this::userFromResultSet);
     }
 
     @Override
@@ -38,7 +42,14 @@ public class PGUserRepository implements UserRepository {
         FunctionThrows<Connection, PreparedStatement, Exception> query;
 
         query = (conn) -> {
-            PreparedStatement st = conn.prepareStatement("SELECT * FROM ah_users WHERE username=? AND password=?");
+            PreparedStatement st = conn.prepareStatement(
+                    "SELECT u.id, u.username, u.password, u.first_name, u.last_name, a.status_name as account_status, r.role_name as role, u.organisation_id, o.org_name as organisation"
+                            + " FROM ah_users u"
+                            + " LEFT JOIN ah_organisations o on u.organisation_id = o.id"
+                            + " LEFT JOIN ah_accountstatus a on u.account_status_id = a.id"
+                            + " LEFT JOIN ah_roles r on u.role_id = r.id"
+                            + " WHERE u.username=? AND u.password=?"
+            );
             st.setString(1, username);
             st.setString(2, password);
             return st;
@@ -54,7 +65,14 @@ public class PGUserRepository implements UserRepository {
         FunctionThrows<Connection, PreparedStatement, Exception> query;
 
         query = (conn) -> {
-            PreparedStatement st = conn.prepareStatement("SELECT * FROM ah_users WHERE username=?");
+            PreparedStatement st = conn.prepareStatement(
+                    "SELECT u.id, u.username, u.password, u.first_name, u.last_name, a.status_name as account_status, r.role_name as role, u.organisation_id, o.org_name as organisation"
+                            + " FROM ah_users u"
+                            + " LEFT JOIN ah_organisations o on u.organisation_id = o.id"
+                            + " LEFT JOIN ah_accountstatus a on u.account_status_id = a.id"
+                            + " LEFT JOIN ah_roles r on u.role_id = r.id"
+                            + " WHERE u.username=?"
+            );
             st.setString(1, username);
             return st;
         };
@@ -101,7 +119,6 @@ public class PGUserRepository implements UserRepository {
                 if (rowsInserted > 0) {
                     try (ResultSet rs = st.getGeneratedKeys()) {
                         if (rs.next()) {
-                            var user = userFromResultSet(rs);
                             var key = rs.getInt("id");
                             idRef.set(key);
                         }
@@ -164,9 +181,12 @@ public class PGUserRepository implements UserRepository {
                     .password(resultSet.getString("password"))
                     .firstName(resultSet.getString("first_name"))
                     .lastName(resultSet.getString("last_name"))
-                    .accountStatus(AccountStatus.ofInt(resultSet.getInt("account_status_id")))
-                    .role(Role.ofInt(resultSet.getInt("role_id")))
-                    .organisation(organisations.get(resultSet.getInt("organisation_id")))
+                    .accountStatus(AccountStatus.valueOf(resultSet.getString("account_status")))
+                    .role(Role.valueOf(resultSet.getString("role")))
+                    .organisation(OrganisationModel.builder()
+                            .id(resultSet.getInt("organisation_id"))
+                            .name(resultSet.getString("organisation"))
+                            .build())
                     .build();
             log.info(user.toString());
         } catch (Exception ex) {

@@ -41,6 +41,21 @@ insert into ah_users
     values
         ('admin', 'admin', 'Pinche', 'Pancho', 1, 1, 2);
 
+insert into ah_users
+        (username, password, organisation_id, account_status_id, role_id)
+    values
+        ('u1', '123', 2, 1, 1);
+
+insert into ah_users
+        (username, password, organisation_id, account_status_id, role_id)
+    values
+        ('u2', '123', 3, 1, 1);
+
+insert into ah_users
+        (username, password, organisation_id, account_status_id, role_id)
+    values
+        ('u4', '123', 4, 1, 1);
+
 select
     u.id, u.username,
     u.password,
@@ -52,4 +67,5 @@ select
 from ah_users u
     left join ah_organisations o on u.organisation_id = o.id
     left join ah_accountstatus a on u.account_status_id = a.id
-    left join ah_roles r on u.role_id = r.id;
+    left join ah_roles r on u.role_id = r.id
+order by u.id;

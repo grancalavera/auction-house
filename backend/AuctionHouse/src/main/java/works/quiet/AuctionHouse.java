@@ -5,12 +5,8 @@ import picocli.CommandLine;
 import works.quiet.cli.*;
 import works.quiet.io.DBConnection;
 import works.quiet.io.PGConnection;
-import works.quiet.reference.OrganisationModel;
-import works.quiet.reference.OrganisationRepository;
-import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.user.*;
 
-import java.util.Map;
 import java.util.logging.Level;
 
 @Log
@@ -51,10 +47,7 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(Level LOG_LEVEL, DBConnection connection) {
-        OrganisationRepository organisationRepository = new PGOrganisationRepository(LOG_LEVEL, connection);
-        Map<Integer, OrganisationModel> organisations = organisationRepository.getAll();
-
-        UserRepository userRepository = new PGUserRepository(LOG_LEVEL, connection, organisations);
+        UserRepository userRepository = new PGUserRepository(LOG_LEVEL, connection);
         Session session = new FileSystemSession(LOG_LEVEL);
         UserValidator userValidator = new UserValidator(LOG_LEVEL);
 

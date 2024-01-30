@@ -21,15 +21,15 @@ public class WhoAmICommand implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() throws Exception {
-        final var maybeUsername = adminService.getCurrentUserUsername();
+    public Integer call()  {
+        final var maybeUser = adminService.getCurrentUser();
 
-        if (maybeUsername.isEmpty()) {
+        if (maybeUser.isEmpty()) {
             log.severe("Not authenticated.");
             return 1;
         }
 
-        System.out.println(maybeUsername.get());
+        System.out.println(maybeUser.get());
         return 0;
     }
 }
