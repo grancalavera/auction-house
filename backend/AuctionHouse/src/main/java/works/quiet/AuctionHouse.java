@@ -5,6 +5,8 @@ import picocli.CommandLine;
 import works.quiet.cli.*;
 import works.quiet.io.DBConnection;
 import works.quiet.io.PGConnection;
+import works.quiet.reference.OrganisationRepository;
+import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.user.*;
 
 import java.util.logging.Level;
@@ -27,6 +29,7 @@ class AuctionHouse {
         CommandLine adminProgram = new CommandLine(new AdminProgram());
         adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
         adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
+        adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
         mainProgram.addSubcommand("login", new LoginCommand(LOG_LEVEL, adminService));
@@ -35,22 +38,26 @@ class AuctionHouse {
         mainProgram.addSubcommand("admin", adminProgram);
         mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
-        int exitCode = mainProgram.execute(argv);
-
         try {
-            connection.close();
+            int exitCode = mainProgram.execute(argv);
+            System.exit(exitCode);
         } catch (Exception ex) {
-            log.warning("Failed to close DBConnection.");
+            System.out.println(ex.getMessage());
+            System.exit(1);
+        } finally {
+            try {
+                connection.close();
+            } catch (Exception ex) {
+                log.warning("Failed to close DBConnection.");
+            }
         }
-
-        System.exit(exitCode);
     }
 
     private static AdminService getAdminService(Level LOG_LEVEL, DBConnection connection) {
         UserRepository userRepository = new PGUserRepository(LOG_LEVEL, connection);
+        OrganisationRepository organisationRepository = new PGOrganisationRepository(LOG_LEVEL, connection);
         Session session = new FileSystemSession(LOG_LEVEL);
         UserValidator userValidator = new UserValidator(LOG_LEVEL);
-
-        return new AdminService(LOG_LEVEL, userRepository, session, userValidator);
+        return new AdminService(LOG_LEVEL, userRepository, organisationRepository, session, userValidator);
     }
 }

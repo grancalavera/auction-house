@@ -1,7 +1,10 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
+import works.quiet.reference.OrganisationModel;
+import works.quiet.reference.OrganisationRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -9,11 +12,13 @@ import java.util.logging.Level;
 @Log
 public class AdminService {
     private final UserRepository userRepository;
+    private final OrganisationRepository organisationRepository;
     private final Session session;
     private final UserValidator userValidator;
 
-    public AdminService(Level logLevel, UserRepository userRepository, Session session, UserValidator userValidator) {
+    public AdminService(Level logLevel, UserRepository userRepository, OrganisationRepository organisationRepository, Session session, UserValidator userValidator) {
         this.userRepository = userRepository;
+        this.organisationRepository = organisationRepository;
         this.session = session;
         this.userValidator = userValidator;
         log.setLevel(logLevel);
@@ -64,8 +69,6 @@ public class AdminService {
     }
 
     public int createUser(String username, String password) throws Exception {
-        // this should be handled by the top level admin command
-        assertIsAdmin();
 
         userValidator.validateUsername(username);
         userValidator.validatePassword(password);
@@ -84,6 +87,10 @@ public class AdminService {
 
     public List<UserModel> listUsers() {
         return userRepository.listUsers();
+    }
+
+    public List<OrganisationModel> listOrganistions() {
+        return organisationRepository.listOrganisations();
     }
 }
 

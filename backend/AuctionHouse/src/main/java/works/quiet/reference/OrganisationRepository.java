@@ -1,7 +1,8 @@
 package works.quiet.reference;
 
-import java.util.Map;
+import java.util.List;
 
 public interface OrganisationRepository {
-    Map<Integer, OrganisationModel> getAll();
+
+    List<OrganisationModel> listOrganisations();
 }
