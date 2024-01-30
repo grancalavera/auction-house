@@ -1,0 +1,4 @@
+#!/bin/sh
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+CLASS_PATH="$SCRIPT_DIR/../backend/AuctionHouse/build/libs/auction-house-1.0-SNAPSHOT-all.jar"
+java -cp "${CLASS_PATH}" works.quiet.AuctionHouse $@
