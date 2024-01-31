@@ -40,6 +40,13 @@ public class AdminService {
         log.info("Logged out.");
     }
 
+    public void assertIsAuthenticated() throws Exception {
+        var maybeUseer = getCurrentUser();
+        if (maybeUseer.isEmpty()) {
+            throw new Exception("Not authenticated.");
+        }
+    }
+
     public void assertIsUser() throws Exception {
         if (getCurrentUserRole() != Role.USER) {
             throw new Exception("Not an user.");

@@ -15,21 +15,15 @@ import java.util.logging.Level;
 public class WhoAmICommand implements Callable<Integer> {
     final AdminService adminService;
 
-    public WhoAmICommand(Level logLevel ,AdminService adminService) {
+    public WhoAmICommand(Level logLevel, AdminService adminService) {
         this.adminService = adminService;
         log.setLevel(logLevel);
     }
 
     @Override
-    public Integer call()  {
-        final var maybeUser = adminService.getCurrentUser();
-
-        if (maybeUser.isEmpty()) {
-            log.severe("Not authenticated.");
-            return 1;
-        }
-
-        System.out.println(maybeUser.get());
+    public Integer call() throws Exception {
+        adminService.assertIsAuthenticated();
+        adminService.getCurrentUser().ifPresent(System.out::println);
         return 0;
     }
 }

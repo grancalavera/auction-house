@@ -22,18 +22,8 @@ public class ListUsersCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        // this should be handled by the top level admin command
-        try {
-            adminService.assertIsAdmin();
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            return 1;
-        }
-
-        var users = adminService.listUsers();
-        for (UserModel user : users) {
-            System.out.println(user.toString());
-        }
+        adminService.assertIsAdmin();
+        adminService.listUsers().forEach(System.out::println);
         return 0;
     }
 }

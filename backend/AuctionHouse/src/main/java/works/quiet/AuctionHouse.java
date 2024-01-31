@@ -36,21 +36,21 @@ class AuctionHouse {
         mainProgram.addSubcommand("logout", new LogoutCommand(adminService));
         mainProgram.addSubcommand("whoami", new WhoAmICommand(LOG_LEVEL, adminService));
         mainProgram.addSubcommand("admin", adminProgram);
+        mainProgram.addSubcommand("boom", new BoomCommand());
         mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
+
+        int exitCode = mainProgram
+                .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
+                .execute(argv);
+
         try {
-            int exitCode = mainProgram.execute(argv);
-            System.exit(exitCode);
+            connection.close();
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            System.exit(1);
-        } finally {
-            try {
-                connection.close();
-            } catch (Exception ex) {
-                log.warning("Failed to close DBConnection.");
-            }
+            log.warning("Failed to close DBConnection.");
         }
+
+        System.exit(exitCode);
     }
 
     private static AdminService getAdminService(Level LOG_LEVEL, DBConnection connection) {

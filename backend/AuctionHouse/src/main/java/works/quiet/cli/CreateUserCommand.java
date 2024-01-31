@@ -2,8 +2,6 @@ package works.quiet.cli;
 
 import picocli.CommandLine;
 import works.quiet.user.AdminService;
-import works.quiet.user.Role;
-import works.quiet.user.UserModel;
 
 import java.util.concurrent.Callable;
 
@@ -31,17 +29,9 @@ public class CreateUserCommand implements Callable<Integer> {
     }
 
 
-
     @Override
     public Integer call() throws Exception {
-        // this should be handled by the top level admin command
-        try {
-            adminService.assertIsAdmin();
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            return 1;
-        }
-
+        adminService.assertIsAdmin();
         var createdId = adminService.createUser(username, password);
         System.out.printf("User created with id=%d\n", createdId);
         return 0;

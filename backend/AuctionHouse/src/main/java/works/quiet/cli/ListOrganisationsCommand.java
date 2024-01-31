@@ -1,7 +1,6 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
-import works.quiet.reference.OrganisationModel;
 import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
@@ -21,20 +20,9 @@ public class ListOrganisationsCommand implements Callable<Integer> {
 
 
     @Override
-    public Integer call() {
-        // this should be handled by the top level admin command
-        try {
-            adminService.assertIsAdmin();
-        } catch (Exception ex) {
-            System.out.println(ex.getMessage());
-            return 1;
-        }
-
-        var organisations = adminService.listOrganistions();
-        for (OrganisationModel organisation : organisations) {
-            System.out.println(organisation.toString());
-        }
-
+    public Integer call() throws Exception {
+        adminService.assertIsAdmin();
+        adminService.listOrganistions().forEach(System.out::println);
         return 0;
     }
 }

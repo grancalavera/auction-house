@@ -19,14 +19,9 @@ public class LogoutCommand implements Callable<Integer> {
     }
 
     @Override
-    public Integer call() {
-        try {
-            adminService.logout();
-            System.out.println("Logged out.");
-            return 0;
-        }catch (Exception ex){
-            System.out.println(ex.getMessage());
-            return 1;
-        }
+    public Integer call() throws Exception {
+        adminService.logout();
+        System.out.println("Logged out.");
+        return 0;
     }
 }
