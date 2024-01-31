@@ -1,5 +1,7 @@
 package works.quiet.io;
 
+import lombok.extern.java.Log;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -7,23 +9,19 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class PGConnection implements DBConnection{
+@Log
+public class PGConnection implements DBConnection {
     private static final Logger LOGGER = Logger.getLogger(PGConnection.class.getName());
-    private Connection connection = null;
     private final String url;
     private final String username;
     private final String password;
+    private Connection connection = null;
 
-    public PGConnection(String url, String username, String password) {
+    public PGConnection(Level logLevel, String url, String username, String password) {
         this.url = url;
         this.username = username;
         this.password = password;
-    }
-
-    public PGConnection(String url, String username) {
-        this.url = url;
-        this.username = username;
-        this.password = null;
+        log.setLevel(logLevel);
     }
 
     @Override
@@ -45,7 +43,7 @@ public class PGConnection implements DBConnection{
             try {
                 connection.close();
                 connection = null;
-            }catch (SQLException ex) {
+            } catch (SQLException ex) {
                 LOGGER.log(
                         Level.SEVERE,
                         "Failed to close postgres connection: url=" + url + " username=" + username,
