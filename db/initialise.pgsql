@@ -20,8 +20,8 @@ create table if not exists ah_users (
     role_id int references ah_roles(id) not null,
     organisation_id int references ah_organisations(id) not null,
     account_status_id int references ah_accountstatus(id) not null,
-    first_name varchar(256),
-    last_name varchar(256)
+    first_name varchar(256) not null,
+    last_name varchar(256) not null
 );
 
 insert into ah_organisations (org_name) 

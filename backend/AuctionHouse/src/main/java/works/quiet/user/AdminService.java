@@ -4,7 +4,6 @@ import lombok.extern.java.Log;
 import works.quiet.reference.OrganisationModel;
 import works.quiet.reference.OrganisationRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -75,21 +74,31 @@ public class AdminService {
         return role.get();
     }
 
-    public int createUser(String username, String password) throws Exception {
+    public int createUser(
+            String username,
+            String password,
+            String firstName,
+            String lastName,
+            String organisationName,
+            String roleName,
+            String accountStatusName
+    ) throws Exception {
 
         userValidator.validateUsername(username);
         userValidator.validatePassword(password);
 
-        final UserModel prototype = UserModel.builder().username(username).password(password).build();
+        int generatedId = userRepository.createUser(
+                username,
+                password,
+                firstName,
+                lastName,
+                organisationName,
+                Role.valueOf(roleName).getId(),
+                AccountStatus.valueOf(accountStatusName).getId()
+        );
 
-        Optional<Integer> generatedId = userRepository.createUser(prototype);
-
-        if (generatedId.isEmpty()) {
-            throw new Exception("Failed to create new user");
-        }
-
-        log.info("created user: " + prototype.toBuilder().id(generatedId.get()).build());
-        return generatedId.get();
+        log.info("created user with id=" + generatedId);
+        return generatedId;
     }
 
     public List<UserModel> listUsers() {

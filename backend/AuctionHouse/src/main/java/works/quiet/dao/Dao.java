@@ -16,8 +16,8 @@ public interface Dao<T> {
             FunctionThrows<Connection, PreparedStatement, Exception> statement
     );
 
-//    int create(
-//            String idKey,
-//            FunctionThrows<Connection, PreparedStatement, Exception> statement
-//    );
+    int createOne(
+            String idKey,
+            FunctionThrows<Connection, PreparedStatement, Exception> statement
+    ) throws Exception;
 }

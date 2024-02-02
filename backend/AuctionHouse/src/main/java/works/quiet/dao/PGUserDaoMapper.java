@@ -16,7 +16,7 @@ public class PGUserDaoMapper implements PGDaoMapper<UserModel> {
     }
 
     @Override
-    public UserModel map(ResultSet resultSet) throws Exception {
+    public UserModel fromResulSet(ResultSet resultSet) throws Exception {
         var organisation = OrganisationModel.builder()
                 .id(resultSet.getInt("organisation_id"))
                 .name(resultSet.getString("organisation"))

@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
@@ -24,13 +25,13 @@ public abstract class PGDao<T> implements Dao<T> {
     }
 
     @Override
-    public List<T> queryMany(FunctionThrows<Connection, PreparedStatement, Exception> statement) {
+    public List<T> queryMany(FunctionThrows<Connection, PreparedStatement, Exception> query) {
         List<T> result = new ArrayList<>();
 
         connection.getConnection().ifPresent(conn -> {
-            try (PreparedStatement st = statement.apply(conn); ResultSet rs = st.executeQuery()) {
+            try (PreparedStatement st = query.apply(conn); ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    result.add(mapper.map(rs));
+                    result.add(mapper.fromResulSet(rs));
                 }
             } catch (Exception ex) {
                 log.severe(ex.toString());
@@ -42,8 +43,8 @@ public abstract class PGDao<T> implements Dao<T> {
     }
 
     @Override
-    public Optional<T> queryOne(FunctionThrows<Connection, PreparedStatement, Exception> statement) {
-        List<T> manyResults = queryMany(statement);
+    public Optional<T> queryOne(FunctionThrows<Connection, PreparedStatement, Exception> query) {
+        List<T> manyResults = queryMany(query);
 
         if (manyResults.isEmpty()) {
             log.info("empty");
@@ -53,5 +54,34 @@ public abstract class PGDao<T> implements Dao<T> {
         T result = manyResults.getFirst();
         log.info(result.toString());
         return Optional.of(result);
+    }
+
+    @Override
+    public int createOne(
+            String idKey,
+            FunctionThrows<Connection, PreparedStatement, Exception> mutation
+    ) throws Exception {
+        AtomicReference<Integer> idRef = new AtomicReference<>();
+        var conn = connection.getConnection().get(); // 💥
+
+        try (PreparedStatement st = mutation.apply(conn)) {
+            int rowsInserted = st.executeUpdate();
+            log.info(rowsInserted + " rows inserted.");
+
+            try (ResultSet rs = st.getGeneratedKeys()) {
+                rs.next();
+                var key = rs.getInt("id");
+                idRef.set(key);
+            } catch (Exception ex) {
+                log.severe(ex.toString());
+                throw ex;
+            }
+
+        } catch (Exception ex) {
+            log.severe(ex.toString());
+            throw ex;
+        }
+
+        return idRef.get().intValue();
     }
 }

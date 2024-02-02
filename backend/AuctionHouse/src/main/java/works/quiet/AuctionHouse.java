@@ -5,13 +5,14 @@ import picocli.CommandLine;
 import works.quiet.cli.*;
 import works.quiet.dao.PGDaoMapper;
 import works.quiet.dao.PGUserDaoMapper;
-import works.quiet.dao.UserDao;
+import works.quiet.dao.PGUserDao;
 import works.quiet.io.DBConnection;
 import works.quiet.io.PGConnection;
 import works.quiet.reference.OrganisationRepository;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.user.*;
 
+import java.util.Arrays;
 import java.util.logging.Level;
 
 @Log
@@ -19,7 +20,6 @@ class AuctionHouse {
     private final static Level DEFAULT_LOG_LEVEL = Level.OFF;
 
     public static void main(String... argv) {
-
         var AH_DB_URL = System.getenv("AH_DB_URL");
         var AH_DB_USER = System.getenv("AH_DB_USER");
         var AH_DB_PASSWORD = System.getenv("AH_DB_PASSWORD");
@@ -80,7 +80,7 @@ class AuctionHouse {
 
         Session session = new FileSystemSession(LOG_LEVEL);
         PGDaoMapper<UserModel> userMapper = new PGUserDaoMapper(LOG_LEVEL);
-        UserDao userDao = new UserDao(LOG_LEVEL, connection, userMapper);
+        PGUserDao userDao = new PGUserDao(LOG_LEVEL, connection, userMapper);
         UserRepository userRepository = new PGUserRepository(LOG_LEVEL, connection, userDao);
         UserValidator userValidator = new UserValidator(LOG_LEVEL);
 

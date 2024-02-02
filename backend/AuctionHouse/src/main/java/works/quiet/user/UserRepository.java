@@ -1,5 +1,7 @@
 package works.quiet.user;
 
+import lombok.NonNull;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -11,5 +13,13 @@ public interface UserRepository {
 
     Optional<UserModel> findByUsername(String username);
 
-    Optional<Integer> createUser(UserModel prototype);
+    int createUser(
+            String username,
+            String password,
+            String firstName,
+            String lastName,
+            String organisationName,
+            int roleId,
+            int accountStatusId
+    ) throws Exception;
 }
