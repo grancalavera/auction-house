@@ -54,7 +54,7 @@ insert into ah_users
 insert into ah_users
         (username, password, organisation_id, account_status_id, role_id)
     values
-        ('u4', '123', 4, 1, 1);
+        ('u3', '123', 4, 1, 1);
 
 select
     u.id, u.username,

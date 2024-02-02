@@ -15,14 +15,18 @@ import java.util.logging.Level;
 class AuctionHouse {
     public static void main(String... argv) {
 
-        var LOG_LEVEL = Level.OFF;
-        log.setLevel(LOG_LEVEL);
+        var AH_DB_URL = System.getenv("AH_DB_URL");
+        var AH_DB_USER = System.getenv("AH_DB_USER");
+        var AH_DB_PASSWORD = System.getenv("AH_DB_PASSWORD");
+        var AH_LOG_LEVEL = System.getenv("AH_LOG_LEVEL");
+        var LOG_LEVEL = Level.parse(AH_LOG_LEVEL);
 
         DBConnection connection = new PGConnection(
                 LOG_LEVEL,
-                System.getenv("AH_DB_URL"),
-                System.getenv("AH_DB_USER"),
-                System.getenv("AH_DB_PASSWORD"));
+                AH_DB_URL,
+                AH_DB_USER,
+                AH_DB_PASSWORD
+        );
 
         AdminService adminService = getAdminService(LOG_LEVEL, connection);
 
