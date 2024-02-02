@@ -138,20 +138,20 @@ public class PGUserRepository implements UserRepository {
             FunctionThrows<Connection, PreparedStatement, Exception> statement,
             FunctionThrows<ResultSet, UserModel, Exception> mapper) {
 
-        List<UserModel> users = new ArrayList<>();
+        List<UserModel> result = new ArrayList<>();
 
         connection.getConnection().ifPresent(conn -> {
             try (PreparedStatement st = statement.apply(conn); ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    users.add(mapper.apply(rs));
+                    result.add(mapper.apply(rs));
                 }
             } catch (Exception ex) {
                 log.severe(ex.toString());
             }
         });
 
-        log.info(users.toString());
-        return users;
+        log.info(result.toString());
+        return result;
     }
 
     private Optional<UserModel> queryOne(
