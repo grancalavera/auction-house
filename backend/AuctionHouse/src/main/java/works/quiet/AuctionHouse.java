@@ -54,6 +54,7 @@ class AuctionHouse {
         mainProgram.addSubcommand("whoami", new WhoAmICommand(LOG_LEVEL, adminService));
         mainProgram.addSubcommand("admin", adminProgram);
         mainProgram.addSubcommand("boom", new BoomCommand());
+        mainProgram.addSubcommand("show-config", new ShowConfigCommand(AH_DB_URL, AH_DB_USER, LOG_LEVEL));
         mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
 
