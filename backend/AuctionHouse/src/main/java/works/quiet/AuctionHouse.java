@@ -13,13 +13,24 @@ import java.util.logging.Level;
 
 @Log
 class AuctionHouse {
+    private final static Level DEFAULT_LOG_LEVEL = Level.OFF;
+
     public static void main(String... argv) {
 
         var AH_DB_URL = System.getenv("AH_DB_URL");
         var AH_DB_USER = System.getenv("AH_DB_USER");
         var AH_DB_PASSWORD = System.getenv("AH_DB_PASSWORD");
         var AH_LOG_LEVEL = System.getenv("AH_LOG_LEVEL");
-        var LOG_LEVEL = Level.parse(AH_LOG_LEVEL);
+
+        Level LOG_LEVEL;
+
+        try {
+            LOG_LEVEL = Level.parse(AH_LOG_LEVEL);
+        } catch (IllegalArgumentException e) {
+            log.setLevel(Level.WARNING);
+            log.warning("Failed to parse log level from AH_LOG_LEVEL, defaulting to \"" + DEFAULT_LOG_LEVEL + "\".");
+            LOG_LEVEL = DEFAULT_LOG_LEVEL;
+        }
 
         DBConnection connection = new PGConnection(
                 LOG_LEVEL,
