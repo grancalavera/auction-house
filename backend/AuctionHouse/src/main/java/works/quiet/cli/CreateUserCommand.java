@@ -57,6 +57,7 @@ public class CreateUserCommand implements Callable<Integer> {
             defaultValue = "USER"
     )
     private String roleName;
+
     @CommandLine.Option(
             names = {"-s", "--account-status"},
             description = "The user's account status. Possible values are: ACTIVE, BLOCKED. Default value: ACTIVE.",

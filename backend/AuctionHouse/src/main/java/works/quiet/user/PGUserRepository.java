@@ -82,6 +82,22 @@ public class PGUserRepository implements UserRepository {
         return maybeUser;
     }
 
+    @Override
+    public Optional<UserModel> findById(int id) {
+        FunctionThrows<Connection, PreparedStatement, Exception> query;
+
+        query = (conn) -> {
+            var st = conn.prepareStatement(USERS_QUERY + " WHERE u.id=?"
+            );
+            st.setInt(1, id);
+            return st;
+        };
+
+        var maybeUser = userDao.queryOne(query);
+        log.info(maybeUser.toString());
+        return maybeUser;
+    }
+
     //insert into ah_organisations (org_name) values (:'org') on conflict (org_name) do nothing;
     @Override
     public int createUser(
@@ -127,18 +143,76 @@ public class PGUserRepository implements UserRepository {
                 insertUser.setInt(5, orgId);
                 insertUser.setInt(6, accountStatusId);
                 insertUser.setInt(7, roleId);
-
                 insertUser.executeUpdate();
+
                 var userRs = insertUser.getGeneratedKeys();
                 userRs.next();
                 var userId = userRs.getInt("id");
                 idRef.set(userId);
 
                 conn.commit();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
             }
         });
         return idRef.get();
+    }
+
+    @Override
+    public void updateUser(UserModel user) throws Exception {
+        connection.getConnection().ifPresent(conn -> {
+            try (
+                    PreparedStatement insertOrg = conn.prepareStatement(
+                            "INSERT INTO ah_organisations (org_name) values (?) ON CONFLICT DO NOTHING"
+                    );
+                    PreparedStatement queryOrgId = conn.prepareStatement(
+                            "SELECT id FROM ah_organisations WHERE org_name=?"
+                    );
+                    PreparedStatement updateUser = conn.prepareStatement(
+                            "UPDATE ah_users SET" +
+                                    " username=?," +            // 1
+                                    " password=?," +            // 2
+                                    " first_name=?," +          // 3
+                                    " last_name=?," +           // 4
+                                    " organisation_id=?," +     // 5
+                                    " account_status_id=?," +   // 6
+                                    " role_id=?" +              // 7
+                                    " WHERE id=?")              // 8
+            ) {
+                conn.setAutoCommit(false);
+
+                String organisationName = user.getOrganisation().getName();
+                String username = user.getUsername();
+                String password = user.getPassword();
+                String firstName = user.getFirstName();
+                String lastName = user.getLastName();
+                int accountStatusId = user.getAccountStatus().getId();
+                int roleId = user.getRole().getId();
+                int userId = user.getId();
+
+                insertOrg.setString(1, organisationName);
+                insertOrg.executeUpdate();
+
+                queryOrgId.setString(1, organisationName);
+                var orgIdRs = queryOrgId.executeQuery();
+                orgIdRs.next();
+                var orgId = orgIdRs.getInt("id");
+
+                updateUser.setString(1, username);
+                updateUser.setString(2, password);
+                updateUser.setString(3, firstName);
+                updateUser.setString(4, lastName);
+                updateUser.setInt(5, orgId);
+                updateUser.setInt(6, accountStatusId);
+                updateUser.setInt(7, roleId);
+                updateUser.setInt(8, userId);
+                updateUser.executeUpdate();
+
+                conn.commit();
+            } catch (SQLException ex) {
+                log.severe(ex.toString());
+                throw new RuntimeException(ex);
+            }
+        });
     }
 }

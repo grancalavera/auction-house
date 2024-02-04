@@ -42,7 +42,7 @@ public class AdminService {
     public void assertIsNotBlocked() throws Exception {
         UserModel user = getCurrentUser();
         if (user.getAccountStatus() == AccountStatus.BLOCKED) {
-            log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked." );
+            log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked.");
             throw new Exception("Not authorised.");
         }
     }
@@ -107,6 +107,54 @@ public class AdminService {
 
     public List<OrganisationModel> listOrganistions() {
         return organisationRepository.listOrganisations();
+    }
+
+    public void blockUser(int userId) throws Exception {
+        Optional<UserModel> maybeUser = userRepository.findById(userId);
+
+        if (maybeUser.isPresent() && maybeUser.get().getId() == getCurrentUser().getId()) {
+            String message = "Cannot block current user.";
+            log.severe(message);
+            throw new Exception(message);
+        }
+
+        if (maybeUser.isPresent() && maybeUser.get().getAccountStatus() == AccountStatus.BLOCKED) {
+            log.info("User with user.id=" + userId + " is already blocked.");
+            return;
+        }
+
+        if (maybeUser.isPresent()) {
+            UserModel user = maybeUser.get();
+            UserModel blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
+            userRepository.updateUser(blockedUser);
+            log.info("Blocked user with user.id=" + userId + ".");
+            return;
+        }
+
+        String message = "User with user.id=" + userId + " does not exist.";
+        log.severe(message);
+        throw new Exception(message);
+    }
+
+    public void unblockUser(int userId) throws Exception {
+        Optional<UserModel> maybeUser = userRepository.findById(userId);
+
+        if (maybeUser.isPresent() && maybeUser.get().getAccountStatus() == AccountStatus.ACTIVE) {
+            log.info("User with user.id=" + userId + " is already active.");
+            return;
+        }
+
+        if (maybeUser.isPresent()) {
+            UserModel user = maybeUser.get();
+            UserModel unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
+            userRepository.updateUser(unblockedUser);
+            log.info("Unlocked user with user.id=" + userId + ".");
+            return;
+        }
+
+        String message = "User with user.id=" + userId + " does not exist.";
+        log.severe(message);
+        throw new Exception(message);
     }
 }
 
