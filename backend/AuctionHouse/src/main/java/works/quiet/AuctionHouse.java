@@ -48,6 +48,7 @@ class AuctionHouse {
         CommandLine adminProgram = new CommandLine(new AdminProgram());
         adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
         adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
+        adminProgram.addSubcommand("update-user", new UpdateUserCommand(adminService));
         adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(adminService));
         adminProgram.addSubcommand("block-user", new BlockUserCommand(LOG_LEVEL, adminService));
         adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(LOG_LEVEL, adminService));

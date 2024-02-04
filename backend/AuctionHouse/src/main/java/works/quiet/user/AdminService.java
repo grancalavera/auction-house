@@ -82,74 +82,124 @@ public class AdminService {
             String accountStatusName
     ) throws Exception {
 
-        userValidator.validateUsername(username);
-        userValidator.validatePassword(password);
-        int roleId = Role.valueOf(roleName).getId();
-        int accountStatusId = AccountStatus.valueOf(accountStatusName).getId();
+        OrganisationModel organisation = OrganisationModel.builder().name(organisationName).build();
+        AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
+        Role role = Role.valueOf(roleName);
 
-        int id = userRepository.createUser(
-                username,
-                password,
-                firstName,
-                lastName,
-                organisationName,
-                roleId,
-                accountStatusId
-        );
+        UserModel user = UserModel.builder()
+                .username(username)
+                .password(password)
+                .firstName(firstName)
+                .lastName(lastName)
+                .organisation(organisation)
+                .role(role)
+                .accountStatus(accountStatus)
+                .build();
 
+        userValidator.validate(user);
+
+        int id = userRepository.createUser(user);
         log.info("created user with id=" + id);
+
         return id;
+    }
+
+    public void updateUser(
+            int userId,
+            String username,
+            String password,
+            String firstName,
+            String lastName,
+            String organisationName,
+            String roleName,
+            String accountStatusName
+    ) throws Exception {
+
+        UserModel.UserModelBuilder updateBuilder = unsafeFindUserById(userId).toBuilder();
+
+        if (username != null) {
+            updateBuilder.username(username);
+        }
+
+        if (password != null) {
+            updateBuilder.password(password);
+        }
+
+        if (firstName != null) {
+            updateBuilder.firstName(firstName);
+        }
+
+        if (lastName != null) {
+            updateBuilder.lastName(lastName);
+        }
+
+        if (organisationName != null) {
+            OrganisationModel organisation = OrganisationModel.builder().name(organisationName).build();
+            updateBuilder.organisation(organisation);
+        }
+
+        if (accountStatusName != null) {
+            AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
+            updateBuilder.accountStatus(accountStatus);
+
+        }
+
+        if (roleName != null) {
+            Role role = Role.valueOf(roleName);
+            updateBuilder.role(role);
+        }
+
+        UserModel updatedUser = updateBuilder.build();
+        userValidator.validate(updatedUser);
+        userRepository.updateUser(updatedUser);
+
+        log.info("updated user with id=" + userId);
     }
 
     public List<UserModel> listUsers() {
         return userRepository.listUsers();
     }
 
-    public List<OrganisationModel> listOrganistions() {
+    public List<OrganisationModel> listOrganisations() {
         return organisationRepository.listOrganisations();
     }
 
     public void blockUser(int userId) throws Exception {
-        Optional<UserModel> maybeUser = userRepository.findById(userId);
+        UserModel user = unsafeFindUserById(userId);
 
-        if (maybeUser.isPresent() && maybeUser.get().getId() == getCurrentUser().getId()) {
+        if (user.getId() == getCurrentUser().getId()) {
             String message = "Cannot block current user.";
             log.severe(message);
             throw new Exception(message);
         }
 
-        if (maybeUser.isPresent() && maybeUser.get().getAccountStatus() == AccountStatus.BLOCKED) {
+        if (user.getAccountStatus() == AccountStatus.BLOCKED) {
             log.info("User with user.id=" + userId + " is already blocked.");
             return;
         }
 
-        if (maybeUser.isPresent()) {
-            UserModel user = maybeUser.get();
-            UserModel blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
-            userRepository.updateUser(blockedUser);
-            log.info("Blocked user with user.id=" + userId + ".");
-            return;
-        }
-
-        String message = "User with user.id=" + userId + " does not exist.";
-        log.severe(message);
-        throw new Exception(message);
+        UserModel blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
+        userRepository.updateUser(blockedUser);
+        log.info("Blocked user with user.id=" + userId + ".");
     }
 
     public void unblockUser(int userId) throws Exception {
-        Optional<UserModel> maybeUser = userRepository.findById(userId);
+        UserModel user = unsafeFindUserById(userId);
 
-        if (maybeUser.isPresent() && maybeUser.get().getAccountStatus() == AccountStatus.ACTIVE) {
+        if (user.getAccountStatus() == AccountStatus.ACTIVE) {
             log.info("User with user.id=" + userId + " is already active.");
             return;
         }
 
+        UserModel unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
+        userRepository.updateUser(unblockedUser);
+        log.info("Unlocked user with user.id=" + userId + ".");
+    }
+
+    private UserModel unsafeFindUserById(int userId) throws Exception {
+        Optional<UserModel> maybeUser = userRepository.findById(userId);
         if (maybeUser.isPresent()) {
-            UserModel user = maybeUser.get();
-            UserModel unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
-            userRepository.updateUser(unblockedUser);
-            log.info("Unlocked user with user.id=" + userId + ".");
-            return;
+            return maybeUser.get();
         }
 
         String message = "User with user.id=" + userId + " does not exist.";

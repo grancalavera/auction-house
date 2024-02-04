@@ -13,15 +13,7 @@ public interface UserRepository {
 
     Optional<UserModel> findById(int id);
 
-    int createUser(
-            String username,
-            String password,
-            String firstName,
-            String lastName,
-            String organisationName,
-            int roleId,
-            int accountStatusId
-    ) throws Exception;
+    int createUser(UserModel user) throws Exception;
 
     void updateUser(UserModel user) throws Exception;
 }

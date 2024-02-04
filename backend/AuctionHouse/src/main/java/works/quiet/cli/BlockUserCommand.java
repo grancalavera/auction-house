@@ -2,13 +2,12 @@ package works.quiet.cli;
 
 import picocli.CommandLine;
 import works.quiet.user.AdminService;
-import works.quiet.user.UserModel;
 
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
-        name="block-user",
+        name = "block-user",
         description = "Block users by id.",
         mixinStandardHelpOptions = true,
         sortOptions = false

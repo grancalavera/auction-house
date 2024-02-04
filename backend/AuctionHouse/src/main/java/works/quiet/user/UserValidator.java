@@ -13,7 +13,12 @@ public class UserValidator implements IUserValidator {
     }
 
     @Override
-    public void validateUsername(String username) throws Exception {
+    public void validate(UserModel user) throws Exception {
+        validateUsername(user.getUsername());
+        validatePassword(user.getPassword());
+    }
+
+    private void validateUsername(String username) throws Exception {
         String usernamePattern = "^[a-zA-Z0-9]+$";
         final boolean matches = Pattern.matches(usernamePattern, username);
         if (!matches) {
@@ -21,11 +26,11 @@ public class UserValidator implements IUserValidator {
         }
     }
 
-    @Override
-    public void validatePassword(String password) throws Exception {
+    private void validatePassword(String password) throws Exception {
         int MIN_PASSWORD_LENGTH = 3;
         if (password.length() < MIN_PASSWORD_LENGTH) {
             throw new Exception("Invalid password: password must be at least " + MIN_PASSWORD_LENGTH + " characters long");
         }
     }
+
 }

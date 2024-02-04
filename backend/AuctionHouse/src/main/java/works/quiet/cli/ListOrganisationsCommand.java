@@ -23,7 +23,7 @@ public class ListOrganisationsCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
-        adminService.listOrganistions().forEach(System.out::println);
+        adminService.listOrganisations().forEach(System.out::println);
         return 0;
     }
 }

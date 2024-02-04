@@ -100,15 +100,7 @@ public class PGUserRepository implements UserRepository {
 
     //insert into ah_organisations (org_name) values (:'org') on conflict (org_name) do nothing;
     @Override
-    public int createUser(
-            String username,
-            String password,
-            String firstName,
-            String lastName,
-            String organisationName,
-            int roleId,
-            int accountStatusId
-    ) throws Exception {
+    public int createUser(UserModel user) throws Exception {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         connection.getConnection().ifPresent(conn -> {
             try (
@@ -127,6 +119,14 @@ public class PGUserRepository implements UserRepository {
                     )
             ) {
                 conn.setAutoCommit(false);
+
+                String organisationName = user.getOrganisation().getName();
+                String username = user.getUsername();
+                String password = user.getPassword();
+                String firstName = user.getFirstName();
+                String lastName = user.getLastName();
+                int accountStatusId = user.getAccountStatus().getId();
+                int roleId = user.getRole().getId();
 
                 insertOrg.setString(1, organisationName);
                 insertOrg.executeUpdate();
@@ -188,7 +188,6 @@ public class PGUserRepository implements UserRepository {
                 String lastName = user.getLastName();
                 int accountStatusId = user.getAccountStatus().getId();
                 int roleId = user.getRole().getId();
-                int userId = user.getId();
 
                 insertOrg.setString(1, organisationName);
                 insertOrg.executeUpdate();
@@ -205,7 +204,10 @@ public class PGUserRepository implements UserRepository {
                 updateUser.setInt(5, orgId);
                 updateUser.setInt(6, accountStatusId);
                 updateUser.setInt(7, roleId);
+
+                int userId = user.getId();
                 updateUser.setInt(8, userId);
+
                 updateUser.executeUpdate();
 
                 conn.commit();
