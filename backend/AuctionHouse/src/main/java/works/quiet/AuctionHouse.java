@@ -3,6 +3,9 @@ package works.quiet;
 import lombok.extern.java.Log;
 import picocli.CommandLine;
 import works.quiet.cli.*;
+import works.quiet.dao.PGDaoMapper;
+import works.quiet.dao.PGUserDaoMapper;
+import works.quiet.dao.PGUserDao;
 import works.quiet.io.DBConnection;
 import works.quiet.io.PGConnection;
 import works.quiet.reference.OrganisationRepository;
@@ -16,7 +19,6 @@ class AuctionHouse {
     private final static Level DEFAULT_LOG_LEVEL = Level.OFF;
 
     public static void main(String... argv) {
-
         var AH_DB_URL = System.getenv("AH_DB_URL");
         var AH_DB_USER = System.getenv("AH_DB_USER");
         var AH_DB_PASSWORD = System.getenv("AH_DB_PASSWORD");
@@ -72,9 +74,11 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(Level LOG_LEVEL, DBConnection connection) {
-        UserRepository userRepository = new PGUserRepository(LOG_LEVEL, connection);
         OrganisationRepository organisationRepository = new PGOrganisationRepository(LOG_LEVEL, connection);
         Session session = new FileSystemSession(LOG_LEVEL);
+        PGDaoMapper<UserModel> userMapper = new PGUserDaoMapper(LOG_LEVEL);
+        PGUserDao userDao = new PGUserDao(LOG_LEVEL, connection, userMapper);
+        UserRepository userRepository = new PGUserRepository(LOG_LEVEL, userDao, connection);
         UserValidator userValidator = new UserValidator(LOG_LEVEL);
         return new AdminService(LOG_LEVEL, userRepository, organisationRepository, session, userValidator);
     }

@@ -23,7 +23,7 @@ public class UserValidator implements IUserValidator {
 
     @Override
     public void validatePassword(String password) throws Exception {
-        int MIN_PASSWORD_LENGTH = 6;
+        int MIN_PASSWORD_LENGTH = 3;
         if (password.length() < MIN_PASSWORD_LENGTH) {
             throw new Exception("Invalid password: password must be at least " + MIN_PASSWORD_LENGTH + " characters long");
         }

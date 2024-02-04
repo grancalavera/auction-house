@@ -4,7 +4,6 @@ import lombok.extern.java.Log;
 import works.quiet.reference.OrganisationModel;
 import works.quiet.reference.OrganisationRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -40,10 +39,11 @@ public class AdminService {
         log.info("Logged out.");
     }
 
-    public void assertIsAuthenticated() throws Exception {
-        var maybeUseer = getCurrentUser();
-        if (maybeUseer.isEmpty()) {
-            throw new Exception("Not authenticated.");
+    public void assertIsNotBlocked() throws Exception {
+        UserModel user = getCurrentUser();
+        if (user.getAccountStatus() == AccountStatus.BLOCKED) {
+            log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked." );
+            throw new Exception("Not authorised.");
         }
     }
 
@@ -60,36 +60,45 @@ public class AdminService {
         }
     }
 
-    public Optional<UserModel> getCurrentUser() {
-        return session.getUsername().flatMap(userRepository::findByUsername);
-    }
-
-    public Role getCurrentUserRole() throws Exception {
-        Optional<Role> role = getCurrentUser().map(UserModel::getRole);
-
-        if (role.isEmpty()) {
-            log.severe("Not authenticated.");
-            throw new Exception("Not authenticated.");
+    public UserModel getCurrentUser() throws Exception {
+        var maybeUser = session.getUsername().flatMap(userRepository::findByUsername);
+        if (maybeUser.isPresent()) {
+            return maybeUser.get();
         }
-
-        return role.get();
+        throw new Exception("Not authenticated.");
     }
 
-    public int createUser(String username, String password) throws Exception {
+    private Role getCurrentUserRole() throws Exception {
+        return getCurrentUser().getRole();
+    }
+
+    public int createUser(
+            String username,
+            String password,
+            String firstName,
+            String lastName,
+            String organisationName,
+            String roleName,
+            String accountStatusName
+    ) throws Exception {
 
         userValidator.validateUsername(username);
         userValidator.validatePassword(password);
+        int roleId = Role.valueOf(roleName).getId();
+        int accountStatusId = AccountStatus.valueOf(accountStatusName).getId();
 
-        final UserModel prototype = UserModel.builder().username(username).password(password).build();
+        int id = userRepository.createUser(
+                username,
+                password,
+                firstName,
+                lastName,
+                organisationName,
+                roleId,
+                accountStatusId
+        );
 
-        Optional<Integer> generatedId = userRepository.createUser(prototype);
-
-        if (generatedId.isEmpty()) {
-            throw new Exception("Failed to create new user");
-        }
-
-        log.info("created user: " + prototype.toBuilder().id(generatedId.get()).build());
-        return generatedId.get();
+        log.info("created user with id=" + id);
+        return id;
     }
 
     public List<UserModel> listUsers() {

@@ -22,8 +22,8 @@ public class WhoAmICommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        adminService.assertIsAuthenticated();
-        adminService.getCurrentUser().ifPresent(System.out::println);
+        adminService.assertIsNotBlocked();
+        System.out.println(adminService.getCurrentUser());
         return 0;
     }
 }
