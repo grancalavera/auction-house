@@ -12,7 +12,6 @@ import works.quiet.reference.OrganisationRepository;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.user.*;
 
-import java.util.Arrays;
 import java.util.logging.Level;
 
 @Log
@@ -75,15 +74,12 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(Level LOG_LEVEL, DBConnection connection) {
-
         OrganisationRepository organisationRepository = new PGOrganisationRepository(LOG_LEVEL, connection);
-
         Session session = new FileSystemSession(LOG_LEVEL);
         PGDaoMapper<UserModel> userMapper = new PGUserDaoMapper(LOG_LEVEL);
         PGUserDao userDao = new PGUserDao(LOG_LEVEL, connection, userMapper);
-        UserRepository userRepository = new PGUserRepository(LOG_LEVEL, connection, userDao);
+        UserRepository userRepository = new PGUserRepository(LOG_LEVEL, userDao, connection);
         UserValidator userValidator = new UserValidator(LOG_LEVEL);
-
         return new AdminService(LOG_LEVEL, userRepository, organisationRepository, session, userValidator);
     }
 }

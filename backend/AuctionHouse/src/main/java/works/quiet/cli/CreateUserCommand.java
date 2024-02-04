@@ -13,17 +13,6 @@ import java.util.concurrent.Callable;
         sortOptions = false
 )
 public class CreateUserCommand implements Callable<Integer> {
-    /*
-    create table if not exists ah_users (
-        username varchar(256) unique not null,
-        password varchar(256) not null,
-        first_name varchar(256) not null,
-        last_name varchar(256) not null
-        organisation_id int references ah_organisations(id) not null,
-        role_id int references ah_roles(id) not null,
-        account_status_id int references ah_accountstatus(id) not null,
-    );
-    */
     private final AdminService adminService;
     @CommandLine.Option(
             names = {"-u", "--username"},

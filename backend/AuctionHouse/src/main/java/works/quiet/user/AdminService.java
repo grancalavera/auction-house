@@ -86,19 +86,21 @@ public class AdminService {
 
         userValidator.validateUsername(username);
         userValidator.validatePassword(password);
+        int roleId = Role.valueOf(roleName).getId();
+        int accountStatusId = AccountStatus.valueOf(accountStatusName).getId();
 
-        int generatedId = userRepository.createUser(
+        int id = userRepository.createUser(
                 username,
                 password,
                 firstName,
                 lastName,
                 organisationName,
-                Role.valueOf(roleName).getId(),
-                AccountStatus.valueOf(accountStatusName).getId()
+                roleId,
+                accountStatusId
         );
 
-        log.info("created user with id=" + generatedId);
-        return generatedId;
+        log.info("created user with id=" + id);
+        return id;
     }
 
     public List<UserModel> listUsers() {

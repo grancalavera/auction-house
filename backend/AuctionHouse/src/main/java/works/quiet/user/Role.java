@@ -4,8 +4,8 @@ import lombok.Getter;
 
 @Getter
 public enum Role {
-    ADMIN(1),
-    USER(2);
+    USER(1),
+    ADMIN(2);
     private final int id;
     Role(int id) {
         this.id = id;
@@ -14,8 +14,8 @@ public enum Role {
     public static Role ofInt(int id) throws IllegalArgumentException {
         Role role;
         switch(id) {
-            case 1 -> role = Role.ADMIN;
-            case 2 -> role = Role.USER;
+            case 1 -> role = Role.USER;
+            case 2 -> role = Role.ADMIN;
             default -> throw new IllegalArgumentException(id + " is not a valid Role id.");
         }
         return role;

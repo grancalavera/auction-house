@@ -15,9 +15,4 @@ public interface Dao<T> {
     Optional<T> queryOne(
             FunctionThrows<Connection, PreparedStatement, Exception> statement
     );
-
-    int createOne(
-            String idKey,
-            FunctionThrows<Connection, PreparedStatement, Exception> statement
-    ) throws Exception;
 }
