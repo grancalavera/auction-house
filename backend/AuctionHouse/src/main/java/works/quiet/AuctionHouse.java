@@ -6,6 +6,7 @@ import works.quiet.cli.AdminProgram;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
 import works.quiet.cli.CreateUserCommand;
+import works.quiet.cli.FindUserCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
@@ -65,6 +66,7 @@ class AuctionHouse {
         CommandLine mainProgram = new CommandLine(new MainProgram());
 
         CommandLine adminProgram = new CommandLine(new AdminProgram());
+        adminProgram.addSubcommand("find-user", new FindUserCommand(adminService));
         adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
         adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
         adminProgram.addSubcommand("update-user", new UpdateUserCommand(adminService));

@@ -110,17 +110,7 @@ public class AdminService {
         return id;
     }
 
-    public void updateUser(
-            final UserModel updatedUser
-//            final int userId,
-//            final String username,
-//            final String password,
-//            final String firstName,
-//            final String lastName,
-//            final String organisationName,
-//            final String roleName,
-//            final String accountStatusName
-    ) throws Exception {
+    public void updateUser(final UserModel updatedUser) throws Exception {
         userValidator.validate(updatedUser);
         userRepository.updateUser(updatedUser);
         log.info("updated user with id=" + updatedUser.getId());
