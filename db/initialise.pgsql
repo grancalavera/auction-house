@@ -48,8 +48,10 @@ insert into ah_users
         (username, password, first_name, last_name, organisation_id, account_status_id, role_id)
     values
         ('admin', 'admin', 'Coyote', 'Jackson', 1, 1, 2),
+        ('blockedu', '123', 'Blocked', 'User', 3, 2, 1),
+        ('blockeda', '123', 'Blocked', 'Admin', 3, 2, 2),
         ('u1', '123', 'Frank', 'Takahashi', 2, 1, 1),
-        ('u2', '123', 'Ahmed', 'Al-Mansour', 3, 1, 1),
+        ('u2', '123', 'Alice', 'Smith', 2, 1, 1),
         ('u3', '123', 'Jiří', 'Novák', 1, 1, 1),
         ('u4', '123', 'Marta', 'García', 2, 1, 1),
         ('u5', '123', 'Andrea', 'Rossi', 1, 1, 1),

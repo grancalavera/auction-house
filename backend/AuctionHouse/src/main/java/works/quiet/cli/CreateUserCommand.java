@@ -71,9 +71,10 @@ public class CreateUserCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         adminService.assertIsAdmin();
+        adminService.assertIsNotBlocked();
         var organisationName = organisation.stream().reduce((acc, next) -> acc + " " + next).get();
 
-        var createdId = adminService.createUser(
+        var userId = adminService.createUser(
                 username,
                 password,
                 firstName,
@@ -82,8 +83,8 @@ public class CreateUserCommand implements Callable<Integer> {
                 roleName,
                 accountStatusName
         );
-        System.out.printf("User created with id=%d\n", createdId);
 
+        System.out.printf("User created with id=%d\n", userId);
         return 0;
     }
 }

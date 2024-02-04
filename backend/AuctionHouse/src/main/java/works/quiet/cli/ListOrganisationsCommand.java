@@ -22,6 +22,7 @@ public class ListOrganisationsCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         adminService.assertIsAdmin();
+        adminService.assertIsNotBlocked();
         adminService.listOrganistions().forEach(System.out::println);
         return 0;
     }

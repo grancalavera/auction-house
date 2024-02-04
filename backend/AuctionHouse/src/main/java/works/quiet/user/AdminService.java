@@ -39,10 +39,11 @@ public class AdminService {
         log.info("Logged out.");
     }
 
-    public void assertIsAuthenticated() throws Exception {
-        var maybeUseer = getCurrentUser();
-        if (maybeUseer.isEmpty()) {
-            throw new Exception("Not authenticated.");
+    public void assertIsNotBlocked() throws Exception {
+        UserModel user = getCurrentUser();
+        if (user.getAccountStatus() == AccountStatus.BLOCKED) {
+            log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked." );
+            throw new Exception("Not authorised.");
         }
     }
 
@@ -59,19 +60,16 @@ public class AdminService {
         }
     }
 
-    public Optional<UserModel> getCurrentUser() {
-        return session.getUsername().flatMap(userRepository::findByUsername);
+    public UserModel getCurrentUser() throws Exception {
+        var maybeUser = session.getUsername().flatMap(userRepository::findByUsername);
+        if (maybeUser.isPresent()) {
+            return maybeUser.get();
+        }
+        throw new Exception("Not authenticated.");
     }
 
-    public Role getCurrentUserRole() throws Exception {
-        Optional<Role> role = getCurrentUser().map(UserModel::getRole);
-
-        if (role.isEmpty()) {
-            log.severe("Not authenticated.");
-            throw new Exception("Not authenticated.");
-        }
-
-        return role.get();
+    private Role getCurrentUserRole() throws Exception {
+        return getCurrentUser().getRole();
     }
 
     public int createUser(

@@ -23,6 +23,7 @@ public class ListUsersCommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         adminService.assertIsAdmin();
+        adminService.assertIsNotBlocked();
         adminService.listUsers().forEach(System.out::println);
         return 0;
     }
