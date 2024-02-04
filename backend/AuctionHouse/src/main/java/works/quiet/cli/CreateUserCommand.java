@@ -70,8 +70,8 @@ public class CreateUserCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        adminService.assertIsAdmin();
         adminService.assertIsNotBlocked();
+        adminService.assertIsAdmin();
         var organisationName = organisation.stream().reduce((acc, next) -> acc + " " + next).get();
 
         var userId = adminService.createUser(
