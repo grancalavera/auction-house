@@ -25,6 +25,8 @@ public class BlockUserCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        adminService.assertIsNotBlocked();
+        adminService.assertIsAdmin();
         adminService.blockUser(userId);
         System.out.printf("Blocked user with user.id=%d.\n", userId);
         return 0;

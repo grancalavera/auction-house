@@ -22,6 +22,10 @@ public class PGUserDaoMapper implements PGDaoMapper<UserModel> {
                 .name(resultSet.getString("organisation"))
                 .build();
 
+        Role role = Role.valueOf(resultSet.getString("role"));
+
+        AccountStatus accountStatus = AccountStatus.valueOf(resultSet.getString("account_status"));
+
         return UserModel.builder()
                 .id(resultSet.getInt("id"))
                 .username(resultSet.getString("username"))

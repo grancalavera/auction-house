@@ -2,24 +2,24 @@ package works.quiet.cli;
 
 import picocli.CommandLine;
 import works.quiet.user.AdminService;
+import works.quiet.user.UserModel;
 
 import java.util.concurrent.Callable;
-import java.util.logging.Level;
 
 @CommandLine.Command(
-        name = "unblock-user",
-        description = "Unlock users by id.",
+        name = "find-user",
+        description = "Find users by id.",
         mixinStandardHelpOptions = true,
         sortOptions = false
 )
-public class UnblockUserCommand implements Callable<Integer> {
+public class FindUserCommand implements Callable<Integer> {
 
     private final AdminService adminService;
 
-    @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to unblock.")
+    @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to find.")
     private int userId;
 
-    public UnblockUserCommand(final Level logLevel, final AdminService adminService) {
+    public FindUserCommand(final AdminService adminService) {
         this.adminService = adminService;
     }
 
@@ -27,8 +27,8 @@ public class UnblockUserCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
-        adminService.unblockUser(userId);
-        System.out.printf("Unblocked user with user.id=%d.\n", userId);
+        UserModel user = adminService.unsafeFindUserById(userId);
+        System.out.println(user);
         return 0;
     }
 }
