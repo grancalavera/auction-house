@@ -15,7 +15,7 @@ import java.util.logging.Level;
 public class PGOrganisationRepository implements OrganisationRepository {
     private final DBConnection connection;
 
-    public PGOrganisationRepository(Level logLevel, DBConnection connection) {
+    public PGOrganisationRepository(final Level logLevel, final DBConnection connection) {
         log.setLevel(logLevel);
         this.connection = connection;
     }
@@ -34,7 +34,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
                 while (resultSet.next()) {
                     organisationFromResultSet(resultSet).ifPresent(organistions::add);
                 }
-            } catch (SQLException ex) {
+            } catch (final SQLException ex) {
                 log.severe(ex.toString());
             }
         });
@@ -42,7 +42,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
         return organistions;
     }
 
-    private Optional<OrganisationModel> organisationFromResultSet(ResultSet resultSet) {
+    private Optional<OrganisationModel> organisationFromResultSet(final ResultSet resultSet) {
         try {
             OrganisationModel model = OrganisationModel
                     .builder()
@@ -50,7 +50,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
                     .name(resultSet.getString("org_name"))
                     .build();
             return Optional.of(model);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log.severe(ex.toString());
             return Optional.empty();
         }

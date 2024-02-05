@@ -11,7 +11,7 @@ public class ShowConfigCommand implements Runnable {
     private final String dbUser;
     private final Level logLevel;
 
-    public ShowConfigCommand(String dbUrl, String dbUser, Level logLevel) {
+    public ShowConfigCommand(final String dbUrl, final String dbUser, final Level logLevel) {
         this.dbUrl = dbUrl;
         this.dbUser = dbUser;
         this.logLevel = logLevel;

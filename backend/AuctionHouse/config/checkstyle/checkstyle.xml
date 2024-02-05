@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+
+    <module name="SuppressWarningsFilter"/>
+
+    <property name="severity" value="error"/>
+<!--    <property name="severity" value="warning"/>-->
+
+    <property name="fileExtensions" value="java, properties, xml"/>
+
+    <!-- Excludes all 'module-info.java' files              -->
+    <!-- See https://checkstyle.org/filefilters/index.html -->
+    <module name="BeforeExecutionExclusionFileFilter">
+        <property name="fileNamePattern" value="module\-info\.java$"/>
+    </module>
+
+    <!-- https://checkstyle.org/filters/suppressionfilter.html -->
+    <module name="SuppressionFilter">
+        <property name="file" value="${config_loc}/suppressions.xml"/>
+    </module>
+
+    <!-- Checks that files end with a new line. -->
+    <!-- See https://checkstyle.org/checks/misc/newlineatendoffile.html -->
+    <module name="NewlineAtEndOfFile"/>
+
+    <!-- Checks file length and line length.                    -->
+    <!-- See https://checkstyle.org/checks/sizes/index.html -->
+    <module name="FileLength"/>
+    <module name="LineLength">
+        <property name="max" value="120"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
+    <!-- Checks that there are no tab characters -->
+    <!-- See https://checkstyle.org/checks/whitespace/index.html -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <module name="TreeWalker">
+
+        <module name="SuppressWarningsHolder"/>
+
+        <!-- Checks for Naming Conventions.                  -->
+        <!-- See https://checkstyle.org/checks/naming/index.html -->
+        <module name="ConstantName"/>
+        <module name="LocalFinalVariableName"/>
+        <module name="LocalVariableName"/>
+        <module name="MemberName" />
+        <module name="MethodName"/>
+        <module name="PackageName"/>
+        <module name="ParameterName"/>
+        <module name="StaticVariableName"/>
+        <module name="TypeName"/>
+
+        <!-- Checks for imports                              -->
+        <!-- See https://checkstyle.org/checks/imports/index.html -->
+        <module name="AvoidStarImport"/>
+        <module name="IllegalImport"/> <!-- defaults to sun.* packages -->
+        <module name="RedundantImport"/>
+        <module name="UnusedImports">
+            <property name="processJavadoc" value="false"/>
+        </module>
+
+        <!-- Checks for Size Violations.                    -->
+        <!-- See https://checkstyle.org/checks/sizes/index.html -->
+        <module name="MethodLength"/>
+        <module name="ParameterNumber"/>
+
+        <!-- Checks for whitespace                               -->
+        <!-- See https://checkstyle.org/checks/whitespace/index.html -->
+        <module name="EmptyForInitializerPad"/>
+        <module name="EmptyForIteratorPad"/>
+        <module name="GenericWhitespace"/>
+        <module name="MethodParamPad"/>
+        <module name="NoWhitespaceAfter"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="OperatorWrap"/>
+        <module name="ParenPad"/>
+        <module name="TypecastParenPad"/>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+
+        <!-- Modifier Checks                                    -->
+        <!-- See https://checkstyle.org/checks/modifier/index.html -->
+        <module name="ModifierOrder"/>
+        <module name="RedundantModifier"/>
+
+        <!-- Checks for blocks. You know, those {}'s         -->
+        <!-- See https://checkstyle.org/checks/blocks/index.html -->
+        <module name="AvoidNestedBlocks"/>
+        <module name="EmptyBlock"/>
+        <module name="LeftCurly"/>
+        <module name="NeedBraces"/>
+        <module name="RightCurly"/>
+
+        <!-- Checks for common coding problems               -->
+        <!-- See https://checkstyle.org/checks/coding/index.html -->
+        <module name="EmptyStatement"/>
+        <module name="EqualsHashCode"/>
+        <module name="IllegalInstantiation"/>
+        <module name="InnerAssignment"/>
+        <module name="MagicNumber"/>
+        <module name="MissingSwitchDefault"/>
+        <module name="MultipleVariableDeclarations"/>
+        <module name="SimplifyBooleanExpression"/>
+        <module name="SimplifyBooleanReturn"/>
+
+        <!-- Makes sure classes that should be marked as final are final. -->
+        <!-- See https://checkstyle.org/checks/misc/arraytypestyle.html -->
+        <module name="FinalClass"/>
+
+        <!-- Enforces Java array style. -->
+        <!-- See https://checkstyle.org/checks/misc/arraytypestyle.html -->
+        <module name="ArrayTypeStyle"/>
+
+        <!-- Checks that parameters for methods, constructors, catch and for-each blocks are final. -->
+        <!-- See https://checkstyle.org/checks/misc/finalparameters.html -->
+        <module name="FinalParameters">
+            <property name="tokens" value="METHOD_DEF, CTOR_DEF, LITERAL_CATCH, FOR_EACH_CLAUSE"/>
+        </module>
+
+        <!-- Includes to-do comments in CheckStyle checks. -->
+        <!-- See https://checkstyle.org/checks/misc/todocomment.html -->
+        <module name="TodoComment">
+            <property name="severity" value="info"/>
+            <property name="format" value="TODO"/>
+        </module>
+
+        <!-- Checks that long constants are defined with an 'L' and not 'l'. -->
+        <!-- See https://checkstyle.org/checks/misc/upperell.html -->
+        <module name="UpperEll"/>
+
+    </module>
+
+</module>

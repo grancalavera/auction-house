@@ -15,7 +15,13 @@ public class AdminService {
     private final Session session;
     private final UserValidator userValidator;
 
-    public AdminService(Level logLevel, UserRepository userRepository, OrganisationRepository organisationRepository, Session session, UserValidator userValidator) {
+    public AdminService(
+            final Level logLevel,
+            final UserRepository userRepository,
+            final OrganisationRepository organisationRepository,
+            final Session session,
+            final UserValidator userValidator
+    ) {
         this.userRepository = userRepository;
         this.organisationRepository = organisationRepository;
         this.session = session;
@@ -23,7 +29,7 @@ public class AdminService {
         log.setLevel(logLevel);
     }
 
-    public void login(String username, String password) throws Exception {
+    public void login(final String username, final String password) throws Exception {
         Optional<UserModel> maybeUser = userRepository.findWithCredentials(username, password);
 
         if (maybeUser.isEmpty()) {
@@ -73,13 +79,13 @@ public class AdminService {
     }
 
     public int createUser(
-            String username,
-            String password,
-            String firstName,
-            String lastName,
-            String organisationName,
-            String roleName,
-            String accountStatusName
+            final String username,
+            final String password,
+            final String firstName,
+            final String lastName,
+            final String organisationName,
+            final String roleName,
+            final String accountStatusName
     ) throws Exception {
 
         OrganisationModel organisation = OrganisationModel.builder().name(organisationName).build();
@@ -105,55 +111,19 @@ public class AdminService {
     }
 
     public void updateUser(
-            int userId,
-            String username,
-            String password,
-            String firstName,
-            String lastName,
-            String organisationName,
-            String roleName,
-            String accountStatusName
+            final UserModel updatedUser
+//            final int userId,
+//            final String username,
+//            final String password,
+//            final String firstName,
+//            final String lastName,
+//            final String organisationName,
+//            final String roleName,
+//            final String accountStatusName
     ) throws Exception {
-
-        UserModel.UserModelBuilder updateBuilder = unsafeFindUserById(userId).toBuilder();
-
-        if (username != null) {
-            updateBuilder.username(username);
-        }
-
-        if (password != null) {
-            updateBuilder.password(password);
-        }
-
-        if (firstName != null) {
-            updateBuilder.firstName(firstName);
-        }
-
-        if (lastName != null) {
-            updateBuilder.lastName(lastName);
-        }
-
-        if (organisationName != null) {
-            OrganisationModel organisation = OrganisationModel.builder().name(organisationName).build();
-            updateBuilder.organisation(organisation);
-        }
-
-        if (accountStatusName != null) {
-            AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
-            updateBuilder.accountStatus(accountStatus);
-
-        }
-
-        if (roleName != null) {
-            Role role = Role.valueOf(roleName);
-            updateBuilder.role(role);
-        }
-
-        UserModel updatedUser = updateBuilder.build();
         userValidator.validate(updatedUser);
         userRepository.updateUser(updatedUser);
-
-        log.info("updated user with id=" + userId);
+        log.info("updated user with id=" + updatedUser.getId());
     }
 
     public List<UserModel> listUsers() {
@@ -164,7 +134,7 @@ public class AdminService {
         return organisationRepository.listOrganisations();
     }
 
-    public void blockUser(int userId) throws Exception {
+    public void blockUser(final int userId) throws Exception {
         UserModel user = unsafeFindUserById(userId);
 
         if (user.getId() == getCurrentUser().getId()) {
@@ -183,7 +153,7 @@ public class AdminService {
         log.info("Blocked user with user.id=" + userId + ".");
     }
 
-    public void unblockUser(int userId) throws Exception {
+    public void unblockUser(final int userId) throws Exception {
         UserModel user = unsafeFindUserById(userId);
 
         if (user.getAccountStatus() == AccountStatus.ACTIVE) {
@@ -196,7 +166,7 @@ public class AdminService {
         log.info("Unlocked user with user.id=" + userId + ".");
     }
 
-    private UserModel unsafeFindUserById(int userId) throws Exception {
+    public UserModel unsafeFindUserById(final int userId) throws Exception {
         Optional<UserModel> maybeUser = userRepository.findById(userId);
         if (maybeUser.isPresent()) {
             return maybeUser.get();

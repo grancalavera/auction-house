@@ -24,22 +24,22 @@ public class PGUserRepository implements UserRepository {
     // way down the line this whole thing will be replaced by an ORM.
     private final DBConnection connection;
 
-    private final String USERS_QUERY =
-            "SELECT" +
-                    " u.id, u.username," +
-                    " u.password," +
-                    " u.first_name," +
-                    " u.last_name," +
-                    " a.status_name as account_status," +
-                    " r.role_name as role," +
-                    " u.organisation_id," +
-                    " o.org_name as organisation"
+    private final String usersQuery =
+            "SELECT"
+                    + " u.id, u.username,"
+                    + " u.password,"
+                    + " u.first_name,"
+                    + " u.last_name,"
+                    + " a.status_name as account_status,"
+                    + " r.role_name as role,"
+                    + " u.organisation_id,"
+                    + " o.org_name as organisation"
                     + " FROM ah_users u"
                     + " LEFT JOIN ah_organisations o on u.organisation_id = o.id"
                     + " LEFT JOIN ah_accountstatus a on u.account_status_id = a.id"
                     + " LEFT JOIN ah_roles r on u.role_id = r.id";
 
-    public PGUserRepository(Level logLevel, Dao<UserModel> userDao, DBConnection connection) {
+    public PGUserRepository(final Level logLevel, final Dao<UserModel> userDao, final DBConnection connection) {
         this.userDao = userDao;
         this.connection = connection;
         log.setLevel(logLevel);
@@ -47,15 +47,15 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public List<UserModel> listUsers() {
-        return userDao.queryMany((conn) -> conn.prepareStatement(USERS_QUERY + " ORDER BY id"));
+        return userDao.queryMany((conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"));
     }
 
     @Override
-    public Optional<UserModel> findWithCredentials(String username, String password) {
+    public Optional<UserModel> findWithCredentials(final String username, final String password) {
         FunctionThrows<Connection, PreparedStatement, Exception> query;
 
         query = (conn) -> {
-            PreparedStatement st = conn.prepareStatement(USERS_QUERY + " WHERE u.username=? AND u.password=?");
+            PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
             st.setString(1, username);
             st.setString(2, password);
             return st;
@@ -67,11 +67,11 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<UserModel> findByUsername(String username) {
+    public Optional<UserModel> findByUsername(final String username) {
         FunctionThrows<Connection, PreparedStatement, Exception> query;
 
         query = (conn) -> {
-            var st = conn.prepareStatement(USERS_QUERY + " WHERE u.username=?"
+            var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
             );
             st.setString(1, username);
             return st;
@@ -83,11 +83,11 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<UserModel> findById(int id) {
+    public Optional<UserModel> findById(final int id) {
         FunctionThrows<Connection, PreparedStatement, Exception> query;
 
         query = (conn) -> {
-            var st = conn.prepareStatement(USERS_QUERY + " WHERE u.id=?"
+            var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
             );
             st.setInt(1, id);
             return st;
@@ -100,7 +100,7 @@ public class PGUserRepository implements UserRepository {
 
     //insert into ah_organisations (org_name) values (:'org') on conflict (org_name) do nothing;
     @Override
-    public int createUser(UserModel user) throws Exception {
+    public int createUser(final UserModel user) throws Exception {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         connection.getConnection().ifPresent(conn -> {
             try (
@@ -111,10 +111,17 @@ public class PGUserRepository implements UserRepository {
                             "SELECT id FROM ah_organisations WHERE org_name=?"
                     );
                     PreparedStatement insertUser = conn.prepareStatement(
-                            "INSERT INTO ah_users" +
-                                    " (username, password, first_name, last_name, organisation_id, account_status_id, role_id) " +
-                                    " VALUES " +
-                                    " (?, ?, ?, ?, ?, ?, ?)",
+                            "INSERT INTO ah_users ("
+                                    + "username,"
+                                    + " password,"
+                                    + " first_name,"
+                                    + " last_name,"
+                                    + " organisation_id,"
+                                    + " account_status_id"
+                                    + ", role_id"
+                                    + ") "
+                                    + " VALUES "
+                                    + " (?, ?, ?, ?, ?, ?, ?)",
                             Statement.RETURN_GENERATED_KEYS
                     )
             ) {
@@ -136,13 +143,16 @@ public class PGUserRepository implements UserRepository {
                 orgIdRs.next();
                 var orgId = orgIdRs.getInt("id");
 
-                insertUser.setString(1, username);
-                insertUser.setString(2, password);
-                insertUser.setString(3, firstName);
-                insertUser.setString(4, lastName);
-                insertUser.setInt(5, orgId);
-                insertUser.setInt(6, accountStatusId);
-                insertUser.setInt(7, roleId);
+                setStatementValues(
+                        insertUser,
+                        username,
+                        password,
+                        firstName,
+                        lastName,
+                        orgId,
+                        accountStatusId,
+                        roleId
+                );
                 insertUser.executeUpdate();
 
                 var userRs = insertUser.getGeneratedKeys();
@@ -151,7 +161,7 @@ public class PGUserRepository implements UserRepository {
                 idRef.set(userId);
 
                 conn.commit();
-            } catch (SQLException ex) {
+            } catch (final SQLException ex) {
                 throw new RuntimeException(ex);
             }
         });
@@ -159,7 +169,7 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public void updateUser(UserModel user) throws Exception {
+    public void updateUser(final UserModel user) throws Exception {
         connection.getConnection().ifPresent(conn -> {
             try (
                     PreparedStatement insertOrg = conn.prepareStatement(
@@ -169,15 +179,15 @@ public class PGUserRepository implements UserRepository {
                             "SELECT id FROM ah_organisations WHERE org_name=?"
                     );
                     PreparedStatement updateUser = conn.prepareStatement(
-                            "UPDATE ah_users SET" +
-                                    " username=?," +            // 1
-                                    " password=?," +            // 2
-                                    " first_name=?," +          // 3
-                                    " last_name=?," +           // 4
-                                    " organisation_id=?," +     // 5
-                                    " account_status_id=?," +   // 6
-                                    " role_id=?" +              // 7
-                                    " WHERE id=?")              // 8
+                            "UPDATE ah_users SET"
+                                    + " username=?,"            // 1
+                                    + " password=?,"            // 2
+                                    + " first_name=?,"          // 3
+                                    + " last_name=?,"           // 4
+                                    + " organisation_id=?,"     // 5
+                                    + " account_status_id=?,"   // 6
+                                    + " role_id=?"              // 7
+                                    + " WHERE id=?")            // 8
             ) {
                 conn.setAutoCommit(false);
 
@@ -196,25 +206,39 @@ public class PGUserRepository implements UserRepository {
                 var orgIdRs = queryOrgId.executeQuery();
                 orgIdRs.next();
                 var orgId = orgIdRs.getInt("id");
-
-                updateUser.setString(1, username);
-                updateUser.setString(2, password);
-                updateUser.setString(3, firstName);
-                updateUser.setString(4, lastName);
-                updateUser.setInt(5, orgId);
-                updateUser.setInt(6, accountStatusId);
-                updateUser.setInt(7, roleId);
-
                 int userId = user.getId();
-                updateUser.setInt(8, userId);
+
+                setStatementValues(updateUser,
+                        username,
+                        password,
+                        firstName,
+                        lastName,
+                        orgId,
+                        accountStatusId,
+                        roleId,
+                        userId
+                );
 
                 updateUser.executeUpdate();
 
                 conn.commit();
-            } catch (SQLException ex) {
+            } catch (final SQLException ex) {
                 log.severe(ex.toString());
                 throw new RuntimeException(ex);
             }
         });
+    }
+
+    // https://stackoverflow.com/a/2563492
+    // https://balusc.omnifaces.org/2008/07/dao-tutorial-data-layer.html
+    // will extract to somewhere later on...
+    private void setStatementValues(final PreparedStatement st, final Object... values) throws SQLException {
+        if (values == null) {
+            return;
+        }
+
+        for (int i = 0; i < values.length; i++) {
+            st.setObject(i + 1, values[i]);
+        }
     }
 }

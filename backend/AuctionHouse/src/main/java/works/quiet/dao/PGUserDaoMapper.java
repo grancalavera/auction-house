@@ -11,18 +11,18 @@ import java.util.logging.Level;
 
 @Log
 public class PGUserDaoMapper implements PGDaoMapper<UserModel> {
-    public PGUserDaoMapper(Level logLevel) {
+    public PGUserDaoMapper(final Level logLevel) {
         log.setLevel(logLevel);
     }
 
     @Override
-    public UserModel fromResulSet(ResultSet resultSet) throws Exception {
+    public UserModel fromResulSet(final ResultSet resultSet) throws Exception {
         var organisation = OrganisationModel.builder()
                 .id(resultSet.getInt("organisation_id"))
                 .name(resultSet.getString("organisation"))
                 .build();
 
-        var user = UserModel.builder()
+        return UserModel.builder()
                 .id(resultSet.getInt("id"))
                 .username(resultSet.getString("username"))
                 .password(resultSet.getString("password"))
@@ -32,7 +32,5 @@ public class PGUserDaoMapper implements PGDaoMapper<UserModel> {
                 .role(Role.valueOf(resultSet.getString("role")))
                 .organisation(organisation)
                 .build();
-
-        return user;
     }
 }

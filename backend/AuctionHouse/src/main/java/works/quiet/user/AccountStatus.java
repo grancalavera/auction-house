@@ -1,24 +1,26 @@
 package works.quiet.user;
 
 import lombok.Getter;
-import org.w3c.dom.ranges.RangeException;
 
 @Getter
 public enum AccountStatus {
     ACTIVE(1),
     BLOCKED(2);
     private final int id;
-    AccountStatus(int id) {
+
+    AccountStatus(final int id) {
         this.id = id;
     }
 
-    public static AccountStatus ofInt(int id) throws  IllegalArgumentException {
-        AccountStatus status;
+    public static AccountStatus ofInt(final int id) throws IllegalArgumentException {
         switch (id) {
-            case 1 -> status = AccountStatus.ACTIVE;
-            case 2 -> status = AccountStatus.BLOCKED;
+            case 1 -> {
+                return AccountStatus.ACTIVE;
+            }
+            case 2 -> {
+                return AccountStatus.BLOCKED;
+            }
             default -> throw new IllegalArgumentException(id + " is not a valid AccountStatus id.");
         }
-        return status;
     }
 }

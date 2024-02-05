@@ -7,7 +7,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
-        name="unblock-user",
+        name = "unblock-user",
         description = "Unlock users by id.",
         mixinStandardHelpOptions = true,
         sortOptions = false
@@ -19,7 +19,7 @@ public class UnblockUserCommand implements Callable<Integer> {
     @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to unblock.")
     private int userId;
 
-    public UnblockUserCommand(Level logLevel, AdminService adminService) {
+    public UnblockUserCommand(final Level logLevel, final AdminService adminService) {
         this.adminService = adminService;
     }
 

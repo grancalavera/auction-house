@@ -19,7 +19,7 @@ public class BlockUserCommand implements Callable<Integer> {
     @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to block.")
     private int userId;
 
-    public BlockUserCommand(Level logLevel, AdminService adminService) {
+    public BlockUserCommand(final Level logLevel, final AdminService adminService) {
         this.adminService = adminService;
     }
 

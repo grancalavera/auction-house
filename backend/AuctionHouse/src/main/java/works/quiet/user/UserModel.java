@@ -1,6 +1,9 @@
 package works.quiet.user;
 
-import lombok.*;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 import works.quiet.reference.OrganisationModel;
 
 @Getter

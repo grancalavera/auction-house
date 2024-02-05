@@ -15,7 +15,7 @@ public class PGConnection implements DBConnection {
     private final String password;
     private Connection connection = null;
 
-    public PGConnection(Level logLevel, String url, String username, String password) {
+    public PGConnection(final Level logLevel, final String url, final String username, final String password) {
         this.url = url;
         this.username = username;
         this.password = password;
@@ -27,7 +27,7 @@ public class PGConnection implements DBConnection {
         if (connection == null) {
             try {
                 connection = DriverManager.getConnection(url, username, password);
-            } catch (SQLException ex) {
+            } catch (final SQLException ex) {
                 log.severe("Failed to open postgres connection.");
                 log.severe(ex.toString());
             }
@@ -42,7 +42,7 @@ public class PGConnection implements DBConnection {
             try {
                 connection.close();
                 connection = null;
-            } catch (SQLException ex) {
+            } catch (final SQLException ex) {
                 log.severe("Failed to close postgres connection.");
                 throw ex;
             }

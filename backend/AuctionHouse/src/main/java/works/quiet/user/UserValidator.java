@@ -8,17 +8,19 @@ import java.util.regex.Pattern;
 @Log
 public class UserValidator implements IUserValidator {
 
-    public UserValidator(Level logLevel) {
+    private static final int MIN_PASSWORD_LENGTH = 3;
+
+    public UserValidator(final Level logLevel) {
         log.setLevel(logLevel);
     }
 
     @Override
-    public void validate(UserModel user) throws Exception {
+    public void validate(final UserModel user) throws Exception {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword());
     }
 
-    private void validateUsername(String username) throws Exception {
+    private void validateUsername(final String username) throws Exception {
         String usernamePattern = "^[a-zA-Z0-9]+$";
         final boolean matches = Pattern.matches(usernamePattern, username);
         if (!matches) {
@@ -26,11 +28,11 @@ public class UserValidator implements IUserValidator {
         }
     }
 
-    private void validatePassword(String password) throws Exception {
-        int MIN_PASSWORD_LENGTH = 3;
+    private void validatePassword(final String password) throws Exception {
         if (password.length() < MIN_PASSWORD_LENGTH) {
-            throw new Exception("Invalid password: password must be at least " + MIN_PASSWORD_LENGTH + " characters long");
+            throw new Exception("Invalid password: password must be at least "
+                    + MIN_PASSWORD_LENGTH
+                    + " characters long");
         }
     }
-
 }

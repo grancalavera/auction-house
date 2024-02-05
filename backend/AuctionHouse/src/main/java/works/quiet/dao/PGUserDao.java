@@ -6,7 +6,7 @@ import works.quiet.user.UserModel;
 import java.util.logging.Level;
 
 public class PGUserDao extends PGDao<UserModel> {
-    public PGUserDao(Level logLevel, DBConnection connection, PGDaoMapper<UserModel> mapper) {
+    public PGUserDao(final Level logLevel, final DBConnection connection, final PGDaoMapper<UserModel> mapper) {
         super(logLevel, connection, mapper);
     }
 }

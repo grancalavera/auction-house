@@ -12,19 +12,19 @@ import java.util.logging.Level;
 public class FileSystemSession implements Session {
     private static final Path SESSION_PATH = Path.of(System.getProperty("user.home"), ".ah-session");
 
-    public FileSystemSession(Level logLevel) {
+    public FileSystemSession(final Level logLevel) {
         log.setLevel(logLevel);
     }
 
     @Override
-    public void open(String username) throws Exception {
+    public void open(final String username) throws Exception {
 
         try {
             Files.deleteIfExists(SESSION_PATH);
             Files.createFile(SESSION_PATH);
             Files.write(SESSION_PATH, username.getBytes(), StandardOpenOption.WRITE);
             log.info("Session open at: " + SESSION_PATH.toAbsolutePath());
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log.severe(ex.toString());
             throw new Exception("Failed to open session.");
         }
@@ -36,7 +36,7 @@ public class FileSystemSession implements Session {
         try {
             Files.deleteIfExists(SESSION_PATH);
             log.info("Session closed at: " + SESSION_PATH.toAbsolutePath());
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log.severe(ex.toString());
             throw new Exception("Failed to close session.");
         }
@@ -48,7 +48,7 @@ public class FileSystemSession implements Session {
             String username = Files.readString(SESSION_PATH);
             log.info("Session username: '" + username + "'  .");
             return Optional.of(username);
-        } catch (Exception ex) {
+        } catch (final Exception ex) {
             log.info("Session does not exist.");
             return Optional.empty();
         }

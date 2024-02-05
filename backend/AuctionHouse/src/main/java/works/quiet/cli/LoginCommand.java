@@ -20,7 +20,7 @@ public class LoginCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-p", "--password"}, required = true)
     private String password;
 
-    public LoginCommand(Level logLevel, AdminService adminService) {
+    public LoginCommand(final Level logLevel, final AdminService adminService) {
         this.adminService = adminService;
         log.setLevel(logLevel);
     }
@@ -31,9 +31,9 @@ public class LoginCommand implements Callable<Integer> {
             adminService.login(username, password);
             adminService.assertIsNotBlocked();
             System.out.printf("Logged in as '%s'.\n", username);
-        } catch (Exception e) {
+        } catch (final Exception ex) {
             adminService.logout();
-            throw e;
+            throw ex;
         }
         return 0;
     }

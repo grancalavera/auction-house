@@ -2,7 +2,6 @@ package works.quiet.cli;
 
 import picocli.CommandLine;
 import works.quiet.user.AdminService;
-import works.quiet.user.UserModel;
 
 import java.util.concurrent.Callable;
 
@@ -15,7 +14,7 @@ public class ListUsersCommand implements Callable<Integer> {
 
     private final AdminService adminService;
 
-    public ListUsersCommand(AdminService adminService) {
+    public ListUsersCommand(final AdminService adminService) {
         this.adminService = adminService;
     }
 

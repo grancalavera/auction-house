@@ -10,12 +10,12 @@ import java.util.logging.Level;
 @Log
 @CommandLine.Command(
         name = "whoami",
-        description = "Prints the username of the currently logged in user. If there is no authenticated user, the command exits with an error code.",
+        description = "Prints the username of the currently logged in user.",
         mixinStandardHelpOptions = true)
 public class WhoAmICommand implements Callable<Integer> {
     final AdminService adminService;
 
-    public WhoAmICommand(Level logLevel, AdminService adminService) {
+    public WhoAmICommand(final Level logLevel, final AdminService adminService) {
         this.adminService = adminService;
         log.setLevel(logLevel);
     }

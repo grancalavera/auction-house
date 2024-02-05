@@ -14,7 +14,7 @@ public class LogoutCommand implements Callable<Integer> {
 
     private final AdminService adminService;
 
-    public LogoutCommand(AdminService adminService) {
+    public LogoutCommand(final AdminService adminService) {
         this.adminService = adminService;
     }
 

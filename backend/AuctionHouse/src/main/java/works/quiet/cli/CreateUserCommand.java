@@ -45,7 +45,8 @@ public class CreateUserCommand implements Callable<Integer> {
     @CommandLine.Option(
             names = {"-o", "--organisation"},
             arity = "1..*",
-            description = "The case sensitive user's organisation name. If the organisation name doesn't exist, a new organisation for the given name will be created.",
+            description = "The case sensitive user's organisation name. "
+                    + "If the organisation name doesn't exist, a new organisation for the given name will be created.",
             required = true
 
     )
@@ -65,7 +66,7 @@ public class CreateUserCommand implements Callable<Integer> {
     )
     private String accountStatusName;
 
-    public CreateUserCommand(AdminService adminService) {
+    public CreateUserCommand(final AdminService adminService) {
         this.adminService = adminService;
     }
 

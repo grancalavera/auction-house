@@ -14,7 +14,7 @@ public class ListOrganisationsCommand implements Callable<Integer> {
 
     private final AdminService adminService;
 
-    public ListOrganisationsCommand(AdminService adminService) {
+    public ListOrganisationsCommand(final AdminService adminService) {
         this.adminService = adminService;
     }
 
