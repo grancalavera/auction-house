@@ -3,20 +3,24 @@ package works.quiet.cli;
 import org.junit.jupiter.api.Test;
 import picocli.CommandLine;
 
-import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErrNormalized;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class BoomCommandTest {
 
     @Test
-    void call() throws Exception {
+    void call() {
+        StringWriter stdErr = new StringWriter();
         CommandLine program = new CommandLine(new BoomCommand());
+        program.setErr(new PrintWriter(stdErr));
 
-        var errText = tapSystemErrNormalized(() -> {
-            var exitCode = program.execute();
-            assertEquals(1, exitCode);
-        });
+        var exitCode = program
+                .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
+                .execute();
 
-        assertEquals("", errText);
+        assertEquals(1, exitCode);
+        assertEquals("💥\n", stdErr.toString());
     }
 }

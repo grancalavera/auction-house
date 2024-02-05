@@ -36,9 +36,12 @@ dependencies {
 
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("com.github.stefanbirkner:system-lambda:1.2.1")
+    testImplementation("org.mockito:mockito-core:5.10.0")
 }
 
 tasks.test {
     useJUnitPlatform()
+    // https://github.com/mockito/mockito/issues/3037
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
+    jvmArgs("-Xshare:off")
 }

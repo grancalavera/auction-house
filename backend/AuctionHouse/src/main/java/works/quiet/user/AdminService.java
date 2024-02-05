@@ -34,7 +34,7 @@ public class AdminService {
 
         if (maybeUser.isEmpty()) {
             log.info("Login attempt failed with username=" + username + ".");
-            throw new BadLoginException();
+            throw new Exception("Incorrect username or password.");
         }
 
         session.open(username);

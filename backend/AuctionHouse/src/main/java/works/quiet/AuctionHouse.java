@@ -75,7 +75,7 @@ class AuctionHouse {
         adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
-        mainProgram.addSubcommand("login", new LoginCommand(logLevel, adminService));
+        mainProgram.addSubcommand("login", new LoginCommand(adminService));
         mainProgram.addSubcommand("logout", new LogoutCommand(adminService));
         mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
         mainProgram.addSubcommand("admin", adminProgram);
