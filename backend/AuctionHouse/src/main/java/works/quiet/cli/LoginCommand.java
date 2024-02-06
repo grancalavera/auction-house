@@ -23,8 +23,18 @@ public class LoginCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        adminService.login(username, password);
-        adminService.assertIsNotBlocked();
+        try {
+            adminService.login(username, password);
+        } catch (final Exception ex) {
+            throw new Exception("Incorrect username or password.");
+        }
+
+        try {
+            adminService.assertIsNotBlocked();
+        } catch (final Exception e) {
+            throw new Exception("Not authorised.");
+        }
+
         System.out.printf("Logged in as '%s'.\n", username);
         return 0;
     }

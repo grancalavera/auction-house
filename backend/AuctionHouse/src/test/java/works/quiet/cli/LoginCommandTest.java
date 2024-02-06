@@ -30,7 +30,7 @@ class LoginCommandTest {
                 .execute("--username", "foo", "--password", "bar");
 
         assertEquals(1, exitCode);
-//        assertEquals("Incorrect username or password.\n", stdErr.toString());
+        assertEquals("Incorrect username or password.\n", stdErr.toString());
     }
 
     @Test
@@ -41,11 +41,16 @@ class LoginCommandTest {
                 .when(adminServiceMock)
                 .assertIsNotBlocked();
 
+        StringWriter stdErr = new StringWriter();
         CommandLine program = new CommandLine(new LoginCommand(adminServiceMock));
+        program.setErr(new PrintWriter(stdErr));
 
         var exitCode = program
+                .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
                 .execute("--username", "foo", "--password", "bar");
 
         assertEquals(1, exitCode);
+        assertEquals("Not authorised.\n", stdErr.toString());
+
     }
 }
