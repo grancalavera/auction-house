@@ -12,6 +12,10 @@ import java.util.concurrent.Callable;
 )
 public class LoginCommand implements Callable<Integer> {
     private final AdminService adminService;
+
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
+
     @CommandLine.Option(names = {"-u", "--username"}, required = true)
     private String username;
     @CommandLine.Option(names = {"-p", "--password"}, required = true)
@@ -23,19 +27,9 @@ public class LoginCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        try {
-            adminService.login(username, password);
-        } catch (final Exception ex) {
-            throw new Exception("Incorrect username or password.");
-        }
-
-        try {
-            adminService.assertIsNotBlocked();
-        } catch (final Exception e) {
-            throw new Exception("Not authorised.");
-        }
-
-        System.out.printf("Logged in as '%s'.\n", username);
+        adminService.login(username, password);
+        adminService.assertIsNotBlocked();
+        spec.commandLine().getOut().printf("Logged in as '%s'.\n", username);
         return 0;
     }
 }
