@@ -9,7 +9,9 @@ import java.io.StringWriter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class LoginCommandTest {
 
@@ -74,7 +76,7 @@ class LoginCommandTest {
     }
 
     @Test
-    void logInSuccessShort() {
+    void logInSuccessShort() throws Exception {
         AdminService adminServiceMock = mock();
         StringWriter stdOut = new StringWriter();
         CommandLine program = new CommandLine(new LoginCommand(adminServiceMock));
@@ -82,6 +84,9 @@ class LoginCommandTest {
 
         var exitCode = program
                 .execute("-u", "foo", "-p", "bar");
+
+        verify(adminServiceMock).login("foo", "bar");
+        verify(adminServiceMock).assertIsNotBlocked();
 
         assertEquals(0, exitCode);
         assertEquals("Logged in as 'foo'.\n", stdOut.toString());
