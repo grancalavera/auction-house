@@ -17,18 +17,18 @@ import works.quiet.cli.ShowConfigCommand;
 import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
-import works.quiet.dao.PGDaoMapper;
-import works.quiet.dao.PGUserDao;
-import works.quiet.dao.PGUserDaoMapper;
+import works.quiet.db.PGMapper;
 import works.quiet.db.DBConnection;
 import works.quiet.db.PGConnection;
 import works.quiet.reference.OrganisationRepository;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
+import works.quiet.user.PGUserMapper;
 import works.quiet.user.PGUserRepository;
+import works.quiet.user.PGUserRepositoryQuery;
 import works.quiet.user.Session;
-import works.quiet.user.UserModel;
+import works.quiet.user.User;
 import works.quiet.user.UserRepository;
 import works.quiet.user.UserValidator;
 
@@ -100,8 +100,8 @@ class AuctionHouse {
     private static AdminService getAdminService(final Level logLevel, final DBConnection connection) {
         OrganisationRepository organisationRepository = new PGOrganisationRepository(logLevel, connection);
         Session session = new FileSystemSession(logLevel);
-        PGDaoMapper<UserModel> userMapper = new PGUserDaoMapper(logLevel);
-        PGUserDao userDao = new PGUserDao(logLevel, connection, userMapper);
+        PGMapper<User> userMapper = new PGUserMapper(logLevel);
+        PGUserRepositoryQuery userDao = new PGUserRepositoryQuery(logLevel, connection, userMapper);
         UserRepository userRepository = new PGUserRepository(logLevel, userDao, connection);
         UserValidator userValidator = new UserValidator(logLevel);
         return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);

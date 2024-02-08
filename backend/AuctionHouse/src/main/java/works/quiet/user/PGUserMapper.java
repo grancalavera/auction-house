@@ -1,23 +1,21 @@
-package works.quiet.dao;
+package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.reference.OrganisationModel;
-import works.quiet.user.AccountStatus;
-import works.quiet.user.Role;
-import works.quiet.user.UserModel;
+import works.quiet.db.PGMapper;
+import works.quiet.reference.Organisation;
 
 import java.sql.ResultSet;
 import java.util.logging.Level;
 
 @Log
-public class PGUserDaoMapper implements PGDaoMapper<UserModel> {
-    public PGUserDaoMapper(final Level logLevel) {
+public class PGUserMapper implements PGMapper<User> {
+    public PGUserMapper(final Level logLevel) {
         log.setLevel(logLevel);
     }
 
     @Override
-    public UserModel fromResulSet(final ResultSet resultSet) throws Exception {
-        var organisation = OrganisationModel.builder()
+    public User fromResulSet(final ResultSet resultSet) throws Exception {
+        var organisation = Organisation.builder()
                 .id(resultSet.getInt("organisation_id"))
                 .name(resultSet.getString("organisation"))
                 .build();
@@ -26,7 +24,7 @@ public class PGUserDaoMapper implements PGDaoMapper<UserModel> {
 
         AccountStatus accountStatus = AccountStatus.valueOf(resultSet.getString("account_status"));
 
-        return UserModel.builder()
+        return User.builder()
                 .id(resultSet.getInt("id"))
                 .username(resultSet.getString("username"))
                 .password(resultSet.getString("password"))

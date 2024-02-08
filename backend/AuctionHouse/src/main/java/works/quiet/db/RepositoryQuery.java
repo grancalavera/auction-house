@@ -1,4 +1,4 @@
-package works.quiet.dao;
+package works.quiet.db;
 
 import works.quiet.etc.FunctionThrows;
 
@@ -7,7 +7,7 @@ import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
 
-public interface Dao<T> {
+public interface RepositoryQuery<T> {
     List<T> queryMany(
             FunctionThrows<Connection, PreparedStatement, Exception> statement
     );

@@ -2,7 +2,7 @@ package works.quiet.cli;
 
 import picocli.CommandLine;
 import works.quiet.user.AdminService;
-import works.quiet.user.UserModel;
+import works.quiet.user.User;
 
 import java.util.concurrent.Callable;
 
@@ -27,7 +27,7 @@ public class FindUserCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
-        UserModel user = adminService.unsafeFindUserById(userId);
+        User user = adminService.unsafeFindUserById(userId);
         System.out.println(user);
         return 0;
     }

@@ -1,7 +1,7 @@
-package works.quiet.dao;
+package works.quiet.db;
 
 import java.sql.ResultSet;
 
-public interface PGDaoMapper<T> {
+public interface PGMapper<T> {
     T fromResulSet(ResultSet resultSet) throws Exception;
 }

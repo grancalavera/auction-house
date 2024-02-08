@@ -22,8 +22,8 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
 
     @Override
-    public List<OrganisationModel> listOrganisations() {
-        List<OrganisationModel> organistions = new ArrayList<>();
+    public List<Organisation> listOrganisations() {
+        List<Organisation> organisations = new ArrayList<>();
         String query = "SELECT * from ah_organisations";
 
         connection.getConnection().ifPresent(conn -> {
@@ -32,19 +32,19 @@ public class PGOrganisationRepository implements OrganisationRepository {
                     ResultSet resultSet = statement.executeQuery(query);
             ) {
                 while (resultSet.next()) {
-                    organisationFromResultSet(resultSet).ifPresent(organistions::add);
+                    organisationFromResultSet(resultSet).ifPresent(organisations::add);
                 }
             } catch (final SQLException ex) {
                 log.severe(ex.toString());
             }
         });
 
-        return organistions;
+        return organisations;
     }
 
-    private Optional<OrganisationModel> organisationFromResultSet(final ResultSet resultSet) {
+    private Optional<Organisation> organisationFromResultSet(final ResultSet resultSet) {
         try {
-            OrganisationModel model = OrganisationModel
+            Organisation model = Organisation
                     .builder()
                     .id(resultSet.getInt("id"))
                     .name(resultSet.getString("org_name"))

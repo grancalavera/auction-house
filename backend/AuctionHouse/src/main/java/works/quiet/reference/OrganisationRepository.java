@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface OrganisationRepository {
 
-    List<OrganisationModel> listOrganisations();
+    List<Organisation> listOrganisations();
 }

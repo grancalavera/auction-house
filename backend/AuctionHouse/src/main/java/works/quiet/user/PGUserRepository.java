@@ -1,11 +1,9 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.dao.Dao;
-import works.quiet.etc.FunctionThrows;
+import works.quiet.db.RepositoryQuery;
 import works.quiet.db.DBConnection;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,7 +14,7 @@ import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
-    private final Dao<UserModel> userDao;
+    private final RepositoryQuery<User> userRepositoryQuery;
 
     // I know this is bad but is because the Dao stuff really doesn't work
     // for mutations, at least not intuitively for me. I'll just do it by
@@ -39,66 +37,49 @@ public class PGUserRepository implements UserRepository {
                     + " LEFT JOIN ah_accountstatus a on u.account_status_id = a.id"
                     + " LEFT JOIN ah_roles r on u.role_id = r.id";
 
-    public PGUserRepository(final Level logLevel, final Dao<UserModel> userDao, final DBConnection connection) {
-        this.userDao = userDao;
+    public PGUserRepository(
+            final Level logLevel, final RepositoryQuery<User> userRepositoryQuery, final DBConnection connection) {
+        this.userRepositoryQuery = userRepositoryQuery;
         this.connection = connection;
         log.setLevel(logLevel);
     }
 
     @Override
-    public List<UserModel> findAll() {
-        return userDao.queryMany((conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"));
+    public List<User> findAll() {
+        return userRepositoryQuery.queryMany((conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"));
     }
 
     @Override
-    public Optional<UserModel> findWithCredentials(final String username, final String password) {
-        FunctionThrows<Connection, PreparedStatement, Exception> query;
-
-        query = (conn) -> {
+    public Optional<User> findWithCredentials(final String username, final String password) {
+        return userRepositoryQuery.queryOne((conn) -> {
             PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
             st.setString(1, username);
             st.setString(2, password);
             return st;
-        };
-
-        var maybeUser = userDao.queryOne(query);
-        log.info(maybeUser.toString());
-        return maybeUser;
+        });
     }
 
     @Override
-    public Optional<UserModel> findByUsername(final String username) {
-        FunctionThrows<Connection, PreparedStatement, Exception> query;
-
-        query = (conn) -> {
+    public Optional<User> findByUsername(final String username) {
+        return userRepositoryQuery.queryOne((conn) -> {
             var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
             );
             st.setString(1, username);
             return st;
-        };
-
-        var maybeUser = userDao.queryOne(query);
-        log.info(maybeUser.toString());
-        return maybeUser;
+        });
     }
 
     @Override
-    public Optional<UserModel> findOne(final int id) {
-        FunctionThrows<Connection, PreparedStatement, Exception> query;
-
-        query = (conn) -> {
+    public Optional<User> findOne(final int id) {
+        return userRepositoryQuery.queryOne((conn) -> {
             var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
             );
             st.setInt(1, id);
             return st;
-        };
-
-        var maybeUser = userDao.queryOne(query);
-        log.info(maybeUser.toString());
-        return maybeUser;
+        });
     }
 
-    private int createUser(final UserModel user) throws Exception {
+    private int createUser(final User user) throws Exception {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         connection.getConnection().ifPresent(conn -> {
             try (
@@ -166,7 +147,7 @@ public class PGUserRepository implements UserRepository {
         return idRef.get();
     }
 
-    private void updateUser(final UserModel user) throws Exception {
+    private void updateUser(final User user) throws Exception {
         connection.getConnection().ifPresent(conn -> {
             try (
                     PreparedStatement insertOrg = conn.prepareStatement(
@@ -227,7 +208,7 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public UserModel save(final UserModel user) throws Exception {
+    public User save(final User user) throws Exception {
         if (user.getId() == Integer.MIN_VALUE) {
             var id = createUser(user);
             return user.toBuilder().id(id).build();

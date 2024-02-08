@@ -1,8 +1,7 @@
-package works.quiet.dao;
+package works.quiet.db;
 
 import lombok.extern.java.Log;
 import works.quiet.etc.FunctionThrows;
-import works.quiet.db.DBConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,11 +12,11 @@ import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
-public abstract class PGDao<T> implements Dao<T> {
+public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
     private final DBConnection connection;
-    private final PGDaoMapper<T> mapper;
+    private final PGMapper<T> mapper;
 
-    public PGDao(final Level logLevel, final DBConnection connection, final PGDaoMapper<T> mapper) {
+    public PGRepositoryQuery(final Level logLevel, final DBConnection connection, final PGMapper<T> mapper) {
         this.connection = connection;
         this.mapper = mapper;
         log.setLevel(logLevel);

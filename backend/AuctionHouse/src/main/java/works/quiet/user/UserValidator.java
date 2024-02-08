@@ -1,12 +1,13 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
+import works.quiet.etc.Validator;
 
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 @Log
-public class UserValidator implements IUserValidator {
+public class UserValidator implements Validator<User> {
 
     private static final int MIN_PASSWORD_LENGTH = 3;
 
@@ -15,7 +16,7 @@ public class UserValidator implements IUserValidator {
     }
 
     @Override
-    public void validate(final UserModel user) throws Exception {
+    public void validate(final User user) throws Exception {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword());
     }
