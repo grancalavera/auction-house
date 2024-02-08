@@ -1,18 +1,18 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
-import works.quiet.reference.OrganisationModel;
+import works.quiet.reference.Organisation;
 import works.quiet.user.AccountStatus;
 import works.quiet.user.AdminService;
 import works.quiet.user.Role;
-import works.quiet.user.UserModel;
+import works.quiet.user.User;
 
 import java.util.List;
 import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name = "update-user",
-        description = "Creates a new user.",
+        description = "Updates an existing user.",
         mixinStandardHelpOptions = true,
         sortOptions = false
 )
@@ -79,7 +79,7 @@ public class UpdateUserCommand implements Callable<Integer> {
                 ? null
                 : organisation.stream().reduce((acc, next) -> acc + " " + next).get();
 
-        UserModel.UserModelBuilder updateBuilder = adminService.unsafeFindUserById(userId).toBuilder();
+        User.UserBuilder updateBuilder = adminService.unsafeFindUserById(userId).toBuilder();
 
         if (username != null) {
             updateBuilder.username(username);
@@ -98,7 +98,7 @@ public class UpdateUserCommand implements Callable<Integer> {
         }
 
         if (organisationName != null) {
-            OrganisationModel organisation = OrganisationModel.builder().name(organisationName).build();
+            Organisation organisation = Organisation.builder().name(organisationName).build();
             updateBuilder.organisation(organisation);
         }
 
@@ -113,7 +113,7 @@ public class UpdateUserCommand implements Callable<Integer> {
             updateBuilder.role(role);
         }
 
-        UserModel updatedUser = updateBuilder.build();
+        User updatedUser = updateBuilder.build();
 
         adminService.updateUser(updatedUser);
 

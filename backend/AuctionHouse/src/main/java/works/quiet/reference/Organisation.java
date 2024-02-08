@@ -9,7 +9,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 @Builder(toBuilder = true)
-public class OrganisationModel {
+public class Organisation {
     private int id;
     private String name;
 }

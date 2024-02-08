@@ -1,7 +1,7 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.reference.OrganisationModel;
+import works.quiet.reference.Organisation;
 import works.quiet.reference.OrganisationRepository;
 
 import java.util.List;
@@ -30,7 +30,7 @@ public class AdminService {
     }
 
     public void login(final String username, final String password) throws Exception {
-        Optional<UserModel> maybeUser = userRepository.findWithCredentials(username, password);
+        Optional<User> maybeUser = userRepository.findWithCredentials(username, password);
 
         if (maybeUser.isEmpty()) {
             log.info("Login attempt failed with username=" + username + ".");
@@ -46,7 +46,7 @@ public class AdminService {
     }
 
     public void assertIsNotBlocked() throws Exception {
-        UserModel user = getCurrentUser();
+        User user = getCurrentUser();
         if (user.getAccountStatus() == AccountStatus.BLOCKED) {
             log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked.");
             throw new Exception("Not authorised.");
@@ -66,7 +66,7 @@ public class AdminService {
         }
     }
 
-    public UserModel getCurrentUser() throws Exception {
+    public User getCurrentUser() throws Exception {
         var maybeUser = session.getUsername().flatMap(userRepository::findByUsername);
         if (maybeUser.isPresent()) {
             return maybeUser.get();
@@ -88,11 +88,11 @@ public class AdminService {
             final String accountStatusName
     ) throws Exception {
 
-        OrganisationModel organisation = OrganisationModel.builder().name(organisationName).build();
+        Organisation organisation = Organisation.builder().name(organisationName).build();
         AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
         Role role = Role.valueOf(roleName);
 
-        UserModel user = UserModel.builder()
+        User user = User.builder()
                 .username(username)
                 .password(password)
                 .firstName(firstName)
@@ -104,28 +104,29 @@ public class AdminService {
 
         userValidator.validate(user);
 
-        int id = userRepository.createUser(user);
+        var created = userRepository.save(user);
+        var id = created.getId();
         log.info("created user with id=" + id);
 
         return id;
     }
 
-    public void updateUser(final UserModel updatedUser) throws Exception {
+    public void updateUser(final User updatedUser) throws Exception {
         userValidator.validate(updatedUser);
-        userRepository.updateUser(updatedUser);
+        userRepository.save(updatedUser);
         log.info("updated user with id=" + updatedUser.getId());
     }
 
-    public List<UserModel> listUsers() {
-        return userRepository.listUsers();
+    public List<User> listUsers() {
+        return userRepository.findAll();
     }
 
-    public List<OrganisationModel> listOrganisations() {
+    public List<Organisation> listOrganisations() {
         return organisationRepository.listOrganisations();
     }
 
     public void blockUser(final int userId) throws Exception {
-        UserModel user = unsafeFindUserById(userId);
+        User user = unsafeFindUserById(userId);
 
         if (user.getId() == getCurrentUser().getId()) {
             String message = "Cannot block current user.";
@@ -138,26 +139,26 @@ public class AdminService {
             return;
         }
 
-        UserModel blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
-        userRepository.updateUser(blockedUser);
+        User blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
+        userRepository.save(blockedUser);
         log.info("Blocked user with user.id=" + userId + ".");
     }
 
     public void unblockUser(final int userId) throws Exception {
-        UserModel user = unsafeFindUserById(userId);
+        User user = unsafeFindUserById(userId);
 
         if (user.getAccountStatus() == AccountStatus.ACTIVE) {
             log.info("User with user.id=" + userId + " is already active.");
             return;
         }
 
-        UserModel unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
-        userRepository.updateUser(unblockedUser);
+        User unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
+        userRepository.save(unblockedUser);
         log.info("Unlocked user with user.id=" + userId + ".");
     }
 
-    public UserModel unsafeFindUserById(final int userId) throws Exception {
-        Optional<UserModel> maybeUser = userRepository.findById(userId);
+    public User unsafeFindUserById(final int userId) throws Exception {
+        Optional<User> maybeUser = userRepository.findOne(userId);
         if (maybeUser.isPresent()) {
             return maybeUser.get();
         }

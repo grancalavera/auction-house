@@ -1,19 +1,15 @@
 package works.quiet.user;
 
-import java.util.List;
+import works.quiet.db.Repository;
+
 import java.util.Optional;
 
-public interface UserRepository {
+public interface UserRepository extends Repository<User> {
+    Optional<User> findWithCredentials(String username, String password);
 
-    List<UserModel> listUsers();
+    Optional<User> findByUsername(String username);
 
-    Optional<UserModel> findWithCredentials(String username, String password);
-
-    Optional<UserModel> findByUsername(String username);
-
-    Optional<UserModel> findById(int id);
-
-    int createUser(UserModel user) throws Exception;
-
-    void updateUser(UserModel user) throws Exception;
+//    Long count();
+//    void delete(User user);
+//    boolean exists(int id);
 }
