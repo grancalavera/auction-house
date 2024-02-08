@@ -104,7 +104,8 @@ public class AdminService {
 
         userValidator.validate(user);
 
-        int id = userRepository.createUser(user);
+        var created = userRepository.save(user);
+        var id = created.getId();
         log.info("created user with id=" + id);
 
         return id;
@@ -112,12 +113,12 @@ public class AdminService {
 
     public void updateUser(final UserModel updatedUser) throws Exception {
         userValidator.validate(updatedUser);
-        userRepository.updateUser(updatedUser);
+        userRepository.save(updatedUser);
         log.info("updated user with id=" + updatedUser.getId());
     }
 
     public List<UserModel> listUsers() {
-        return userRepository.listUsers();
+        return userRepository.findAll();
     }
 
     public List<OrganisationModel> listOrganisations() {
@@ -139,7 +140,7 @@ public class AdminService {
         }
 
         UserModel blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
-        userRepository.updateUser(blockedUser);
+        userRepository.save(blockedUser);
         log.info("Blocked user with user.id=" + userId + ".");
     }
 
@@ -152,12 +153,12 @@ public class AdminService {
         }
 
         UserModel unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
-        userRepository.updateUser(unblockedUser);
+        userRepository.save(unblockedUser);
         log.info("Unlocked user with user.id=" + userId + ".");
     }
 
     public UserModel unsafeFindUserById(final int userId) throws Exception {
-        Optional<UserModel> maybeUser = userRepository.findById(userId);
+        Optional<UserModel> maybeUser = userRepository.findOne(userId);
         if (maybeUser.isPresent()) {
             return maybeUser.get();
         }

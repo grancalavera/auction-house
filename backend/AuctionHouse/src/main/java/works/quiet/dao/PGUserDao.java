@@ -1,6 +1,6 @@
 package works.quiet.dao;
 
-import works.quiet.io.DBConnection;
+import works.quiet.db.DBConnection;
 import works.quiet.user.UserModel;
 
 import java.util.logging.Level;

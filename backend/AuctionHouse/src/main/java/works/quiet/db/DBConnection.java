@@ -1,4 +1,4 @@
-package works.quiet.io;
+package works.quiet.db;
 
 import java.sql.Connection;
 import java.util.Optional;

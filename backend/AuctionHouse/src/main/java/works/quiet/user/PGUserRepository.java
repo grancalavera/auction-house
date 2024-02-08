@@ -3,7 +3,7 @@ package works.quiet.user;
 import lombok.extern.java.Log;
 import works.quiet.dao.Dao;
 import works.quiet.etc.FunctionThrows;
-import works.quiet.io.DBConnection;
+import works.quiet.db.DBConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,7 +46,7 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public List<UserModel> listUsers() {
+    public List<UserModel> findAll() {
         return userDao.queryMany((conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"));
     }
 
@@ -83,7 +83,7 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<UserModel> findById(final int id) {
+    public Optional<UserModel> findOne(final int id) {
         FunctionThrows<Connection, PreparedStatement, Exception> query;
 
         query = (conn) -> {
@@ -98,9 +98,7 @@ public class PGUserRepository implements UserRepository {
         return maybeUser;
     }
 
-    //insert into ah_organisations (org_name) values (:'org') on conflict (org_name) do nothing;
-    @Override
-    public int createUser(final UserModel user) throws Exception {
+    private int createUser(final UserModel user) throws Exception {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         connection.getConnection().ifPresent(conn -> {
             try (
@@ -168,8 +166,7 @@ public class PGUserRepository implements UserRepository {
         return idRef.get();
     }
 
-    @Override
-    public void updateUser(final UserModel user) throws Exception {
+    private void updateUser(final UserModel user) throws Exception {
         connection.getConnection().ifPresent(conn -> {
             try (
                     PreparedStatement insertOrg = conn.prepareStatement(
@@ -227,6 +224,17 @@ public class PGUserRepository implements UserRepository {
                 throw new RuntimeException(ex);
             }
         });
+    }
+
+    @Override
+    public UserModel save(final UserModel user) throws Exception {
+        if (user.getId() == Integer.MIN_VALUE) {
+            var id = createUser(user);
+            return user.toBuilder().id(id).build();
+        } else {
+            updateUser(user);
+            return user.toBuilder().build();
+        }
     }
 
     // https://stackoverflow.com/a/2563492

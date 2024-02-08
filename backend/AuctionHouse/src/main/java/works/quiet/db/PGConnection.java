@@ -1,4 +1,4 @@
-package works.quiet.io;
+package works.quiet.db;
 
 import lombok.extern.java.Log;
 

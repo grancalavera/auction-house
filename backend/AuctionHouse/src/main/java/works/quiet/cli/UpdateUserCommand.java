@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 
 @CommandLine.Command(
         name = "update-user",
-        description = "Creates a new user.",
+        description = "Updates an existing user.",
         mixinStandardHelpOptions = true,
         sortOptions = false
 )

@@ -2,7 +2,7 @@ package works.quiet.dao;
 
 import lombok.extern.java.Log;
 import works.quiet.etc.FunctionThrows;
-import works.quiet.io.DBConnection;
+import works.quiet.db.DBConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

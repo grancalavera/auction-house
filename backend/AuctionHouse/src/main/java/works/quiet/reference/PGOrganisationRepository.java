@@ -1,7 +1,7 @@
 package works.quiet.reference;
 
 import lombok.extern.java.Log;
-import works.quiet.io.DBConnection;
+import works.quiet.db.DBConnection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
