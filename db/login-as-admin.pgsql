@@ -1,2 +1,2 @@
 
-SELECT username FROM ah_users WHERE username='admin' AND password='admin'
+SELECT username FROM users WHERE username='admin' AND password='admin'

@@ -22,9 +22,9 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
 
     @Override
-    public List<Organisation> listOrganisations() {
+    public List<Organisation> findAll() {
         List<Organisation> organisations = new ArrayList<>();
-        String query = "SELECT * from ah_organisations";
+        String query = "SELECT * from organisations";
 
         connection.getConnection().ifPresent(conn -> {
             try (
@@ -47,7 +47,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
             Organisation model = Organisation
                     .builder()
                     .id(resultSet.getInt("id"))
-                    .name(resultSet.getString("org_name"))
+                    .name(resultSet.getString("name"))
                     .build();
             return Optional.of(model);
         } catch (final Exception ex) {

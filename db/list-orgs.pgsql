@@ -1,1 +1,1 @@
-select * from ah_organisations;
+select * from organisations;

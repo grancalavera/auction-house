@@ -14,28 +14,24 @@ import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
-    private final RepositoryQuery<User> userRepositoryQuery;
-
-    // I know this is bad but is because the Dao stuff really doesn't work
-    // for mutations, at least not intuitively for me. I'll just do it by
-    // hand now and try to figure out how to improve it later. Even maybe
-    // way down the line this whole thing will be replaced by an ORM.
     private final DBConnection connection;
+    private final RepositoryQuery<User> userRepositoryQuery;
 
     private final String usersQuery =
             "SELECT"
-                    + " u.id, u.username,"
+                    + " u.id,"
+                    + " u.username,"
                     + " u.password,"
-                    + " u.first_name,"
-                    + " u.last_name,"
-                    + " a.status_name as account_status,"
-                    + " r.role_name as role,"
-                    + " u.organisation_id,"
-                    + " o.org_name as organisation"
-                    + " FROM ah_users u"
-                    + " LEFT JOIN ah_organisations o on u.organisation_id = o.id"
-                    + " LEFT JOIN ah_accountstatus a on u.account_status_id = a.id"
-                    + " LEFT JOIN ah_roles r on u.role_id = r.id";
+                    + " u.firstname,"
+                    + " u.lastname,"
+                    + " a.name as accountStatus,"
+                    + " r.name as role,"
+                    + " u.organisation_id as organisationId,"
+                    + " o.name as organisation"
+                    + " FROM users u"
+                    + " LEFT JOIN organisations o on u.organisation_id = o.id"
+                    + " LEFT JOIN account_status a on u.accountstatus_id = a.id"
+                    + " LEFT JOIN roles r on u.role_id = r.id";
 
     public PGUserRepository(
             final Level logLevel, final RepositoryQuery<User> userRepositoryQuery, final DBConnection connection) {
@@ -84,20 +80,20 @@ public class PGUserRepository implements UserRepository {
         connection.getConnection().ifPresent(conn -> {
             try (
                     PreparedStatement insertOrg = conn.prepareStatement(
-                            "INSERT INTO ah_organisations (org_name) values (?) ON CONFLICT DO NOTHING"
+                            "INSERT INTO organisations (name) values (?) ON CONFLICT DO NOTHING"
                     );
                     PreparedStatement queryOrgId = conn.prepareStatement(
-                            "SELECT id FROM ah_organisations WHERE org_name=?"
+                            "SELECT id FROM organisations WHERE name=?"
                     );
                     PreparedStatement insertUser = conn.prepareStatement(
-                            "INSERT INTO ah_users ("
+                            "INSERT INTO users ("
                                     + "username,"
                                     + " password,"
-                                    + " first_name,"
-                                    + " last_name,"
+                                    + " firstName,"
+                                    + " lastName,"
                                     + " organisation_id,"
-                                    + " account_status_id"
-                                    + ", role_id"
+                                    + " accountStatus_id,"
+                                    + " role_id"
                                     + ") "
                                     + " VALUES "
                                     + " (?, ?, ?, ?, ?, ?, ?)",
@@ -151,21 +147,21 @@ public class PGUserRepository implements UserRepository {
         connection.getConnection().ifPresent(conn -> {
             try (
                     PreparedStatement insertOrg = conn.prepareStatement(
-                            "INSERT INTO ah_organisations (org_name) values (?) ON CONFLICT DO NOTHING"
+                            "INSERT INTO organisations (org_name) values (?) ON CONFLICT DO NOTHING"
                     );
                     PreparedStatement queryOrgId = conn.prepareStatement(
-                            "SELECT id FROM ah_organisations WHERE org_name=?"
+                            "SELECT id FROM organisations WHERE org_name=?"
                     );
                     PreparedStatement updateUser = conn.prepareStatement(
-                            "UPDATE ah_users SET"
-                                    + " username=?,"            // 1
-                                    + " password=?,"            // 2
-                                    + " first_name=?,"          // 3
-                                    + " last_name=?,"           // 4
-                                    + " organisation_id=?,"     // 5
-                                    + " account_status_id=?,"   // 6
-                                    + " role_id=?"              // 7
-                                    + " WHERE id=?")            // 8
+                            "UPDATE users SET"
+                                    + " username=?,"
+                                    + " password=?,"
+                                    + " firstName=?,"
+                                    + " lastName=?,"
+                                    + " organisation_id=?,"
+                                    + " accountStatus_id=?,"
+                                    + " role_id=?"
+                                    + " WHERE id=?")
             ) {
                 conn.setAutoCommit(false);
 

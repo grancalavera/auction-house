@@ -122,7 +122,7 @@ public class AdminService {
     }
 
     public List<Organisation> listOrganisations() {
-        return organisationRepository.listOrganisations();
+        return organisationRepository.findAll();
     }
 
     public void blockUser(final int userId) throws Exception {

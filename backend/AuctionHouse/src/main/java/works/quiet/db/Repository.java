@@ -11,8 +11,10 @@ public interface Repository<T> {
     List<T> findAll();
 
 //    Long count();
+
 //    boolean exists(int id);
 
     User save(T user) throws Exception;
-//    void delete(User user);
+
+    //    void delete(User user);
 }

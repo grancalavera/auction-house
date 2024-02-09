@@ -15,23 +15,24 @@ public class PGUserMapper implements PGMapper<User> {
 
     @Override
     public User fromResulSet(final ResultSet resultSet) throws Exception {
-        var organisation = Organisation.builder()
-                .id(resultSet.getInt("organisation_id"))
+        var organisation = Organisation
+                .builder()
+                .id(resultSet.getInt("organisationId"))
                 .name(resultSet.getString("organisation"))
                 .build();
-
-        Role role = Role.valueOf(resultSet.getString("role"));
-
-        AccountStatus accountStatus = AccountStatus.valueOf(resultSet.getString("account_status"));
+        var role = Role
+                .valueOf(resultSet.getString("role"));
+        var accountStatus = AccountStatus
+                .valueOf(resultSet.getString("accountStatus"));
 
         return User.builder()
                 .id(resultSet.getInt("id"))
                 .username(resultSet.getString("username"))
                 .password(resultSet.getString("password"))
-                .firstName(resultSet.getString("first_name"))
-                .lastName(resultSet.getString("last_name"))
-                .accountStatus(AccountStatus.valueOf(resultSet.getString("account_status")))
-                .role(Role.valueOf(resultSet.getString("role")))
+                .firstName(resultSet.getString("firstName"))
+                .lastName(resultSet.getString("lastName"))
+                .accountStatus(accountStatus)
+                .role(role)
                 .organisation(organisation)
                 .build();
     }

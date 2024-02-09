@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface OrganisationRepository {
 
-    List<Organisation> listOrganisations();
+    List<Organisation> findAll();
 }
