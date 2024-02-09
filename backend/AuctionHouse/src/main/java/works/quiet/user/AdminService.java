@@ -66,12 +66,18 @@ public class AdminService {
         }
     }
 
-    public User getCurrentUser() throws Exception {
-        var maybeUser = session.getUsername().flatMap(userRepository::findByUsername);
-        if (maybeUser.isPresent()) {
-            return maybeUser.get();
+    public String getCurrentUsername() throws Exception {
+        var maybeUsername =  session.getUsername();
+        if (maybeUsername.isPresent()) {
+            return maybeUsername.get();
         }
         throw new Exception("Not authenticated.");
+    }
+
+    public User getCurrentUser() throws Exception {
+        var username = getCurrentUsername();
+        var user = userRepository.findByUsername(username);
+        return user.orElseThrow();
     }
 
     private Role getCurrentUserRole() throws Exception {
