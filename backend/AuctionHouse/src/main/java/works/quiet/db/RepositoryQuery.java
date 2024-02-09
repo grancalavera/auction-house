@@ -18,4 +18,8 @@ public interface RepositoryQuery<T> {
             FunctionThrows<Connection, PreparedStatement, Exception> statement,
             FunctionThrows<ResultSet, T, Exception> mapper
     );
+
+   boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
+
+   long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
 }

@@ -8,7 +8,7 @@ public interface Repository<T> {
 
     List<T> findAll();
 
-//    Long count();
+    long count();
 
     boolean exists(int id);
 

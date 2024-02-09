@@ -5,6 +5,8 @@ import picocli.CommandLine;
 import works.quiet.cli.AdminProgram;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
+import works.quiet.cli.CheckUserExistsCommand;
+import works.quiet.cli.CountUsersCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
@@ -69,6 +71,8 @@ class AuctionHouse {
         CommandLine adminProgram = new CommandLine(new AdminProgram());
         adminProgram.addSubcommand("find-user", new FindUserCommand(adminService));
         adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
+        adminProgram.addSubcommand("count-users", new CountUsersCommand(adminService));
+        adminProgram.addSubcommand("check-user-exists", new CheckUserExistsCommand(adminService));
         adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
         adminProgram.addSubcommand("update-user", new UpdateUserCommand(adminService));
         adminProgram.addSubcommand("delete-user", new DeleteUserCommand(adminService));
@@ -84,7 +88,6 @@ class AuctionHouse {
         mainProgram.addSubcommand("boom", new BoomCommand());
         mainProgram.addSubcommand("show-config", new ShowConfigCommand(ahDbUrl, ahDbUser, logLevel));
         mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
-
 
         int exitCode = mainProgram
                 .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
@@ -103,7 +106,7 @@ class AuctionHouse {
         OrganisationRepository organisationRepository = new PGOrganisationRepository(logLevel, connection);
         Session session = new FileSystemSession(logLevel);
         PGMapper<User> userMapper = new PGUserMapper(logLevel);
-        PGUserRepositoryQuery userDao = new PGUserRepositoryQuery(logLevel, connection, userMapper);
+        PGUserRepositoryQuery userDao = new PGUserRepositoryQuery(logLevel, connection);
         UserRepository userRepository = new PGUserRepository(logLevel, userDao, connection, userMapper);
         UserValidator userValidator = new UserValidator(logLevel);
         return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);

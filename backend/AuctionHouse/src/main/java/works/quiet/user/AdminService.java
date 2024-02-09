@@ -162,6 +162,13 @@ public class AdminService {
         userRepository.delete(user);
     }
 
+    public long countUsers() {
+        return userRepository.count();
+    }
+    public boolean userExists(final int id) {
+        return userRepository.exists(id);
+    }
+
     public User unsafeFindUserById(final int userId) throws Exception {
         Optional<User> maybeUser = userRepository.findOne(userId);
         if (maybeUser.isPresent()) {

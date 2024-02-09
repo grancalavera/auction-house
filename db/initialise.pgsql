@@ -1,3 +1,8 @@
+-- https://betterstack.com/community/guides/logging/how-to-start-logging-with-postgresql/
+-- https://stackoverflow.com/questions/34918025/how-to-restart-postgresql
+-- psql -U admin
+-- select pg_current_logfile();
+-- /var/lib/postgresql/data/log/
 create table if not exists organisations (
     id serial primary key,
     name varchar(256) unique not null

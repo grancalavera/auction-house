@@ -19,8 +19,6 @@ public class PGUserRepository implements UserRepository {
     private final RepositoryQuery<User> userRepositoryQuery;
     private final PGMapper<User> mapper;
 
-    private final String existsQuery = "SELECT 1 from users where id=?";
-
     private final String usersQuery =
             "SELECT"
                     + " u.id,"
@@ -55,8 +53,17 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
+    public long count() {
+        return userRepositoryQuery.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
+    }
+
+    @Override
     public boolean exists(final int id) {
-        return false;
+        return userRepositoryQuery.queryExists(conn -> {
+            var st = conn.prepareStatement("SELECT id FROM users WHERE id=?");
+            st.setInt(1, id);
+            return st;
+        });
     }
 
     @Override
