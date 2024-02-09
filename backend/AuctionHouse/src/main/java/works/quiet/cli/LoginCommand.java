@@ -18,6 +18,7 @@ public class LoginCommand implements Callable<Integer> {
 
     @CommandLine.Option(names = {"-u", "--username"}, required = true)
     private String username;
+
     @CommandLine.Option(names = {"-p", "--password"}, required = true)
     private String password;
 

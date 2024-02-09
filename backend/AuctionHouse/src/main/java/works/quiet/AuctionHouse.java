@@ -6,6 +6,7 @@ import works.quiet.cli.AdminProgram;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
 import works.quiet.cli.CreateUserCommand;
+import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
@@ -70,6 +71,7 @@ class AuctionHouse {
         adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
         adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
         adminProgram.addSubcommand("update-user", new UpdateUserCommand(adminService));
+        adminProgram.addSubcommand("delete-user", new DeleteUserCommand(adminService));
         adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(adminService));
         adminProgram.addSubcommand("block-user", new BlockUserCommand(logLevel, adminService));
         adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, adminService));
@@ -102,7 +104,7 @@ class AuctionHouse {
         Session session = new FileSystemSession(logLevel);
         PGMapper<User> userMapper = new PGUserMapper(logLevel);
         PGUserRepositoryQuery userDao = new PGUserRepositoryQuery(logLevel, connection, userMapper);
-        UserRepository userRepository = new PGUserRepository(logLevel, userDao, connection);
+        UserRepository userRepository = new PGUserRepository(logLevel, userDao, connection, userMapper);
         UserValidator userValidator = new UserValidator(logLevel);
         return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);
     }

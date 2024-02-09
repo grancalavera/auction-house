@@ -1,6 +1,7 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
+import works.quiet.db.PGMapper;
 import works.quiet.db.RepositoryQuery;
 import works.quiet.db.DBConnection;
 
@@ -16,6 +17,9 @@ import java.util.logging.Level;
 public class PGUserRepository implements UserRepository {
     private final DBConnection connection;
     private final RepositoryQuery<User> userRepositoryQuery;
+    private final PGMapper<User> mapper;
+
+    private final String existsQuery = "SELECT 1 from users where id=?";
 
     private final String usersQuery =
             "SELECT"
@@ -34,45 +38,63 @@ public class PGUserRepository implements UserRepository {
                     + " LEFT JOIN roles r on u.role_id = r.id";
 
     public PGUserRepository(
-            final Level logLevel, final RepositoryQuery<User> userRepositoryQuery, final DBConnection connection) {
+            final Level logLevel, final RepositoryQuery<User> userRepositoryQuery, final DBConnection connection,
+            final PGMapper<User> mapper) {
         this.userRepositoryQuery = userRepositoryQuery;
         this.connection = connection;
+        this.mapper = mapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public List<User> findAll() {
-        return userRepositoryQuery.queryMany((conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"));
+        return userRepositoryQuery.queryMany(
+                (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
+                mapper::fromResulSet
+        );
+    }
+
+    @Override
+    public boolean exists(final int id) {
+        return false;
     }
 
     @Override
     public Optional<User> findWithCredentials(final String username, final String password) {
-        return userRepositoryQuery.queryOne((conn) -> {
-            PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
-            st.setString(1, username);
-            st.setString(2, password);
-            return st;
-        });
+        return userRepositoryQuery.queryOne(
+                (conn) -> {
+                    PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
+                    st.setString(1, username);
+                    st.setString(2, password);
+                    return st;
+                },
+                mapper::fromResulSet
+        );
     }
 
     @Override
     public Optional<User> findByUsername(final String username) {
-        return userRepositoryQuery.queryOne((conn) -> {
-            var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
-            );
-            st.setString(1, username);
-            return st;
-        });
+        return userRepositoryQuery.queryOne(
+                (conn) -> {
+                    var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
+                    );
+                    st.setString(1, username);
+                    return st;
+                },
+                mapper::fromResulSet);
     }
 
     @Override
     public Optional<User> findOne(final int id) {
-        return userRepositoryQuery.queryOne((conn) -> {
-            var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
-            );
-            st.setInt(1, id);
-            return st;
-        });
+        return userRepositoryQuery.queryOne(
+                (conn) -> {
+                    var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
+                    );
+                    st.setInt(1, id);
+                    return st;
+                },
+                mapper::fromResulSet
+        );
     }
 
     private int createUser(final User user) throws Exception {
@@ -212,6 +234,21 @@ public class PGUserRepository implements UserRepository {
             updateUser(user);
             return user.toBuilder().build();
         }
+    }
+
+    @Override
+    public void delete(final User entity) throws Exception {
+        connection.getConnection().ifPresent(conn -> {
+            try (
+                PreparedStatement st = conn.prepareStatement("DELETE FROM users WHERE id=?");
+            ) {
+                st.setObject(1, entity.getId());
+                st.executeUpdate();
+            } catch (final SQLException ex) {
+                log.severe(ex.toString());
+                throw new RuntimeException(ex);
+            }
+        });
     }
 
     // https://stackoverflow.com/a/2563492

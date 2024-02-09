@@ -14,22 +14,23 @@ import java.util.logging.Level;
 @Log
 public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
     private final DBConnection connection;
-    private final PGMapper<T> mapper;
 
     public PGRepositoryQuery(final Level logLevel, final DBConnection connection, final PGMapper<T> mapper) {
         this.connection = connection;
-        this.mapper = mapper;
         log.setLevel(logLevel);
     }
 
     @Override
-    public List<T> queryMany(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
+    public List<T> queryMany(
+            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            final FunctionThrows<ResultSet, T, Exception> mapper
+    ) {
         List<T> result = new ArrayList<>();
 
         connection.getConnection().ifPresent(conn -> {
             try (PreparedStatement st = query.apply(conn); ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    result.add(mapper.fromResulSet(rs));
+                    result.add(mapper.apply(rs));
                 }
             } catch (final Exception ex) {
                 log.severe(ex.toString());
@@ -41,8 +42,11 @@ public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
     }
 
     @Override
-    public Optional<T> queryOne(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        List<T> manyResults = queryMany(query);
+    public Optional<T> queryOne(
+            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            final FunctionThrows<ResultSet, T, Exception> mapper
+    ) {
+        List<T> manyResults = queryMany(query, mapper);
 
         if (manyResults.isEmpty()) {
             log.info("empty");

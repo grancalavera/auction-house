@@ -157,6 +157,11 @@ public class AdminService {
         log.info("Unlocked user with user.id=" + userId + ".");
     }
 
+    public void deleteUserById(final int userId) throws Exception {
+        final var user = unsafeFindUserById(userId);
+        userRepository.delete(user);
+    }
+
     public User unsafeFindUserById(final int userId) throws Exception {
         Optional<User> maybeUser = userRepository.findOne(userId);
         if (maybeUser.isPresent()) {
