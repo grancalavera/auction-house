@@ -84,36 +84,15 @@ public class AdminService {
         return getCurrentUser().getRole();
     }
 
-    public int createUser(
-            final String username,
-            final String password,
-            final String firstName,
-            final String lastName,
-            final String organisationName,
-            final String roleName,
-            final String accountStatusName
-    ) throws Exception {
+    public Organisation findOrganisationByName(final String name) throws Exception {
+        return organisationRepository.findByName(name).orElseThrow();
+    }
 
-        Organisation organisation = Organisation.builder().name(organisationName).build();
-        AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
-        Role role = Role.valueOf(roleName);
-
-        User user = User.builder()
-                .username(username)
-                .password(password)
-                .firstName(firstName)
-                .lastName(lastName)
-                .organisation(organisation)
-                .role(role)
-                .accountStatus(accountStatus)
-                .build();
-
+    public int createUser(final User user) throws Exception {
         userValidator.validate(user);
-
         var created = userRepository.save(user);
         var id = created.getId();
         log.info("created user with id=" + id);
-
         return id;
     }
 

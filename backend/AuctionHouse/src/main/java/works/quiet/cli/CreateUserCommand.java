@@ -1,7 +1,10 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
+import works.quiet.user.AccountStatus;
 import works.quiet.user.AdminService;
+import works.quiet.user.Role;
+import works.quiet.user.User;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -74,18 +77,24 @@ public class CreateUserCommand implements Callable<Integer> {
     public Integer call() throws Exception {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
-        var organisationName = organisation.stream().reduce((acc, next) -> acc + " " + next).get();
 
-        var userId = adminService.createUser(
-                username,
-                password,
-                firstName,
-                lastName,
-                organisationName,
-                roleName,
-                accountStatusName
-        );
+        var organisationName = organisation
+                .stream().reduce((acc, next) -> acc + " " + next).orElseThrow();
+        var accountStatus = AccountStatus.valueOf(accountStatusName);
+        var role = Role.valueOf(roleName);
+        var organisation = adminService.findOrganisationByName(organisationName);
 
+        var user = User.builder()
+                .username(username)
+                .password(password)
+                .firstName(firstName)
+                .lastName(lastName)
+                .organisation(organisation)
+                .role(role)
+                .accountStatus(accountStatus)
+                .build();
+
+        var userId = adminService.createUser(user);
         System.out.printf("Created user with user.id=%d\n", userId);
         return 0;
     }

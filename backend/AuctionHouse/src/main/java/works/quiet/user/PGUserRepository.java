@@ -15,8 +15,8 @@ import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
-    private final DBConnection connection;
-    private final RepositoryQuery<User> userRepositoryQuery;
+    private final DBConnection connection; // still need this for mutations, but maybe I can move into the query "proxy"
+    private final RepositoryQuery<User> userRepoQuery;
     private final PGMapper<User> mapper;
 
     private final String usersQuery =
@@ -36,9 +36,9 @@ public class PGUserRepository implements UserRepository {
                     + " LEFT JOIN roles r on u.role_id = r.id";
 
     public PGUserRepository(
-            final Level logLevel, final RepositoryQuery<User> userRepositoryQuery, final DBConnection connection,
+            final Level logLevel, final RepositoryQuery<User> userRepoQuery, final DBConnection connection,
             final PGMapper<User> mapper) {
-        this.userRepositoryQuery = userRepositoryQuery;
+        this.userRepoQuery = userRepoQuery;
         this.connection = connection;
         this.mapper = mapper;
         log.setLevel(logLevel);
@@ -46,7 +46,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        return userRepositoryQuery.queryMany(
+        return userRepoQuery.queryMany(
                 (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
                 mapper::fromResulSet
         );
@@ -54,12 +54,12 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public long count() {
-        return userRepositoryQuery.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
+        return userRepoQuery.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
     }
 
     @Override
     public boolean exists(final int id) {
-        return userRepositoryQuery.queryExists(conn -> {
+        return userRepoQuery.queryExists(conn -> {
             var st = conn.prepareStatement("SELECT id FROM users WHERE id=?");
             st.setInt(1, id);
             return st;
@@ -68,7 +68,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findWithCredentials(final String username, final String password) {
-        return userRepositoryQuery.queryOne(
+        return userRepoQuery.queryOne(
                 (conn) -> {
                     PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
                     st.setString(1, username);
@@ -81,7 +81,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(final String username) {
-        return userRepositoryQuery.queryOne(
+        return userRepoQuery.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
                     );
@@ -93,7 +93,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findOne(final int id) {
-        return userRepositoryQuery.queryOne(
+        return userRepoQuery.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
                     );
@@ -108,13 +108,7 @@ public class PGUserRepository implements UserRepository {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         connection.getConnection().ifPresent(conn -> {
             try (
-                    PreparedStatement insertOrg = conn.prepareStatement(
-                            "INSERT INTO organisations (name) values (?) ON CONFLICT DO NOTHING"
-                    );
-                    PreparedStatement queryOrgId = conn.prepareStatement(
-                            "SELECT id FROM organisations WHERE name=?"
-                    );
-                    PreparedStatement insertUser = conn.prepareStatement(
+                    PreparedStatement st = conn.prepareStatement(
                             "INSERT INTO users ("
                                     + "username,"
                                     + " password,"
@@ -129,26 +123,16 @@ public class PGUserRepository implements UserRepository {
                             Statement.RETURN_GENERATED_KEYS
                     )
             ) {
-                conn.setAutoCommit(false);
-
-                String organisationName = user.getOrganisation().getName();
-                String username = user.getUsername();
-                String password = user.getPassword();
-                String firstName = user.getFirstName();
-                String lastName = user.getLastName();
-                int accountStatusId = user.getAccountStatus().getId();
-                int roleId = user.getRole().getId();
-
-                insertOrg.setString(1, organisationName);
-                insertOrg.executeUpdate();
-
-                queryOrgId.setString(1, organisationName);
-                var orgIdRs = queryOrgId.executeQuery();
-                orgIdRs.next();
-                var orgId = orgIdRs.getInt("id");
+                var username = user.getUsername();
+                var password = user.getPassword();
+                var firstName = user.getFirstName();
+                var lastName = user.getLastName();
+                var orgId = user.getOrganisation().getId();
+                var accountStatusId = user.getAccountStatus().getId();
+                var roleId = user.getRole().getId();
 
                 setStatementValues(
-                        insertUser,
+                        st,
                         username,
                         password,
                         firstName,
@@ -157,14 +141,12 @@ public class PGUserRepository implements UserRepository {
                         accountStatusId,
                         roleId
                 );
-                insertUser.executeUpdate();
+                st.executeUpdate();
 
-                var userRs = insertUser.getGeneratedKeys();
+                var userRs = st.getGeneratedKeys();
                 userRs.next();
                 var userId = userRs.getInt("id");
                 idRef.set(userId);
-
-                conn.commit();
             } catch (final SQLException ex) {
                 throw new RuntimeException(ex);
             }
@@ -175,13 +157,7 @@ public class PGUserRepository implements UserRepository {
     private void updateUser(final User user) throws Exception {
         connection.getConnection().ifPresent(conn -> {
             try (
-                    PreparedStatement insertOrg = conn.prepareStatement(
-                            "INSERT INTO organisations (org_name) values (?) ON CONFLICT DO NOTHING"
-                    );
-                    PreparedStatement queryOrgId = conn.prepareStatement(
-                            "SELECT id FROM organisations WHERE org_name=?"
-                    );
-                    PreparedStatement updateUser = conn.prepareStatement(
+                    PreparedStatement st = conn.prepareStatement(
                             "UPDATE users SET"
                                     + " username=?,"
                                     + " password=?,"
@@ -192,26 +168,16 @@ public class PGUserRepository implements UserRepository {
                                     + " role_id=?"
                                     + " WHERE id=?")
             ) {
-                conn.setAutoCommit(false);
+                var username = user.getUsername();
+                var password = user.getPassword();
+                var firstName = user.getFirstName();
+                var lastName = user.getLastName();
+                var orgId = user.getOrganisation().getId();
+                var accountStatusId = user.getAccountStatus().getId();
+                var roleId = user.getRole().getId();
+                var userId = user.getId();
 
-                String organisationName = user.getOrganisation().getName();
-                String username = user.getUsername();
-                String password = user.getPassword();
-                String firstName = user.getFirstName();
-                String lastName = user.getLastName();
-                int accountStatusId = user.getAccountStatus().getId();
-                int roleId = user.getRole().getId();
-
-                insertOrg.setString(1, organisationName);
-                insertOrg.executeUpdate();
-
-                queryOrgId.setString(1, organisationName);
-                var orgIdRs = queryOrgId.executeQuery();
-                orgIdRs.next();
-                var orgId = orgIdRs.getInt("id");
-                int userId = user.getId();
-
-                setStatementValues(updateUser,
+                setStatementValues(st,
                         username,
                         password,
                         firstName,
@@ -222,9 +188,7 @@ public class PGUserRepository implements UserRepository {
                         userId
                 );
 
-                updateUser.executeUpdate();
-
-                conn.commit();
+                st.executeUpdate();
             } catch (final SQLException ex) {
                 log.severe(ex.toString());
                 throw new RuntimeException(ex);

@@ -20,11 +20,15 @@ import works.quiet.cli.ShowConfigCommand;
 import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
-import works.quiet.db.PGMapper;
 import works.quiet.db.DBConnection;
 import works.quiet.db.PGConnection;
+import works.quiet.db.PGMapper;
+import works.quiet.db.RepositoryQuery;
+import works.quiet.reference.Organisation;
 import works.quiet.reference.OrganisationRepository;
+import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reference.PGOrganisationRepositoryQuery;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
 import works.quiet.user.PGUserMapper;
@@ -103,12 +107,18 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(final Level logLevel, final DBConnection connection) {
-        OrganisationRepository organisationRepository = new PGOrganisationRepository(logLevel, connection);
+
         Session session = new FileSystemSession(logLevel);
+        PGUserRepositoryQuery userRepoQuery = new PGUserRepositoryQuery(logLevel, connection);
+        RepositoryQuery<Organisation> organisationRepoQuery = new PGOrganisationRepositoryQuery(logLevel, connection);
+        PGMapper<Organisation> orgMapper = new PGOrganisationMapper();
+        OrganisationRepository organisationRepository = new PGOrganisationRepository(
+                logLevel, organisationRepoQuery, orgMapper);
+
         PGMapper<User> userMapper = new PGUserMapper(logLevel);
-        PGUserRepositoryQuery userDao = new PGUserRepositoryQuery(logLevel, connection);
-        UserRepository userRepository = new PGUserRepository(logLevel, userDao, connection, userMapper);
+        UserRepository userRepository = new PGUserRepository(logLevel, userRepoQuery, connection, userMapper);
         UserValidator userValidator = new UserValidator(logLevel);
+
         return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);
     }
 }

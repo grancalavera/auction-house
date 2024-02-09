@@ -3,9 +3,12 @@
 -- psql -U admin
 -- select pg_current_logfile();
 -- /var/lib/postgresql/data/log/
+-- https://www.postgresql.org/docs/current/citext.html
+CREATE EXTENSION citext;
+
 create table if not exists organisations (
     id serial primary key,
-    name varchar(256) unique not null
+    name citext unique not null
 );
 
 create table if not exists account_status (

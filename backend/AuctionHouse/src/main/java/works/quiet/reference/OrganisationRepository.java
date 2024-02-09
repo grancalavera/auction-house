@@ -1,8 +1,9 @@
 package works.quiet.reference;
 
-import java.util.List;
+import works.quiet.db.Repository;
 
-public interface OrganisationRepository {
+import java.util.Optional;
 
-    List<Organisation> findAll();
+public interface OrganisationRepository extends Repository<Organisation> {
+    Optional<Organisation> findByName(String name);
 }
