@@ -45,3 +45,10 @@ tasks.test {
     jvmArgs("-XX:+EnableDynamicAgentLoading")
     jvmArgs("-Xshare:off")
 }
+
+// https://docs.gradle.org/current/userguide/working_with_files.html#sec:copying_multiple_files_example
+tasks.register<Copy>("copyPropertyFiles") {
+    from(layout.projectDirectory)
+    include("**/*.properties")
+    into(layout.buildDirectory)
+}

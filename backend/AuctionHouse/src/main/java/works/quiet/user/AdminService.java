@@ -20,8 +20,7 @@ public class AdminService {
             final UserRepository userRepository,
             final OrganisationRepository organisationRepository,
             final Session session,
-            final UserValidator userValidator
-    ) {
+            final UserValidator userValidator) {
         this.userRepository = userRepository;
         this.organisationRepository = organisationRepository;
         this.session = session;
@@ -67,7 +66,7 @@ public class AdminService {
     }
 
     public String getCurrentUsername() throws Exception {
-        var maybeUsername =  session.getUsername();
+        var maybeUsername = session.getUsername();
         if (maybeUsername.isPresent()) {
             return maybeUsername.get();
         }
@@ -77,7 +76,7 @@ public class AdminService {
     public User getCurrentUser() throws Exception {
         var username = getCurrentUsername();
         var user = userRepository.findByUsername(username);
-        return user.orElseThrow();
+        return user.orElseThrow(() -> new Exception("Kabooom!"));
     }
 
     private Role getCurrentUserRole() throws Exception {
@@ -150,6 +149,7 @@ public class AdminService {
     public long countUsers() {
         return userRepository.count();
     }
+
     public boolean userExists(final int id) {
         return userRepository.exists(id);
     }

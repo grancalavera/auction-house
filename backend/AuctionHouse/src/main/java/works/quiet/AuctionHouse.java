@@ -29,6 +29,7 @@ import works.quiet.reference.OrganisationRepository;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.reference.PGOrganisationRepositoryQuery;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
 import works.quiet.user.PGUserMapper;
@@ -39,17 +40,22 @@ import works.quiet.user.User;
 import works.quiet.user.UserRepository;
 import works.quiet.user.UserValidator;
 
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 @Log
 class AuctionHouse {
     private static final Level DEFAULT_LOG_LEVEL = Level.OFF;
 
+
     public static void main(final String... argv) {
         var ahDbUrl = System.getenv("AH_DB_URL");
         var ahDbUser = System.getenv("AH_DB_USER");
         var ahDbPassword = System.getenv("AH_DB_PASSWORD");
         var ahLogLevel = System.getenv("AH_LOG_LEVEL");
+
+        var bundle = ResourceBundle.getBundle("strings");
+        var badLogin = bundle.getString("errors.badLogin");
 
         Level logLevel;
 
@@ -68,7 +74,9 @@ class AuctionHouse {
                 ahDbPassword
         );
 
+
         AdminService adminService = getAdminService(logLevel, connection);
+        Resources resources = new Resources();
 
         CommandLine mainProgram = new CommandLine(new MainProgram());
 
@@ -85,7 +93,7 @@ class AuctionHouse {
         adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
-        mainProgram.addSubcommand("login", new LoginCommand(adminService));
+        mainProgram.addSubcommand("login", new LoginCommand(resources, adminService));
         mainProgram.addSubcommand("logout", new LogoutCommand(adminService));
         mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
         mainProgram.addSubcommand("admin", adminProgram);
