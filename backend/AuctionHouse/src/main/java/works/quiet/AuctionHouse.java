@@ -40,22 +40,17 @@ import works.quiet.user.User;
 import works.quiet.user.UserRepository;
 import works.quiet.user.UserValidator;
 
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 @Log
 class AuctionHouse {
     private static final Level DEFAULT_LOG_LEVEL = Level.OFF;
 
-
     public static void main(final String... argv) {
         var ahDbUrl = System.getenv("AH_DB_URL");
         var ahDbUser = System.getenv("AH_DB_USER");
         var ahDbPassword = System.getenv("AH_DB_PASSWORD");
         var ahLogLevel = System.getenv("AH_LOG_LEVEL");
-
-        var bundle = ResourceBundle.getBundle("strings");
-        var badLogin = bundle.getString("errors.badLogin");
 
         Level logLevel;
 
@@ -74,11 +69,8 @@ class AuctionHouse {
                 ahDbPassword
         );
 
-
         AdminService adminService = getAdminService(logLevel, connection);
         Resources resources = new Resources();
-
-        CommandLine mainProgram = new CommandLine(new MainProgram());
 
         CommandLine adminProgram = new CommandLine(new AdminProgram());
         adminProgram.addSubcommand("find-user", new FindUserCommand(adminService));
@@ -93,6 +85,7 @@ class AuctionHouse {
         adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
+        CommandLine mainProgram = new CommandLine(new MainProgram());
         mainProgram.addSubcommand("login", new LoginCommand(resources, adminService));
         mainProgram.addSubcommand("logout", new LogoutCommand(adminService));
         mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
@@ -115,18 +108,15 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(final Level logLevel, final DBConnection connection) {
-
         Session session = new FileSystemSession(logLevel);
         PGUserRepositoryQuery userRepoQuery = new PGUserRepositoryQuery(logLevel, connection);
         RepositoryQuery<Organisation> organisationRepoQuery = new PGOrganisationRepositoryQuery(logLevel, connection);
         PGMapper<Organisation> orgMapper = new PGOrganisationMapper();
         OrganisationRepository organisationRepository = new PGOrganisationRepository(
                 logLevel, organisationRepoQuery, orgMapper);
-
         PGMapper<User> userMapper = new PGUserMapper(logLevel);
         UserRepository userRepository = new PGUserRepository(logLevel, userRepoQuery, connection, userMapper);
         UserValidator userValidator = new UserValidator(logLevel);
-
         return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);
     }
 }
