@@ -1,7 +1,5 @@
 package works.quiet.db;
 
-import works.quiet.user.User;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -10,9 +8,11 @@ public interface Repository<T> {
 
     List<T> findAll();
 
-//    Long count();
-//    boolean exists(int id);
+    long count();
 
-    User save(T user) throws Exception;
-//    void delete(User user);
+    boolean exists(int id);
+
+    T save(T entity) throws Exception;
+
+    void delete(T entity) throws Exception;
 }

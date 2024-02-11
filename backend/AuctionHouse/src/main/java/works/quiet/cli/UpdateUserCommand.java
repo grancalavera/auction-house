@@ -1,7 +1,6 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
-import works.quiet.reference.Organisation;
 import works.quiet.user.AccountStatus;
 import works.quiet.user.AdminService;
 import works.quiet.user.Role;
@@ -18,6 +17,9 @@ import java.util.concurrent.Callable;
 )
 public class UpdateUserCommand implements Callable<Integer> {
     private final AdminService adminService;
+
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
 
     @CommandLine.Option(
             names = {"-u", "--username"},
@@ -77,7 +79,7 @@ public class UpdateUserCommand implements Callable<Integer> {
 
         var organisationName = organisation == null
                 ? null
-                : organisation.stream().reduce((acc, next) -> acc + " " + next).get();
+                : organisation.stream().reduce((acc, next) -> acc + " " + next).orElseThrow();
 
         User.UserBuilder updateBuilder = adminService.unsafeFindUserById(userId).toBuilder();
 
@@ -98,19 +100,31 @@ public class UpdateUserCommand implements Callable<Integer> {
         }
 
         if (organisationName != null) {
-            Organisation organisation = Organisation.builder().name(organisationName).build();
-            updateBuilder.organisation(organisation);
+            try {
+                var organisation = adminService.findOrganisationByName(organisationName);
+                updateBuilder.organisation(organisation);
+            } catch (final Exception ex) {
+                throw new Exception("Organisation.name=\"" + organisationName + "\" does not exist.");
+            }
         }
 
         if (accountStatusName != null) {
-            AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
-            updateBuilder.accountStatus(accountStatus);
+            try {
+                var accountStatus = AccountStatus.valueOf(accountStatusName.toUpperCase());
+                updateBuilder.accountStatus(accountStatus);
+            } catch (final Exception ex) {
+                throw new Error("\"" + accountStatusName + "\" is not an AccountStatus.");
+            }
 
         }
 
         if (roleName != null) {
-            Role role = Role.valueOf(roleName);
-            updateBuilder.role(role);
+            try {
+                var role = Role.valueOf(roleName.toUpperCase());
+                updateBuilder.role(role);
+            } catch (final Exception ex) {
+                throw new Error("\"" + roleName + "\" is not a Role.");
+            }
         }
 
         User updatedUser = updateBuilder.build();

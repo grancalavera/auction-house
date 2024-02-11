@@ -1,51 +1,59 @@
-create table if not exists ah_organisations (
+-- https://betterstack.com/community/guides/logging/how-to-start-logging-with-postgresql/
+-- https://stackoverflow.com/questions/34918025/how-to-restart-postgresql
+-- psql -U admin
+-- select pg_current_logfile();
+-- /var/lib/postgresql/data/log/
+-- https://www.postgresql.org/docs/current/citext.html
+CREATE EXTENSION citext;
+
+create table if not exists organisations (
     id serial primary key,
-    org_name varchar(256) unique not null
+    name citext unique not null
 );
 
-create table if not exists ah_accountstatus (
+create table if not exists account_status (
     id serial primary key,
-    status_name varchar(256) unique not null
+    name varchar(256) unique not null
 );
 
-create table if not exists ah_roles (
+create table if not exists roles (
     id serial primary key,
-    role_name varchar(256) unique not null
+    name varchar(256) unique not null
 );
 
-create table if not exists ah_users (
+create table if not exists users (
     id serial primary key,
     username varchar(256) unique not null,
     password varchar(256) not null,
-    role_id int references ah_roles(id) not null,
-    organisation_id int references ah_organisations(id) not null,
-    account_status_id int references ah_accountstatus(id) not null,
-    first_name varchar(256) not null,
-    last_name varchar(256) not null
+    firstname varchar(256) not null,
+    lastname varchar(256) not null,
+    accountstatus_id int references account_status(id) not null,
+    organisation_id int references organisations(id) not null,
+    role_id int references roles(id) not null
 );
 
-insert into ah_organisations (org_name) 
-    values 
+insert into organisations (name)
+    values
         ('Auction House Solutions Inc.'),
         ('Optimistic Traders'),
         ('Institutional Investors'),
         ('The Bank of England')
     on conflict do nothing;
 
-insert into ah_accountstatus (status_name) 
-    values 
+insert into account_status (name)
+    values
         ('ACTIVE'),
         ('BLOCKED')
     on conflict do nothing;
 
-insert into ah_roles (role_name) 
-    values 
+insert into roles (name)
+    values
         ('USER'),
         ('ADMIN')
     on conflict do nothing;
 
-insert into ah_users
-        (username, password, first_name, last_name, organisation_id, account_status_id, role_id)
+insert into users
+        (username, password, firstName, lastName, organisation_id, accountstatus_id, role_id)
     values
         ('admin', 'admin', 'Coyote', 'Jackson', 1, 1, 2),
         ('blockedu', '123', 'Blocked', 'User', 3, 2, 1),

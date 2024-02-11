@@ -5,7 +5,10 @@ import picocli.CommandLine;
 import works.quiet.cli.AdminProgram;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
+import works.quiet.cli.CheckUserExistsCommand;
+import works.quiet.cli.CountUsersCommand;
 import works.quiet.cli.CreateUserCommand;
+import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
@@ -17,11 +20,16 @@ import works.quiet.cli.ShowConfigCommand;
 import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
-import works.quiet.db.PGMapper;
 import works.quiet.db.DBConnection;
 import works.quiet.db.PGConnection;
+import works.quiet.db.PGMapper;
+import works.quiet.db.RepositoryQuery;
+import works.quiet.reference.Organisation;
 import works.quiet.reference.OrganisationRepository;
+import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reference.PGOrganisationRepositoryQuery;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
 import works.quiet.user.PGUserMapper;
@@ -62,27 +70,29 @@ class AuctionHouse {
         );
 
         AdminService adminService = getAdminService(logLevel, connection);
-
-        CommandLine mainProgram = new CommandLine(new MainProgram());
+        Resources resources = new Resources();
 
         CommandLine adminProgram = new CommandLine(new AdminProgram());
         adminProgram.addSubcommand("find-user", new FindUserCommand(adminService));
         adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
+        adminProgram.addSubcommand("count-users", new CountUsersCommand(adminService));
+        adminProgram.addSubcommand("check-user-exists", new CheckUserExistsCommand(adminService));
         adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
         adminProgram.addSubcommand("update-user", new UpdateUserCommand(adminService));
+        adminProgram.addSubcommand("delete-user", new DeleteUserCommand(adminService));
         adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(adminService));
         adminProgram.addSubcommand("block-user", new BlockUserCommand(logLevel, adminService));
         adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
-        mainProgram.addSubcommand("login", new LoginCommand(adminService));
+        CommandLine mainProgram = new CommandLine(new MainProgram());
+        mainProgram.addSubcommand("login", new LoginCommand(resources, adminService));
         mainProgram.addSubcommand("logout", new LogoutCommand(adminService));
         mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
         mainProgram.addSubcommand("admin", adminProgram);
         mainProgram.addSubcommand("boom", new BoomCommand());
         mainProgram.addSubcommand("show-config", new ShowConfigCommand(ahDbUrl, ahDbUser, logLevel));
         mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
-
 
         int exitCode = mainProgram
                 .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
@@ -98,11 +108,14 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(final Level logLevel, final DBConnection connection) {
-        OrganisationRepository organisationRepository = new PGOrganisationRepository(logLevel, connection);
         Session session = new FileSystemSession(logLevel);
+        PGUserRepositoryQuery userRepoQuery = new PGUserRepositoryQuery(logLevel, connection);
+        RepositoryQuery<Organisation> organisationRepoQuery = new PGOrganisationRepositoryQuery(logLevel, connection);
+        PGMapper<Organisation> orgMapper = new PGOrganisationMapper();
+        OrganisationRepository organisationRepository = new PGOrganisationRepository(
+                logLevel, organisationRepoQuery, orgMapper);
         PGMapper<User> userMapper = new PGUserMapper(logLevel);
-        PGUserRepositoryQuery userDao = new PGUserRepositoryQuery(logLevel, connection, userMapper);
-        UserRepository userRepository = new PGUserRepository(logLevel, userDao, connection);
+        UserRepository userRepository = new PGUserRepository(logLevel, userRepoQuery, connection, userMapper);
         UserValidator userValidator = new UserValidator(logLevel);
         return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);
     }

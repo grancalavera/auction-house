@@ -14,22 +14,61 @@ import java.util.logging.Level;
 @Log
 public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
     private final DBConnection connection;
-    private final PGMapper<T> mapper;
 
-    public PGRepositoryQuery(final Level logLevel, final DBConnection connection, final PGMapper<T> mapper) {
+    public PGRepositoryQuery(final Level logLevel, final DBConnection connection) {
         this.connection = connection;
-        this.mapper = mapper;
         log.setLevel(logLevel);
     }
 
     @Override
-    public List<T> queryMany(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        List<T> result = new ArrayList<>();
+    public List<T> queryMany(
+            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            final FunctionThrows<ResultSet, T, Exception> mapper
+    ) {
+        List<T> result = genericQueryMany(query, mapper);
+        log.info(result.toString());
+        return result;
+    }
+
+    @Override
+    public Optional<T> queryOne(
+            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            final FunctionThrows<ResultSet, T, Exception> mapper
+    ) {
+        Optional<T> result = genericQueryOne(query, mapper);
+        log.info(result.toString());
+        return result;
+    }
+
+    @Override
+    public boolean queryExists(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
+        return genericQueryOne(query, rs ->
+                // I know in this project all primary keys are int and live in a column named "id" so 🔥...
+                rs.getInt("id")
+        ).isPresent();
+    }
+
+    @Override
+    public long queryCount(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
+        var maybeCount = genericQueryOne(query, rs -> rs.getLong("count"));
+
+        if (maybeCount.isPresent()) {
+            return  maybeCount.get();
+        }
+
+        return 0;
+    }
+
+    private <U> List<U> genericQueryMany(
+            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            final FunctionThrows<ResultSet, U, Exception> mapper
+    ) {
+        List<U> result = new ArrayList<>();
 
         connection.getConnection().ifPresent(conn -> {
             try (PreparedStatement st = query.apply(conn); ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    result.add(mapper.fromResulSet(rs));
+                    result.add(mapper.apply(rs));
                 }
             } catch (final Exception ex) {
                 log.severe(ex.toString());
@@ -40,16 +79,18 @@ public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
         return result;
     }
 
-    @Override
-    public Optional<T> queryOne(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        List<T> manyResults = queryMany(query);
+    private <U> Optional<U> genericQueryOne(
+            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            final FunctionThrows<ResultSet, U, Exception> mapper
+    ) {
+        List<U> manyResults = genericQueryMany(query, mapper);
 
         if (manyResults.isEmpty()) {
             log.info("empty");
             return Optional.empty();
         }
 
-        T result = manyResults.getFirst();
+        U result = manyResults.getFirst();
         log.info(result.toString());
         return Optional.of(result);
     }

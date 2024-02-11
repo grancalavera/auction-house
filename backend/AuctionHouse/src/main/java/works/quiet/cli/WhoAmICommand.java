@@ -15,6 +15,9 @@ import java.util.logging.Level;
 public class WhoAmICommand implements Callable<Integer> {
     final AdminService adminService;
 
+    @CommandLine.Spec
+    CommandLine.Model.CommandSpec spec;
+
     public WhoAmICommand(final Level logLevel, final AdminService adminService) {
         this.adminService = adminService;
         log.setLevel(logLevel);
@@ -23,7 +26,7 @@ public class WhoAmICommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         adminService.assertIsNotBlocked();
-        System.out.println(adminService.getCurrentUser());
+        spec.commandLine().getOut().println(adminService.getCurrentUsername());
         return 0;
     }
 }

@@ -1,1 +1,1 @@
-select * from ah_users where id=:id;
+select * from users where id=:id;

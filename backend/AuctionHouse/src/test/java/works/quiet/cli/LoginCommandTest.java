@@ -1,94 +1,135 @@
 package works.quiet.cli;
 
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import picocli.CommandLine;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.MessageFormat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
+@DisplayName("LoginCommand black box tests.")
 class LoginCommandTest {
 
+    Resources resources;
+    AdminService adminServiceMock;
+    StringWriter stdErr;
+    StringWriter stdOut;
+    CommandLine program = new CommandLine(new LoginCommand(resources, adminServiceMock));
+
+    @BeforeEach
+    void setup() {
+        resources = new Resources();
+        adminServiceMock = mock();
+        stdErr = new StringWriter();
+        stdOut = new StringWriter();
+        program = new CommandLine(new LoginCommand(resources, adminServiceMock));
+        program.setOut(new PrintWriter(stdOut));
+        program.setErr(new PrintWriter(stdErr));
+        program.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
+    }
+
+    private String sanitizeStringWriter(final StringWriter w) {
+        return w.toString().replace("\n", "");
+    }
+
+    private String sanitizedOut() {
+        return sanitizeStringWriter(stdOut);
+    }
+
+    private String sanitizedErr() {
+        return sanitizeStringWriter(stdErr);
+    }
+
     @Test
-    void wrongUsernameOrPassword() throws Exception {
-        AdminService adminServiceMock = mock();
-        var message = "boom!";
-        doThrow(new Exception(message))
+    @DisplayName("Should fail with USAGE error code for bad user input")
+    void badUserInput() {
+        var exitCode = program.execute();
+        assertEquals(CommandLine.ExitCode.USAGE, exitCode);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+            "--username,--password",
+            "-u,-p",
+            "--username,-p",
+            "-u,--password",
+    })
+    @DisplayName("Should fail with SOFTWARE error code when the user enters wrong username or password.")
+    void wrongUsernameOrPassword(final String usernameOption, final String passwordOption) throws Exception {
+        var expectedMessage = "boom!";
+        doThrow(new Exception(expectedMessage))
                 .when(adminServiceMock)
                 .login(anyString(), anyString());
 
-        StringWriter stdErr = new StringWriter();
-        CommandLine program = new CommandLine(new LoginCommand(adminServiceMock));
-        program.setErr(new PrintWriter(stdErr));
+        var exitCode = program.execute(
+                usernameOption, "",
+                passwordOption, ""
+        );
 
-        var exitCode = program
-                .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
-                .execute("--username", "foo", "--password", "bar");
-
-        assertEquals(1, exitCode);
-        assertEquals(message + "\n", stdErr.toString());
+        verify(adminServiceMock).login(anyString(), anyString());
+        verify(adminServiceMock, never()).assertIsNotBlocked();
+        assertEquals(CommandLine.ExitCode.SOFTWARE, exitCode);
+        assertEquals(expectedMessage, sanitizedErr());
     }
 
-    @Test
-    void blockedUser() throws Exception {
-        AdminService adminServiceMock = mock();
-        var message = "boom!";
-        doThrow(new Exception(message))
-                .when(adminServiceMock)
-                .assertIsNotBlocked();
+    @ParameterizedTest
+    @CsvSource({
+            "--username,--password",
+            "-u,-p",
+            "--username,-p",
+            "-u,--password",
+    })
+    @DisplayName("Should fail with SOFTWARE error code when the user is blocked.")
+    void blockedUser(final String usernameOption, final String passwordOption) throws Exception {
+        var expectedMessage = "boom!";
+        doThrow(new Exception(expectedMessage)).when(adminServiceMock).assertIsNotBlocked();
 
-        StringWriter stdErr = new StringWriter();
-        CommandLine program = new CommandLine(new LoginCommand(adminServiceMock));
-        program.setErr(new PrintWriter(stdErr));
+        var exitCode = program.execute(
+                usernameOption, "",
+                passwordOption, ""
+        );
 
-        var exitCode = program
-                .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
-                .execute("--username", "foo", "--password", "bar");
-
-        verify(adminServiceMock).login("foo", "bar");
+        verify(adminServiceMock).login(anyString(), anyString());
         verify(adminServiceMock).assertIsNotBlocked();
-
-        assertEquals(1, exitCode);
-        assertEquals(message + "\n", stdErr.toString());
+        assertEquals(CommandLine.ExitCode.SOFTWARE, exitCode);
+        assertEquals(expectedMessage, sanitizedErr());
     }
 
-    @Test
-    void logInSuccess() throws Exception {
-        AdminService adminServiceMock = mock();
-        StringWriter stdOut = new StringWriter();
-        CommandLine program = new CommandLine(new LoginCommand(adminServiceMock));
-        program.setOut(new PrintWriter(stdOut));
+    @ParameterizedTest
+    @CsvSource({
+            "--username,--password",
+            "-u,-p",
+            "--username,-p",
+            "-u,--password",
+    })
+    @DisplayName("Should login successfully with all allowed parameter combination.")
+    void logInSuccess(final String usernameOption, final String passwordOption) throws Exception {
+        var expectedUsername = "foo";
+        var expectedPassword = "bar";
+        var expectedMessage = MessageFormat
+                .format(resources.getBundle().getString("messages.login"), expectedUsername);
 
-        var exitCode = program
-                .execute("--username", "foo", "--password", "bar");
+        var exitCode = program.execute(
+                usernameOption, expectedUsername,
+                passwordOption, expectedPassword
+        );
 
-        verify(adminServiceMock).login("foo", "bar");
+        verify(adminServiceMock).login(expectedUsername, expectedPassword);
         verify(adminServiceMock).assertIsNotBlocked();
-
-        assertEquals(0, exitCode);
-        assertEquals("Logged in as 'foo'.\n", stdOut.toString());
-    }
-
-    @Test
-    void logInSuccessShort() throws Exception {
-        AdminService adminServiceMock = mock();
-        StringWriter stdOut = new StringWriter();
-        CommandLine program = new CommandLine(new LoginCommand(adminServiceMock));
-        program.setOut(new PrintWriter(stdOut));
-
-        var exitCode = program
-                .execute("-u", "foo", "-p", "bar");
-
-        verify(adminServiceMock).login("foo", "bar");
-        verify(adminServiceMock).assertIsNotBlocked();
-
-        assertEquals(0, exitCode);
-        assertEquals("Logged in as 'foo'.\n", stdOut.toString());
+        assertEquals(CommandLine.ExitCode.OK, exitCode);
+        assertEquals(expectedMessage, sanitizedOut());
     }
 }

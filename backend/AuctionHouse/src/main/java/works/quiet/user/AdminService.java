@@ -20,8 +20,7 @@ public class AdminService {
             final UserRepository userRepository,
             final OrganisationRepository organisationRepository,
             final Session session,
-            final UserValidator userValidator
-    ) {
+            final UserValidator userValidator) {
         this.userRepository = userRepository;
         this.organisationRepository = organisationRepository;
         this.session = session;
@@ -66,48 +65,33 @@ public class AdminService {
         }
     }
 
-    public User getCurrentUser() throws Exception {
-        var maybeUser = session.getUsername().flatMap(userRepository::findByUsername);
-        if (maybeUser.isPresent()) {
-            return maybeUser.get();
+    public String getCurrentUsername() throws Exception {
+        var maybeUsername = session.getUsername();
+        if (maybeUsername.isPresent()) {
+            return maybeUsername.get();
         }
         throw new Exception("Not authenticated.");
+    }
+
+    public User getCurrentUser() throws Exception {
+        var username = getCurrentUsername();
+        var user = userRepository.findByUsername(username);
+        return user.orElseThrow(() -> new Exception("Kabooom!"));
     }
 
     private Role getCurrentUserRole() throws Exception {
         return getCurrentUser().getRole();
     }
 
-    public int createUser(
-            final String username,
-            final String password,
-            final String firstName,
-            final String lastName,
-            final String organisationName,
-            final String roleName,
-            final String accountStatusName
-    ) throws Exception {
+    public Organisation findOrganisationByName(final String name) throws Exception {
+        return organisationRepository.findByName(name).orElseThrow();
+    }
 
-        Organisation organisation = Organisation.builder().name(organisationName).build();
-        AccountStatus accountStatus = AccountStatus.valueOf(accountStatusName);
-        Role role = Role.valueOf(roleName);
-
-        User user = User.builder()
-                .username(username)
-                .password(password)
-                .firstName(firstName)
-                .lastName(lastName)
-                .organisation(organisation)
-                .role(role)
-                .accountStatus(accountStatus)
-                .build();
-
+    public int createUser(final User user) throws Exception {
         userValidator.validate(user);
-
         var created = userRepository.save(user);
         var id = created.getId();
         log.info("created user with id=" + id);
-
         return id;
     }
 
@@ -122,7 +106,7 @@ public class AdminService {
     }
 
     public List<Organisation> listOrganisations() {
-        return organisationRepository.listOrganisations();
+        return organisationRepository.findAll();
     }
 
     public void blockUser(final int userId) throws Exception {
@@ -155,6 +139,19 @@ public class AdminService {
         User unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
         userRepository.save(unblockedUser);
         log.info("Unlocked user with user.id=" + userId + ".");
+    }
+
+    public void deleteUserById(final int userId) throws Exception {
+        final var user = unsafeFindUserById(userId);
+        userRepository.delete(user);
+    }
+
+    public long countUsers() {
+        return userRepository.count();
+    }
+
+    public boolean userExists(final int id) {
+        return userRepository.exists(id);
     }
 
     public User unsafeFindUserById(final int userId) throws Exception {
