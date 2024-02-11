@@ -2,6 +2,7 @@ package works.quiet.cli;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import picocli.CommandLine;
@@ -40,16 +41,23 @@ class LoginCommandTest {
         program.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
     }
 
-    private String sanitize(final StringWriter w) {
+    private String sanitizeStringWriter(final StringWriter w) {
         return w.toString().replace("\n", "");
     }
 
     private String sanitizedOut() {
-        return sanitize(stdOut);
+        return sanitizeStringWriter(stdOut);
     }
 
     private String sanitizedErr() {
-        return sanitize(stdErr);
+        return sanitizeStringWriter(stdErr);
+    }
+
+    @Test
+    @DisplayName("Should fail with USAGE error code for bad user input")
+    void badUserInput() {
+        var exitCode = program.execute();
+        assertEquals(CommandLine.ExitCode.USAGE, exitCode);
     }
 
     @ParameterizedTest
@@ -59,7 +67,7 @@ class LoginCommandTest {
             "--username,-p",
             "-u,--password",
     })
-    @DisplayName("Should fail when the user enters wrong username or password.")
+    @DisplayName("Should fail with SOFTWARE error code when the user enters wrong username or password.")
     void wrongUsernameOrPassword(final String usernameOption, final String passwordOption) throws Exception {
         var expectedMessage = "boom!";
         doThrow(new Exception(expectedMessage))
@@ -73,7 +81,7 @@ class LoginCommandTest {
 
         verify(adminServiceMock).login(anyString(), anyString());
         verify(adminServiceMock, never()).assertIsNotBlocked();
-        assertEquals(1, exitCode);
+        assertEquals(CommandLine.ExitCode.SOFTWARE, exitCode);
         assertEquals(expectedMessage, sanitizedErr());
     }
 
@@ -84,7 +92,7 @@ class LoginCommandTest {
             "--username,-p",
             "-u,--password",
     })
-    @DisplayName("Should fail when the user is blocked.")
+    @DisplayName("Should fail with SOFTWARE error code when the user is blocked.")
     void blockedUser(final String usernameOption, final String passwordOption) throws Exception {
         var expectedMessage = "boom!";
         doThrow(new Exception(expectedMessage)).when(adminServiceMock).assertIsNotBlocked();
@@ -96,7 +104,7 @@ class LoginCommandTest {
 
         verify(adminServiceMock).login(anyString(), anyString());
         verify(adminServiceMock).assertIsNotBlocked();
-        assertEquals(1, exitCode);
+        assertEquals(CommandLine.ExitCode.SOFTWARE, exitCode);
         assertEquals(expectedMessage, sanitizedErr());
     }
 
@@ -121,7 +129,7 @@ class LoginCommandTest {
 
         verify(adminServiceMock).login(expectedUsername, expectedPassword);
         verify(adminServiceMock).assertIsNotBlocked();
-        assertEquals(0, exitCode);
+        assertEquals(CommandLine.ExitCode.OK, exitCode);
         assertEquals(expectedMessage, sanitizedOut());
     }
 }
