@@ -1,9 +1,9 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -12,15 +12,13 @@ import java.util.logging.Level;
         mixinStandardHelpOptions = true,
         sortOptions = false
 )
-public class BlockUserCommand implements Callable<Integer> {
-
-    private final AdminService adminService;
+public class BlockUserCommand extends CommandWithAdmin {
 
     @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to block.")
     private int userId;
 
-    public BlockUserCommand(final Level logLevel, final AdminService adminService) {
-        this.adminService = adminService;
+    public BlockUserCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
+        super(logLevel, resources, adminService);
     }
 
     @Override
@@ -29,6 +27,6 @@ public class BlockUserCommand implements Callable<Integer> {
         adminService.assertIsAdmin();
         adminService.blockUser(userId);
         System.out.printf("Blocked user with user.id=%d.\n", userId);
-        return 0;
+        return 1;
     }
 }

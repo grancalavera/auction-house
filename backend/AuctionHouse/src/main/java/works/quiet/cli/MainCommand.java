@@ -9,4 +9,4 @@ import picocli.CommandLine.Command;
         sortOptions = false,
         mixinStandardHelpOptions = true
 )
-public class MainProgram { }
+public class MainCommand { }

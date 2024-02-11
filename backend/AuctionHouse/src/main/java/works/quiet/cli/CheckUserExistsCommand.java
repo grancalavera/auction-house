@@ -1,9 +1,11 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 @CommandLine.Command(
         name = "check-user-exists",
@@ -11,18 +13,15 @@ import java.util.concurrent.Callable;
         mixinStandardHelpOptions = true,
         sortOptions = false
 )
-public class CheckUserExistsCommand implements Callable<Integer> {
-    private final AdminService adminService;
-
-    @CommandLine.Spec
-    CommandLine.Model.CommandSpec spec;
+public class CheckUserExistsCommand extends CommandWithAdmin {
 
     @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to check.")
     private int userId;
 
-    public CheckUserExistsCommand(final AdminService adminService) {
-        this.adminService = adminService;
+    public CheckUserExistsCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
+        super(logLevel, resources, adminService);
     }
+
 
     @Override
     public Integer call() throws Exception {

@@ -5,16 +5,14 @@ import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 @CommandLine.Command(
         name = "login",
         description = "Login with username and password, and persists an user session.",
         mixinStandardHelpOptions = true
 )
-public class LoginCommand implements Callable<Integer> {
-    private final AdminService adminService;
-    private final Resources resources;
-
+public class LoginCommand extends CommandWithAdmin {
     @CommandLine.Spec
     CommandLine.Model.CommandSpec spec;
 
@@ -24,9 +22,8 @@ public class LoginCommand implements Callable<Integer> {
     @CommandLine.Option(names = {"-p", "--password"}, required = true)
     private String password;
 
-    public LoginCommand(final Resources resources, final AdminService adminService) {
-        this.adminService = adminService;
-        this.resources = resources;
+    public LoginCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
+        super(logLevel, resources, adminService);
     }
 
     @Override

@@ -1,24 +1,21 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 @CommandLine.Command(
         name = "count-users",
         description = "Counts all existing users.",
         mixinStandardHelpOptions = true
 )
-public class CountUsersCommand implements Callable<Integer> {
+public class CountUsersCommand extends CommandWithAdmin {
 
-    private final AdminService adminService;
-
-    @CommandLine.Spec
-    CommandLine.Model.CommandSpec spec;
-
-    public CountUsersCommand(final AdminService adminService) {
-        this.adminService = adminService;
+    public CountUsersCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
+        super(logLevel, resources, adminService);
     }
 
 

@@ -6,58 +6,30 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import picocli.CommandLine;
-import works.quiet.resources.Resources;
-import works.quiet.user.AdminService;
+import works.quiet.cli.etc.AdminTestHarness;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.text.MessageFormat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @DisplayName("LoginCommand black box tests.")
 class LoginCommandTest {
 
-    Resources resources;
-    AdminService adminServiceMock;
-    StringWriter stdErr;
-    StringWriter stdOut;
-    CommandLine program = new CommandLine(new LoginCommand(resources, adminServiceMock));
+    private AdminTestHarness harness;
 
     @BeforeEach
     void setup() {
-        resources = new Resources();
-        adminServiceMock = mock();
-        stdErr = new StringWriter();
-        stdOut = new StringWriter();
-        program = new CommandLine(new LoginCommand(resources, adminServiceMock));
-        program.setOut(new PrintWriter(stdOut));
-        program.setErr(new PrintWriter(stdErr));
-        program.setExecutionExceptionHandler(new PrintExceptionMessageHandler());
-    }
-
-    private String sanitizeStringWriter(final StringWriter w) {
-        return w.toString().replace("\n", "");
-    }
-
-    private String sanitizedOut() {
-        return sanitizeStringWriter(stdOut);
-    }
-
-    private String sanitizedErr() {
-        return sanitizeStringWriter(stdErr);
+        harness = new AdminTestHarness(LoginCommand.class);
     }
 
     @Test
     @DisplayName("Should fail with USAGE error code for bad user input")
     void badUserInput() {
-        var exitCode = program.execute();
-        assertEquals(CommandLine.ExitCode.USAGE, exitCode);
+        assertEquals(CommandLine.ExitCode.USAGE, harness.program.execute());
     }
 
     @ParameterizedTest
@@ -70,19 +42,17 @@ class LoginCommandTest {
     @DisplayName("Should fail with SOFTWARE error code when the user enters wrong username or password.")
     void wrongUsernameOrPassword(final String usernameOption, final String passwordOption) throws Exception {
         var expectedMessage = "boom!";
+
         doThrow(new Exception(expectedMessage))
-                .when(adminServiceMock)
+                .when(harness.adminService)
                 .login(anyString(), anyString());
 
-        var exitCode = program.execute(
-                usernameOption, "",
-                passwordOption, ""
-        );
+        var exitCode = harness.program.execute(usernameOption, "", passwordOption, "");
 
-        verify(adminServiceMock).login(anyString(), anyString());
-        verify(adminServiceMock, never()).assertIsNotBlocked();
+        verify(harness.adminService).login(anyString(), anyString());
+        verify(harness.adminService, never()).assertIsNotBlocked();
         assertEquals(CommandLine.ExitCode.SOFTWARE, exitCode);
-        assertEquals(expectedMessage, sanitizedErr());
+        assertEquals(expectedMessage, harness.sanitizedErr());
     }
 
     @ParameterizedTest
@@ -95,17 +65,14 @@ class LoginCommandTest {
     @DisplayName("Should fail with SOFTWARE error code when the user is blocked.")
     void blockedUser(final String usernameOption, final String passwordOption) throws Exception {
         var expectedMessage = "boom!";
-        doThrow(new Exception(expectedMessage)).when(adminServiceMock).assertIsNotBlocked();
+        doThrow(new Exception(expectedMessage)).when(harness.adminService).assertIsNotBlocked();
 
-        var exitCode = program.execute(
-                usernameOption, "",
-                passwordOption, ""
-        );
+        var exitCode = harness.program.execute(usernameOption, "", passwordOption, "");
 
-        verify(adminServiceMock).login(anyString(), anyString());
-        verify(adminServiceMock).assertIsNotBlocked();
+        verify(harness.adminService).login(anyString(), anyString());
+        verify(harness.adminService).assertIsNotBlocked();
         assertEquals(CommandLine.ExitCode.SOFTWARE, exitCode);
-        assertEquals(expectedMessage, sanitizedErr());
+        assertEquals(expectedMessage, harness.sanitizedErr());
     }
 
     @ParameterizedTest
@@ -120,16 +87,13 @@ class LoginCommandTest {
         var expectedUsername = "foo";
         var expectedPassword = "bar";
         var expectedMessage = MessageFormat
-                .format(resources.getBundle().getString("messages.login"), expectedUsername);
+                .format(harness.resources.getBundle().getString("messages.login"), expectedUsername);
 
-        var exitCode = program.execute(
-                usernameOption, expectedUsername,
-                passwordOption, expectedPassword
-        );
+        var exitCode = harness.program.execute(usernameOption, expectedUsername, passwordOption, expectedPassword);
 
-        verify(adminServiceMock).login(expectedUsername, expectedPassword);
-        verify(adminServiceMock).assertIsNotBlocked();
+        verify(harness.adminService).login(expectedUsername, expectedPassword);
+        verify(harness.adminService).assertIsNotBlocked();
         assertEquals(CommandLine.ExitCode.OK, exitCode);
-        assertEquals(expectedMessage, sanitizedOut());
+        assertEquals(expectedMessage, harness.sanitizedOut());
     }
 }
