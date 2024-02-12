@@ -43,7 +43,7 @@ class LoginCommandTest {
     void wrongUsernameOrPassword(final String usernameOption, final String passwordOption) throws Exception {
         var expectedMessage = "boom!";
 
-        doThrow(new Exception(expectedMessage))
+        doThrow(new RuntimeException(expectedMessage))
                 .when(harness.adminService)
                 .login(anyString(), anyString());
 
@@ -65,7 +65,7 @@ class LoginCommandTest {
     @DisplayName("Should fail with SOFTWARE error code when the user is blocked.")
     void blockedUser(final String usernameOption, final String passwordOption) throws Exception {
         var expectedMessage = "boom!";
-        doThrow(new Exception(expectedMessage)).when(harness.adminService).assertIsNotBlocked();
+        doThrow(new RuntimeException(expectedMessage)).when(harness.adminService).assertIsNotBlocked();
 
         var exitCode = harness.program.execute(usernameOption, "", passwordOption, "");
 

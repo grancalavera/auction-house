@@ -8,7 +8,6 @@ import works.quiet.user.Role;
 import works.quiet.user.User;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(

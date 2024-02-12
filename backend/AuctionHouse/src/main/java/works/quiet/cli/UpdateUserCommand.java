@@ -82,7 +82,7 @@ public class UpdateUserCommand extends CommandWithAdmin {
                 ? null
                 : organisation.stream().reduce((acc, next) -> acc + " " + next).orElseThrow();
 
-        User.UserBuilder updateBuilder = adminService.unsafeFindUserById(userId).toBuilder();
+        User.UserBuilder updateBuilder = adminService.findUserById(userId).toBuilder();
 
         if (username != null) {
             updateBuilder.username(username);

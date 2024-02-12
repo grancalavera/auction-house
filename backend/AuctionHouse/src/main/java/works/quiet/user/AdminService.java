@@ -5,7 +5,6 @@ import works.quiet.reference.Organisation;
 import works.quiet.reference.OrganisationRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
@@ -28,76 +27,79 @@ public class AdminService {
         log.setLevel(logLevel);
     }
 
-    public void login(final String username, final String password) throws Exception {
-        Optional<User> maybeUser = userRepository.findWithCredentials(username, password);
-
-        if (maybeUser.isEmpty()) {
-            log.info("Login attempt failed with username=" + username + ".");
-            throw new Exception("Incorrect username or password.");
-        }
-
-        session.open(username);
+    public void login(final String username, final String password) {
+        var user = userRepository.findWithCredentials(username, password)
+                .orElseThrow(() -> new RuntimeException("Incorrect username or password."));
+        session.open(user.getUsername());
     }
 
-    public void logout() throws Exception {
+    public void logout() {
         session.close();
         log.info("Logged out.");
     }
 
-    public void assertIsNotBlocked() throws Exception {
+    public void assertIsNotBlocked() {
         User user = getCurrentUser();
         if (user.getAccountStatus() == AccountStatus.BLOCKED) {
             log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked.");
-            throw new Exception("Not authorised.");
+            throw new RuntimeException("Not authorised.");
         }
     }
 
-    public void assertIsUser() throws Exception {
+    public void assertIsUser() {
         if (getCurrentUserRole() != Role.USER) {
-            throw new Exception("Not an user.");
+            throw new RuntimeException("Not an user.");
         }
     }
 
-    public void assertIsAdmin() throws Exception {
+    public void assertIsAdmin() {
         if (getCurrentUserRole() != Role.ADMIN) {
             log.severe("Current user is not an admin, current role=" + getCurrentUserRole());
-            throw new Exception("Not an admin.");
+            throw new RuntimeException("Not an admin.");
         }
     }
 
-    public String getCurrentUsername() throws Exception {
-        var maybeUsername = session.getUsername();
-        if (maybeUsername.isPresent()) {
-            return maybeUsername.get();
-        }
-        throw new Exception("Not authenticated.");
+    public String getCurrentUsername() {
+        return session.getUsername().orElseThrow(() -> new RuntimeException("Not authenticated."));
     }
 
-    public User getCurrentUser() throws Exception {
+    public User getCurrentUser() {
         var username = getCurrentUsername();
         var user = userRepository.findByUsername(username);
-        return user.orElseThrow(() -> new Exception("Kabooom!"));
+        return user.orElseThrow(() -> new RuntimeException("User with username=\"" + username + "\" does not exist."));
     }
 
-    private Role getCurrentUserRole() throws Exception {
+    private Role getCurrentUserRole() {
         return getCurrentUser().getRole();
     }
 
-    public Organisation findOrganisationByName(final String name) throws Exception {
-        return organisationRepository.findByName(name).orElseThrow();
+    public Organisation findOrganisationByName(final String name) {
+        return organisationRepository.findByName(name)
+                .orElseThrow(() -> new RuntimeException("Organisation with name=\"" + name + "\" does not exist."));
     }
 
-    public int createUser(final User user) throws Exception {
+    public int createUser(final User user) {
         userValidator.validate(user);
-        var created = userRepository.save(user);
+        User created = null;
+        try {
+            created = userRepository.save(user);
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to create user. Please try again.");
+        }
         var id = created.getId();
         log.info("created user with id=" + id);
         return id;
     }
 
-    public void updateUser(final User updatedUser) throws Exception {
+    public void updateUser(final User updatedUser) {
         userValidator.validate(updatedUser);
-        userRepository.save(updatedUser);
+
+        try {
+            userRepository.save(updatedUser);
+        } catch (final Exception e) {
+            throw new RuntimeException("User update failed, please try again.");
+        }
+
         log.info("updated user with id=" + updatedUser.getId());
     }
 
@@ -109,13 +111,11 @@ public class AdminService {
         return organisationRepository.findAll();
     }
 
-    public void blockUser(final int userId) throws Exception {
-        User user = unsafeFindUserById(userId);
+    public void blockUser(final int userId) {
+        User user = findUserById(userId);
 
         if (user.getId() == getCurrentUser().getId()) {
-            String message = "Cannot block current user.";
-            log.severe(message);
-            throw new Exception(message);
+            throw new RuntimeException("Cannot block current user.");
         }
 
         if (user.getAccountStatus() == AccountStatus.BLOCKED) {
@@ -124,12 +124,16 @@ public class AdminService {
         }
 
         User blockedUser = user.toBuilder().accountStatus(AccountStatus.BLOCKED).build();
-        userRepository.save(blockedUser);
-        log.info("Blocked user with user.id=" + userId + ".");
+        try {
+            userRepository.save(blockedUser);
+            log.info("Blocked user with user.id=" + userId + ".");
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to block user with user.id=" + userId + ". Please try again.");
+        }
     }
 
-    public void unblockUser(final int userId) throws Exception {
-        User user = unsafeFindUserById(userId);
+    public void unblockUser(final int userId) {
+        User user = findUserById(userId);
 
         if (user.getAccountStatus() == AccountStatus.ACTIVE) {
             log.info("User with user.id=" + userId + " is already active.");
@@ -137,13 +141,22 @@ public class AdminService {
         }
 
         User unblockedUser = user.toBuilder().accountStatus(AccountStatus.ACTIVE).build();
-        userRepository.save(unblockedUser);
-        log.info("Unlocked user with user.id=" + userId + ".");
+
+        try {
+            userRepository.save(unblockedUser);
+            log.info("Unlocked user with user.id=" + userId + ".");
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to unblock user with user.id=" + userId + ". Please try again.");
+        }
     }
 
-    public void deleteUserById(final int userId) throws Exception {
-        final var user = unsafeFindUserById(userId);
-        userRepository.delete(user);
+    public void deleteUserById(final int userId) {
+        try {
+            final var user = findUserById(userId);
+            userRepository.delete(user);
+        } catch (final Exception e) {
+            throw new RuntimeException("Failed to delete User with id=" + userId + ". Please try again.");
+        }
     }
 
     public long countUsers() {
@@ -154,14 +167,8 @@ public class AdminService {
         return userRepository.exists(id);
     }
 
-    public User unsafeFindUserById(final int userId) throws Exception {
-        Optional<User> maybeUser = userRepository.findOne(userId);
-        if (maybeUser.isPresent()) {
-            return maybeUser.get();
-        }
-
-        String message = "User with user.id=" + userId + " does not exist.";
-        log.severe(message);
-        throw new Exception(message);
+    public User findUserById(final int userId) {
+        return userRepository.findOne(userId)
+                .orElseThrow(() -> new RuntimeException("User with user.id=" + userId + " does not exist."));
     }
 }

@@ -4,7 +4,6 @@ import picocli.CommandLine;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(

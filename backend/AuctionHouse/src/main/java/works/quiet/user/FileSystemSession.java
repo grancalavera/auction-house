@@ -17,7 +17,7 @@ public class FileSystemSession implements Session {
     }
 
     @Override
-    public void open(final String username) throws Exception {
+    public void open(final String username) {
 
         try {
             Files.deleteIfExists(SESSION_PATH);
@@ -25,20 +25,21 @@ public class FileSystemSession implements Session {
             Files.write(SESSION_PATH, username.getBytes(), StandardOpenOption.WRITE);
             log.info("Session open at: " + SESSION_PATH.toAbsolutePath());
         } catch (final Exception ex) {
+            log.severe("Failed to create session file.");
             log.severe(ex.toString());
-            throw new Exception("Failed to open session.");
+            throw new RuntimeException("Failed to open session for username=\"" + username + "\"");
         }
     }
 
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         try {
             Files.deleteIfExists(SESSION_PATH);
             log.info("Session closed at: " + SESSION_PATH.toAbsolutePath());
         } catch (final Exception ex) {
             log.severe(ex.toString());
-            throw new Exception("Failed to close session.");
+            throw new RuntimeException("Failed to close session.");
         }
     }
 
