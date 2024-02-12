@@ -1,23 +1,23 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
 
 @CommandLine.Command(
         name = "list-users",
         description = "List all existing users.",
         mixinStandardHelpOptions = true
 )
-public class ListUsersCommand implements Callable<Integer> {
+public class ListUsersCommand extends CommandWithAdmin {
 
-    private final AdminService adminService;
 
-    public ListUsersCommand(final AdminService adminService) {
-        this.adminService = adminService;
+    public ListUsersCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
+        super(logLevel, resources, adminService);
     }
-
 
     @Override
     public Integer call() throws Exception {

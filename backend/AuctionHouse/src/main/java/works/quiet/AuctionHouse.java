@@ -2,7 +2,7 @@ package works.quiet;
 
 import lombok.extern.java.Log;
 import picocli.CommandLine;
-import works.quiet.cli.AdminProgram;
+import works.quiet.cli.AdminCommand;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
 import works.quiet.cli.CheckUserExistsCommand;
@@ -14,7 +14,7 @@ import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
 import works.quiet.cli.LogoutCommand;
-import works.quiet.cli.MainProgram;
+import works.quiet.cli.MainCommand;
 import works.quiet.cli.PrintExceptionMessageHandler;
 import works.quiet.cli.ShowConfigCommand;
 import works.quiet.cli.UnblockUserCommand;
@@ -72,27 +72,30 @@ class AuctionHouse {
         AdminService adminService = getAdminService(logLevel, connection);
         Resources resources = new Resources();
 
-        CommandLine adminProgram = new CommandLine(new AdminProgram());
-        adminProgram.addSubcommand("find-user", new FindUserCommand(adminService));
-        adminProgram.addSubcommand("list-users", new ListUsersCommand(adminService));
-        adminProgram.addSubcommand("count-users", new CountUsersCommand(adminService));
-        adminProgram.addSubcommand("check-user-exists", new CheckUserExistsCommand(adminService));
-        adminProgram.addSubcommand("create-user", new CreateUserCommand(adminService));
-        adminProgram.addSubcommand("update-user", new UpdateUserCommand(adminService));
-        adminProgram.addSubcommand("delete-user", new DeleteUserCommand(adminService));
-        adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(adminService));
-        adminProgram.addSubcommand("block-user", new BlockUserCommand(logLevel, adminService));
-        adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, adminService));
+        CommandLine mainProgram = new CommandLine(new MainCommand());
+        mainProgram.addSubcommand("login", new LoginCommand(logLevel, resources, adminService));
+        mainProgram.addSubcommand("logout", new LogoutCommand(logLevel, resources, adminService));
+        mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
+        mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
+
+        CommandLine adminProgram = new CommandLine(new AdminCommand());
+        mainProgram.addSubcommand("admin", adminProgram);
+        adminProgram.addSubcommand("find-user", new FindUserCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("list-users", new ListUsersCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("count-users", new CountUsersCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("check-user-exists", new CheckUserExistsCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("create-user", new CreateUserCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("update-user", new UpdateUserCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("delete-user", new DeleteUserCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(
+                logLevel, resources, adminService));
+        adminProgram.addSubcommand("block-user", new BlockUserCommand(logLevel, resources, adminService));
+        adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, resources, adminService));
         adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
-        CommandLine mainProgram = new CommandLine(new MainProgram());
-        mainProgram.addSubcommand("login", new LoginCommand(resources, adminService));
-        mainProgram.addSubcommand("logout", new LogoutCommand(adminService));
-        mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
-        mainProgram.addSubcommand("admin", adminProgram);
+        // hidden commands
         mainProgram.addSubcommand("boom", new BoomCommand());
         mainProgram.addSubcommand("show-config", new ShowConfigCommand(ahDbUrl, ahDbUser, logLevel));
-        mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
         int exitCode = mainProgram
                 .setExecutionExceptionHandler(new PrintExceptionMessageHandler())

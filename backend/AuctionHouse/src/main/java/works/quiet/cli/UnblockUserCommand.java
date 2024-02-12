@@ -1,6 +1,7 @@
 package works.quiet.cli;
 
 import picocli.CommandLine;
+import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.util.concurrent.Callable;
@@ -12,15 +13,13 @@ import java.util.logging.Level;
         mixinStandardHelpOptions = true,
         sortOptions = false
 )
-public class UnblockUserCommand implements Callable<Integer> {
-
-    private final AdminService adminService;
+public class UnblockUserCommand extends CommandWithAdmin {
 
     @CommandLine.Parameters(paramLabel = "USER_ID", description = "The user id to unblock.")
     private int userId;
 
-    public UnblockUserCommand(final Level logLevel, final AdminService adminService) {
-        this.adminService = adminService;
+    public UnblockUserCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
+        super(logLevel, resources, adminService);
     }
 
     @Override
