@@ -21,9 +21,9 @@ class LogoutCommandTest {
 
     @Test
     @DisplayName("Should fail when call to logout fails")
-    void logoutFails() throws Exception {
+    void logoutFails() {
         var expectedMessage = "boom!";
-        doThrow(new Exception(expectedMessage))
+        doThrow(new RuntimeException(expectedMessage))
                 .when(harness.adminService)
                 .logout();
 
@@ -36,7 +36,7 @@ class LogoutCommandTest {
 
     @Test
     @DisplayName("Should logout successfully")
-    void logoutSuccess() throws Exception {
+    void logoutSuccess() {
         var exitCode = harness.program.execute();
         verify(harness.adminService).logout();
         assertEquals(

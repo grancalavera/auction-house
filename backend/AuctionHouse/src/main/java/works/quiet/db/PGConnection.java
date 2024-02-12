@@ -13,7 +13,7 @@ public class PGConnection implements DBConnection {
     private final String url;
     private final String username;
     private final String password;
-    private Connection connection = null;
+    private Connection connection;
 
     public PGConnection(final Level logLevel, final String url, final String username, final String password) {
         this.url = url;
@@ -37,14 +37,15 @@ public class PGConnection implements DBConnection {
     }
 
     @Override
-    public void close() throws SQLException {
+    public void close() {
         if (connection != null) {
             try {
                 connection.close();
                 connection = null;
             } catch (final SQLException ex) {
                 log.severe("Failed to close postgres connection.");
-                throw ex;
+                log.severe(ex.toString());
+                throw new RuntimeException(ex.getMessage());
             }
         }
     }

@@ -3,7 +3,7 @@ package works.quiet.user;
 import java.util.Optional;
 
 public interface Session {
-    void open(String username) throws Exception;
-    void close() throws Exception;
+    void open(String username);
+    void close();
     Optional<String> getUsername();
 }

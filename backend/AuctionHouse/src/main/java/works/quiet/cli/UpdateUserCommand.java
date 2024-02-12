@@ -74,7 +74,8 @@ public class UpdateUserCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
+
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
 
@@ -82,7 +83,7 @@ public class UpdateUserCommand extends CommandWithAdmin {
                 ? null
                 : organisation.stream().reduce((acc, next) -> acc + " " + next).orElseThrow();
 
-        User.UserBuilder updateBuilder = adminService.unsafeFindUserById(userId).toBuilder();
+        User.UserBuilder updateBuilder = adminService.findUserById(userId).toBuilder();
 
         if (username != null) {
             updateBuilder.username(username);
@@ -105,7 +106,7 @@ public class UpdateUserCommand extends CommandWithAdmin {
                 var organisation = adminService.findOrganisationByName(organisationName);
                 updateBuilder.organisation(organisation);
             } catch (final Exception ex) {
-                throw new Exception("Organisation.name=\"" + organisationName + "\" does not exist.");
+                throw new RuntimeException("Organisation.name=\"" + organisationName + "\" does not exist.");
             }
         }
 
@@ -114,7 +115,7 @@ public class UpdateUserCommand extends CommandWithAdmin {
                 var accountStatus = AccountStatus.valueOf(accountStatusName.toUpperCase());
                 updateBuilder.accountStatus(accountStatus);
             } catch (final Exception ex) {
-                throw new Error("\"" + accountStatusName + "\" is not an AccountStatus.");
+                throw new RuntimeException("\"" + accountStatusName + "\" is not an AccountStatus.");
             }
 
         }
@@ -124,15 +125,12 @@ public class UpdateUserCommand extends CommandWithAdmin {
                 var role = Role.valueOf(roleName.toUpperCase());
                 updateBuilder.role(role);
             } catch (final Exception ex) {
-                throw new Error("\"" + roleName + "\" is not a Role.");
+                throw new RuntimeException("\"" + roleName + "\" is not a Role.");
             }
         }
 
         User updatedUser = updateBuilder.build();
-
         adminService.updateUser(updatedUser);
-
         System.out.printf("Updated user with user.id=%d\n", userId);
-        return 0;
     }
 }

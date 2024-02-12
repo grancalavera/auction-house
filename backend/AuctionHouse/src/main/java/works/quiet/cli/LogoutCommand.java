@@ -4,7 +4,6 @@ import picocli.CommandLine;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -19,9 +18,8 @@ public class LogoutCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.logout();
         spec.commandLine().getOut().println("Logged out.");
-        return 0;
     }
 }

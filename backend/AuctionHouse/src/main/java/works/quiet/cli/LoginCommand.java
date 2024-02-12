@@ -4,7 +4,6 @@ import picocli.CommandLine;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -27,10 +26,9 @@ public class LoginCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.login(username, password);
         adminService.assertIsNotBlocked();
         spec.commandLine().getOut().printf("Logged in as \"%s\".\n", username);
-        return 0;
     }
 }

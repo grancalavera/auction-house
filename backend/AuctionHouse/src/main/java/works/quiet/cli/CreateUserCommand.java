@@ -8,7 +8,6 @@ import works.quiet.user.Role;
 import works.quiet.user.User;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -76,7 +75,8 @@ public class CreateUserCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
+
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
 
@@ -98,6 +98,5 @@ public class CreateUserCommand extends CommandWithAdmin {
 
         var userId = adminService.createUser(user);
         System.out.printf("Created user with user.id=%d\n", userId);
-        return 0;
     }
 }

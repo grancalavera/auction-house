@@ -5,7 +5,6 @@ import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.User;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -25,11 +24,10 @@ public class FindUserCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
-        User user = adminService.unsafeFindUserById(userId);
+        User user = adminService.findUserById(userId);
         System.out.println(user);
-        return 0;
     }
 }

@@ -4,7 +4,6 @@ import picocli.CommandLine;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -32,21 +31,14 @@ public class DeleteUserCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
-
+    public void run() {
         if (!force) {
-            spec.commandLine().getErr().printf(
-                    "Do you really want to delete user.id=%d? If so, retry with --force to continue.",
-                    userId
-            );
-            return 1;
+            throw new RuntimeException("Do you really want to delete user.id="
+                    + userId + " If so, retry with --force to continue.");
         }
-
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
         adminService.deleteUserById(userId);
-
         spec.commandLine().getOut().printf("Deleted user with user.id=%d.\n", userId);
-        return 0;
     }
 }

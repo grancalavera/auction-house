@@ -4,7 +4,6 @@ import picocli.CommandLine;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -24,11 +23,10 @@ public class CheckUserExistsCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
         var exists = adminService.userExists(userId);
         spec.commandLine().getOut().println(exists);
-        return 0;
     }
 }

@@ -22,11 +22,10 @@ public class BlockUserCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run()  {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
         adminService.blockUser(userId);
         System.out.printf("Blocked user with user.id=%d.\n", userId);
-        return 1;
     }
 }
