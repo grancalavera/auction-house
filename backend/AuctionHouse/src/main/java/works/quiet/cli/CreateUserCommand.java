@@ -75,7 +75,8 @@ public class CreateUserCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
+
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
 
@@ -97,6 +98,5 @@ public class CreateUserCommand extends CommandWithAdmin {
 
         var userId = adminService.createUser(user);
         System.out.printf("Created user with user.id=%d\n", userId);
-        return 0;
     }
 }

@@ -26,10 +26,9 @@ public class LoginCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.login(username, password);
         adminService.assertIsNotBlocked();
         spec.commandLine().getOut().printf("Logged in as \"%s\".\n", username);
-        return 0;
     }
 }

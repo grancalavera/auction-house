@@ -19,10 +19,9 @@ public class ListUsersCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsAdmin();
         adminService.assertIsNotBlocked();
         adminService.listUsers().forEach(System.out::println);
-        return 0;
     }
 }

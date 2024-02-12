@@ -19,11 +19,10 @@ public class CountUsersCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsAdmin();
         adminService.assertIsNotBlocked();
         var count = adminService.countUsers();
         spec.commandLine().getOut().println(count);
-        return 0;
     }
 }

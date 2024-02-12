@@ -23,11 +23,10 @@ public class CheckUserExistsCommand extends CommandWithAdmin {
 
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
         var exists = adminService.userExists(userId);
         spec.commandLine().getOut().println(exists);
-        return 0;
     }
 }

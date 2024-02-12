@@ -18,10 +18,9 @@ public class ListOrganisationsCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
         adminService.listOrganisations().forEach(System.out::println);
-        return 0;
     }
 }

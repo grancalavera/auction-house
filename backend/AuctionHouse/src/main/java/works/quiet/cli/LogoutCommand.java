@@ -18,9 +18,8 @@ public class LogoutCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.logout();
         spec.commandLine().getOut().println("Logged out.");
-        return 0;
     }
 }

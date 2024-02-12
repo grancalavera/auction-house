@@ -22,11 +22,10 @@ public class UnblockUserCommand extends CommandWithAdmin {
     }
 
     @Override
-    public Integer call() throws Exception {
+    public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsAdmin();
         adminService.unblockUser(userId);
         System.out.printf("Unblocked user with user.id=%d.\n", userId);
-        return 0;
     }
 }
