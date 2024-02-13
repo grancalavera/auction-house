@@ -1,5 +1,6 @@
 package works.quiet.resources;
 
+import java.text.MessageFormat;
 import java.util.ResourceBundle;
 
 public class Resources {
@@ -12,4 +13,14 @@ public class Resources {
 
         return bundle;
     }
+
+    public String getString(final String key) {
+        return getBundle().getString(key);
+    }
+
+    public String getFormattedString(final String key, final Object... arguments) {
+        var string = getBundle().getString(key);
+        return MessageFormat.format(string, arguments);
+    }
 }
+

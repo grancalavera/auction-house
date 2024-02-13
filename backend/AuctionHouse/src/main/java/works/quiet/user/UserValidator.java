@@ -2,6 +2,7 @@ package works.quiet.user;
 
 import lombok.extern.java.Log;
 import works.quiet.etc.Validator;
+import works.quiet.resources.Resources;
 
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -10,8 +11,10 @@ import java.util.regex.Pattern;
 public class UserValidator implements Validator<User> {
 
     private static final int MIN_PASSWORD_LENGTH = 3;
+    private final Resources resources;
 
-    public UserValidator(final Level logLevel) {
+    public UserValidator(final Level logLevel, final Resources resources) {
+        this.resources = resources;
         log.setLevel(logLevel);
     }
 
@@ -25,15 +28,13 @@ public class UserValidator implements Validator<User> {
         String usernamePattern = "^[a-zA-Z0-9]+$";
         final boolean matches = Pattern.matches(usernamePattern, username);
         if (!matches) {
-            throw new RuntimeException("Invalid username: only alpha-numerical characters allowed.");
+            throw new RuntimeException(resources.getString("errors.invalidUsername"));
         }
     }
 
     private void validatePassword(final String password) {
         if (password.length() < MIN_PASSWORD_LENGTH) {
-            throw new RuntimeException("Invalid password: password must be at least "
-                    + MIN_PASSWORD_LENGTH
-                    + " characters long");
+            throw new RuntimeException(resources.getFormattedString("errors.invalidPassword", MIN_PASSWORD_LENGTH));
         }
     }
 }
