@@ -17,6 +17,7 @@ public class AdminService {
     private final Resources resources;
 
     private String currentUsername;
+    private User currentUser;
 
     public AdminService(
             final Level logLevel,
@@ -75,10 +76,13 @@ public class AdminService {
     }
 
     public User getCurrentUser() {
-        var username = getCurrentUsername();
-        var user = userRepository.findByUsername(username);
-        return user.orElseThrow(() ->
-                new RuntimeException(resources.getFormattedString("errors.badUsername", username)));
+        if (currentUsername == null) {
+            var username = getCurrentUsername();
+            var user = userRepository.findByUsername(username);
+            currentUser = user.orElseThrow(() ->
+                    new RuntimeException(resources.getFormattedString("errors.badUsername", username)));
+        }
+        return currentUser;
     }
 
     private Role getCurrentUserRole() {
