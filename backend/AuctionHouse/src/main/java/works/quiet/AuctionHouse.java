@@ -69,8 +69,8 @@ class AuctionHouse {
                 ahDbPassword
         );
 
-        AdminService adminService = getAdminService(logLevel, connection);
         Resources resources = new Resources();
+        AdminService adminService = getAdminService(logLevel, connection, resources);
 
         CommandLine mainProgram = new CommandLine(new MainCommand());
         mainProgram.addSubcommand("login", new LoginCommand(logLevel, resources, adminService));
@@ -110,8 +110,9 @@ class AuctionHouse {
         System.exit(exitCode);
     }
 
-    private static AdminService getAdminService(final Level logLevel, final DBConnection connection) {
-        Session session = new FileSystemSession(logLevel);
+    private static AdminService getAdminService(
+            final Level logLevel, final DBConnection connection, final Resources resources) {
+        Session session = new FileSystemSession(logLevel, resources);
         PGUserRepositoryQuery userRepoQuery = new PGUserRepositoryQuery(logLevel, connection);
         RepositoryQuery<Organisation> organisationRepoQuery = new PGOrganisationRepositoryQuery(logLevel, connection);
         PGMapper<Organisation> orgMapper = new PGOrganisationMapper();
@@ -119,7 +120,7 @@ class AuctionHouse {
                 logLevel, organisationRepoQuery, orgMapper);
         PGMapper<User> userMapper = new PGUserMapper(logLevel);
         UserRepository userRepository = new PGUserRepository(logLevel, userRepoQuery, connection, userMapper);
-        UserValidator userValidator = new UserValidator(logLevel);
-        return new AdminService(logLevel, userRepository, organisationRepository, session, userValidator);
+        UserValidator userValidator = new UserValidator(logLevel, resources);
+        return new AdminService(logLevel, resources, userRepository, organisationRepository, session, userValidator);
     }
 }

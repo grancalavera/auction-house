@@ -3,6 +3,7 @@ package works.quiet.user;
 import lombok.extern.java.Log;
 import works.quiet.reference.Organisation;
 import works.quiet.reference.OrganisationRepository;
+import works.quiet.resources.Resources;
 
 import java.util.List;
 import java.util.logging.Level;
@@ -13,9 +14,14 @@ public class AdminService {
     private final OrganisationRepository organisationRepository;
     private final Session session;
     private final UserValidator userValidator;
+    private final Resources resources;
+
+    private String currentUsername;
+    private User currentUser;
 
     public AdminService(
             final Level logLevel,
+            final Resources resources,
             final UserRepository userRepository,
             final OrganisationRepository organisationRepository,
             final Session session,
@@ -24,12 +30,13 @@ public class AdminService {
         this.organisationRepository = organisationRepository;
         this.session = session;
         this.userValidator = userValidator;
+        this.resources = resources;
         log.setLevel(logLevel);
     }
 
     public void login(final String username, final String password) {
         var user = userRepository.findWithCredentials(username, password)
-                .orElseThrow(() -> new RuntimeException("Incorrect username or password."));
+                .orElseThrow(() -> new RuntimeException(resources.getString("errors.badLogin")));
         session.open(user.getUsername());
     }
 
@@ -42,31 +49,40 @@ public class AdminService {
         User user = getCurrentUser();
         if (user.getAccountStatus() == AccountStatus.BLOCKED) {
             log.severe("Not authorised: username=\"" + user.getUsername() + "\" is blocked.");
-            throw new RuntimeException("Not authorised.");
+            throw new RuntimeException(resources.getString("errors.notAuthorised"));
         }
     }
 
     public void assertIsUser() {
         if (getCurrentUserRole() != Role.USER) {
-            throw new RuntimeException("Not an user.");
+            throw new RuntimeException(resources.getString("errors.badRoleNotUser"));
         }
     }
 
     public void assertIsAdmin() {
         if (getCurrentUserRole() != Role.ADMIN) {
             log.severe("Current user is not an admin, current role=" + getCurrentUserRole());
-            throw new RuntimeException("Not an admin.");
+            throw new RuntimeException(resources.getString("errors.badRoleNotAdmin"));
         }
     }
 
     public String getCurrentUsername() {
-        return session.getUsername().orElseThrow(() -> new RuntimeException("Not authenticated."));
+        if (currentUsername == null) {
+            currentUsername =
+                    session.getUsername().orElseThrow(() ->
+                            new RuntimeException(resources.getString("errors.notAuthenticated")));
+        }
+        return currentUsername;
     }
 
     public User getCurrentUser() {
-        var username = getCurrentUsername();
-        var user = userRepository.findByUsername(username);
-        return user.orElseThrow(() -> new RuntimeException("User with username=\"" + username + "\" does not exist."));
+        if (currentUsername == null) {
+            var username = getCurrentUsername();
+            var user = userRepository.findByUsername(username);
+            currentUser = user.orElseThrow(() ->
+                    new RuntimeException(resources.getFormattedString("errors.badUsername", username)));
+        }
+        return currentUser;
     }
 
     private Role getCurrentUserRole() {
@@ -74,8 +90,8 @@ public class AdminService {
     }
 
     public Organisation findOrganisationByName(final String name) {
-        return organisationRepository.findByName(name)
-                .orElseThrow(() -> new RuntimeException("Organisation with name=\"" + name + "\" does not exist."));
+        return organisationRepository.findByName(name).orElseThrow(() ->
+                new RuntimeException(resources.getFormattedString("errors.badOrganisationName", name)));
     }
 
     public int createUser(final User user) {
@@ -84,7 +100,7 @@ public class AdminService {
         try {
             created = userRepository.save(user);
         } catch (final Exception e) {
-            throw new RuntimeException("Failed to create user. Please try again.");
+            throw new RuntimeException(resources.getString("errors.createUserFailed"));
         }
         var id = created.getId();
         log.info("created user with id=" + id);
@@ -97,7 +113,7 @@ public class AdminService {
         try {
             userRepository.save(updatedUser);
         } catch (final Exception e) {
-            throw new RuntimeException("User update failed, please try again.");
+            throw new RuntimeException(resources.getString("errors.updateUserFailed"));
         }
 
         log.info("updated user with id=" + updatedUser.getId());
@@ -115,7 +131,7 @@ public class AdminService {
         User user = findUserById(userId);
 
         if (user.getId() == getCurrentUser().getId()) {
-            throw new RuntimeException("Cannot block current user.");
+            throw new RuntimeException(resources.getString("errors.cannotBlockCurrentUser"));
         }
 
         if (user.getAccountStatus() == AccountStatus.BLOCKED) {
@@ -128,7 +144,7 @@ public class AdminService {
             userRepository.save(blockedUser);
             log.info("Blocked user with user.id=" + userId + ".");
         } catch (final Exception e) {
-            throw new RuntimeException("Failed to block user with user.id=" + userId + ". Please try again.");
+            throw new RuntimeException(resources.getFormattedString("errors.blockUserFailed", userId));
         }
     }
 
@@ -146,7 +162,7 @@ public class AdminService {
             userRepository.save(unblockedUser);
             log.info("Unlocked user with user.id=" + userId + ".");
         } catch (final Exception e) {
-            throw new RuntimeException("Failed to unblock user with user.id=" + userId + ". Please try again.");
+            throw new RuntimeException(resources.getFormattedString("errors.unblockUserFailed", userId));
         }
     }
 
@@ -155,7 +171,7 @@ public class AdminService {
             final var user = findUserById(userId);
             userRepository.delete(user);
         } catch (final Exception e) {
-            throw new RuntimeException("Failed to delete User with id=" + userId + ". Please try again.");
+            throw new RuntimeException(resources.getFormattedString("errors.deleteUserFailed", userId));
         }
     }
 
@@ -169,6 +185,6 @@ public class AdminService {
 
     public User findUserById(final int userId) {
         return userRepository.findOne(userId)
-                .orElseThrow(() -> new RuntimeException("User with user.id=" + userId + " does not exist."));
+                .orElseThrow(() -> new RuntimeException(resources.getFormattedString("errors.badUserId", userId)));
     }
 }

@@ -1,6 +1,7 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
+import works.quiet.resources.Resources;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,8 +12,10 @@ import java.util.logging.Level;
 @Log
 public class FileSystemSession implements Session {
     private static final Path SESSION_PATH = Path.of(System.getProperty("user.home"), ".ah-session");
+    private final Resources resources;
 
-    public FileSystemSession(final Level logLevel) {
+    public FileSystemSession(final Level logLevel, final Resources resources) {
+        this.resources = resources;
         log.setLevel(logLevel);
     }
 
@@ -27,7 +30,7 @@ public class FileSystemSession implements Session {
         } catch (final Exception ex) {
             log.severe("Failed to create session file.");
             log.severe(ex.toString());
-            throw new RuntimeException("Failed to open session for username=\"" + username + "\"");
+            throw new RuntimeException(resources.getFormattedString("errors.openSessionFailed", username));
         }
     }
 
@@ -39,7 +42,7 @@ public class FileSystemSession implements Session {
             log.info("Session closed at: " + SESSION_PATH.toAbsolutePath());
         } catch (final Exception ex) {
             log.severe(ex.toString());
-            throw new RuntimeException("Failed to close session.");
+            throw new RuntimeException(resources.getFormattedString("errors.closeSessionFailed"));
         }
     }
 

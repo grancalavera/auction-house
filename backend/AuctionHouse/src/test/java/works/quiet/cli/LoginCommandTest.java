@@ -8,8 +8,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import picocli.CommandLine;
 import works.quiet.cli.etc.AdminTestHarness;
 
-import java.text.MessageFormat;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
@@ -86,9 +84,7 @@ class LoginCommandTest {
     void logInSuccess(final String usernameOption, final String passwordOption) throws Exception {
         var expectedUsername = "foo";
         var expectedPassword = "bar";
-        var expectedMessage = MessageFormat
-                .format(harness.resources.getBundle().getString("messages.login"), expectedUsername);
-
+        var expectedMessage = harness.resources.getFormattedString("messages.login", expectedUsername);
         var exitCode = harness.program.execute(usernameOption, expectedUsername, passwordOption, expectedPassword);
 
         verify(harness.adminService).login(expectedUsername, expectedPassword);
