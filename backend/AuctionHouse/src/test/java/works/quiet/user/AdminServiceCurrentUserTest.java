@@ -30,9 +30,6 @@ class AdminServiceCurrentUserTest {
     }
 
     @Test
-    // This assumes we never re-read the user after a mutation, which is very likely
-    // a wrong assumption to make. One thing we could do is invalidate the user after
-    // a mutation: currentUser = null, forcing the service to go the database again.
     @DisplayName("Should cache current user from repo (only go to DB once).")
     void ensureCurrentUserIsCached() {
         var expectedUsername = "coyote-jackson";
