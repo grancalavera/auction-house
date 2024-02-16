@@ -24,21 +24,11 @@ public class AdminTestHarness {
         this.adminService = mock();
         this.stdErr = new StringWriter();
         this.stdOut = new StringWriter();
-        this.program = makeProgram(klass)
+        var command = makeCommand(klass);
+        this.program = new CommandLine(command)
                 .setErr(new PrintWriter(stdErr))
                 .setOut(new PrintWriter(stdOut))
                 .setExecutionExceptionHandler(new PrintExceptionMessageHandler());
-    }
-
-    private CommandLine makeProgram(final Class<? extends CommandWithAdmin> klass) {
-        try {
-            CommandWithAdmin cmd = klass
-                    .getDeclaredConstructor(Level.class, Resources.class, AdminService.class)
-                    .newInstance(Level.OFF, resources, adminService);
-            return new CommandLine(cmd);
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public String sanitizedOut() {
@@ -47,6 +37,16 @@ public class AdminTestHarness {
 
     public String sanitizedErr() {
         return sanitizeStringWriter(stdErr);
+    }
+
+    private CommandWithAdmin makeCommand(final Class<? extends CommandWithAdmin> klass) {
+        try {
+            return klass
+                    .getDeclaredConstructor(Level.class, Resources.class, AdminService.class)
+                    .newInstance(Level.OFF, resources, adminService);
+        } catch (final Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String sanitizeStringWriter(final StringWriter writer) {
