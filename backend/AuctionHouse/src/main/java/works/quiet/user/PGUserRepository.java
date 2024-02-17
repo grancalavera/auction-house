@@ -131,7 +131,7 @@ public class PGUserRepository implements UserRepository {
                 var accountStatusId = user.getAccountStatus().getId();
                 var roleId = user.getRole().getId();
 
-                setStatementValues(
+                userRepoQuery.setStatementValues(
                         st,
                         username,
                         password,
@@ -177,7 +177,7 @@ public class PGUserRepository implements UserRepository {
                 var roleId = user.getRole().getId();
                 var userId = user.getId();
 
-                setStatementValues(st,
+                userRepoQuery.setStatementValues(st,
                         username,
                         password,
                         firstName,
@@ -220,18 +220,5 @@ public class PGUserRepository implements UserRepository {
                 throw new RuntimeException(ex);
             }
         });
-    }
-
-    // https://stackoverflow.com/a/2563492
-    // https://balusc.omnifaces.org/2008/07/dao-tutorial-data-layer.html
-    // will extract to somewhere later on...
-    private void setStatementValues(final PreparedStatement st, final Object... values) throws SQLException {
-        if (values == null) {
-            return;
-        }
-
-        for (int i = 0; i < values.length; i++) {
-            st.setObject(i + 1, values[i]);
-        }
     }
 }

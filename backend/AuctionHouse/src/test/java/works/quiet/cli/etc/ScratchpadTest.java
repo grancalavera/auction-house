@@ -24,7 +24,8 @@ public class ScratchpadTest {
 
         // https://www.baeldung.com/java-time-instant-to-java-sql-timestamp
 
-        // If you want to record the physical instant at when a particular event ocurred, (a true "timestamp" , typically some creation/modification/deletion event), then use:
+        // If you want to record the physical instant at when a particular event ocurred, (a true "timestamp" ,
+        // typically some creation/modification/deletion event), then use:
         //
         // Java: Instant (Java 8 , or Jodatime).
         //         JDBC: java.sql.Timestamp
