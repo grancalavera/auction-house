@@ -3,6 +3,7 @@ package works.quiet.user;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -14,7 +15,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AdminServiceCurrentUserTest {
-
     @Test
     @DisplayName("Should cache current username from session (only open session once).")
     void ensureCurrentUsernameIsCached() {
