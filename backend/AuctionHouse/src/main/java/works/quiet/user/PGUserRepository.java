@@ -1,9 +1,10 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
+import works.quiet.db.DBConnection;
+import works.quiet.db.UpsertHelper;
 import works.quiet.db.PGMapper;
 import works.quiet.db.RepositoryQuery;
-import works.quiet.db.DBConnection;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -92,7 +93,7 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public Optional<User> findOne(final int id) {
+    public Optional<User> findById(final int id) {
         return userRepoQuery.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
@@ -104,114 +105,60 @@ public class PGUserRepository implements UserRepository {
         );
     }
 
-    private int createUser(final User user) throws Exception {
-        AtomicReference<Integer> idRef = new AtomicReference<>();
-        connection.getConnection().ifPresent(conn -> {
-            try (
-                    PreparedStatement st = conn.prepareStatement(
-                            "INSERT INTO users ("
-                                    + "username,"
-                                    + " password,"
-                                    + " firstName,"
-                                    + " lastName,"
-                                    + " organisation_id,"
-                                    + " accountStatus_id,"
-                                    + " role_id"
-                                    + ") "
-                                    + " VALUES "
-                                    + " (?, ?, ?, ?, ?, ?, ?)",
-                            Statement.RETURN_GENERATED_KEYS
-                    )
-            ) {
-                var username = user.getUsername();
-                var password = user.getPassword();
-                var firstName = user.getFirstName();
-                var lastName = user.getLastName();
-                var orgId = user.getOrganisation().getId();
-                var accountStatusId = user.getAccountStatus().getId();
-                var roleId = user.getRole().getId();
-
-                userRepoQuery.setStatementValues(
-                        st,
-                        username,
-                        password,
-                        firstName,
-                        lastName,
-                        orgId,
-                        accountStatusId,
-                        roleId
-                );
-                st.executeUpdate();
-
-                var userRs = st.getGeneratedKeys();
-                userRs.next();
-                var userId = userRs.getInt("id");
-                idRef.set(userId);
-            } catch (final SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-        return idRef.get();
-    }
-
-    private void updateUser(final User user) throws Exception {
-        connection.getConnection().ifPresent(conn -> {
-            try (
-                    PreparedStatement st = conn.prepareStatement(
-                            "UPDATE users SET"
-                                    + " username=?,"
-                                    + " password=?,"
-                                    + " firstName=?,"
-                                    + " lastName=?,"
-                                    + " organisation_id=?,"
-                                    + " accountStatus_id=?,"
-                                    + " role_id=?"
-                                    + " WHERE id=?")
-            ) {
-                var username = user.getUsername();
-                var password = user.getPassword();
-                var firstName = user.getFirstName();
-                var lastName = user.getLastName();
-                var orgId = user.getOrganisation().getId();
-                var accountStatusId = user.getAccountStatus().getId();
-                var roleId = user.getRole().getId();
-                var userId = user.getId();
-
-                userRepoQuery.setStatementValues(st,
-                        username,
-                        password,
-                        firstName,
-                        lastName,
-                        orgId,
-                        accountStatusId,
-                        roleId,
-                        userId
-                );
-
-                st.executeUpdate();
-            } catch (final SQLException ex) {
-                log.severe(ex.toString());
-                throw new RuntimeException(ex);
-            }
-        });
-    }
-
     @Override
-    public User save(final User user) throws Exception {
-        if (user.getId() == Integer.MIN_VALUE) {
-            var id = createUser(user);
-            return user.toBuilder().id(id).build();
-        } else {
-            updateUser(user);
-            return user.toBuilder().build();
-        }
+    public User save(final User user) {
+        AtomicReference<Integer> idRef = new AtomicReference<>();
+
+        var helper = new UpsertHelper(
+                user.getId() == 0,
+                new String[]{
+                        "id",
+                        "username",
+                        "password",
+                        "firstName",
+                        "lastName",
+                        "organisation_id",
+                        "role_id",
+                        "accountStatus_id"
+                },
+                new Object[]{
+                        user.getId(),
+                        user.getUsername(),
+                        user.getPassword(),
+                        user.getFirstName(),
+                        user.getLastName(),
+                        user.getOrganisation().getId(),
+                        user.getAccountStatus().getId(),
+                        user.getRole().getId()
+                });
+
+        String sql = "INSERT INTO users (" + helper.getFieldNames() + ")"
+                + " VALUES (" + helper.getPlaceholders() + ")"
+                + " ON CONFLICT (id)"
+                + " DO UPDATE SET"
+                + " " + helper.getUpdateDescription();
+
+        connection.getConnection().ifPresent(conn -> {
+            try (var st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+                userRepoQuery.setStatementValues(st, helper.getValues());
+                st.executeUpdate();
+                var rs = st.getGeneratedKeys();
+                var hasNext = rs.next();
+                var id = rs.getInt("id");
+                idRef.set(id);
+            } catch (final SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
+        return user.toBuilder().id(idRef.get()).build();
     }
 
     @Override
     public void delete(final User entity) throws Exception {
         connection.getConnection().ifPresent(conn -> {
             try (
-                PreparedStatement st = conn.prepareStatement("DELETE FROM users WHERE id=?");
+                    PreparedStatement st = conn.prepareStatement("DELETE FROM users WHERE id=?");
             ) {
                 st.setObject(1, entity.getId());
                 st.executeUpdate();

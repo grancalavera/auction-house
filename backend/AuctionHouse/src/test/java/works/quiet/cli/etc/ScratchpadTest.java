@@ -1,13 +1,16 @@
 package works.quiet.cli.etc;
 
 import org.junit.jupiter.api.Test;
+import works.quiet.user.User;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ScratchpadTest {
@@ -46,4 +49,33 @@ public class ScratchpadTest {
         instant = timestamp.toInstant();
         assertEquals(instant.toEpochMilli(), timestamp.getTime());
     }
+
+    @Test
+    void nullUserId() {
+        assertEquals(0, User.builder().build().getId());
+    }
+
+    @Test
+    void skipFirst() {
+        String[] actual = {"a", "b"};
+        actual = Arrays.copyOfRange(actual, 1, actual.length);
+        String[] expected = {"b"};
+        assertEquals(Arrays.toString(expected), Arrays.toString(actual));
+    }
+
+    @Test
+    void arrayEquality() {
+        String[] a = {"a"};
+        String[] b = {"a"};
+        assertArrayEquals(a, b);
+    }
+
+    @Test
+    void joinArrayOfString() {
+        String[] source = {"foo", "bar"};
+        String actual = String.join(",", source);
+        assertEquals("foo,bar", actual);
+    }
+
+
 }

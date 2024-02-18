@@ -20,7 +20,7 @@
         <list>
           <option value="run" />
           <option value="--args" />
-          <option value="&quot;admin create-user -p 123 -f first -l last -o 'The Bank of England' -u u101&quot;" />
+          <option value="&quot;admin create-user -p 123 -f first -l last -o 'The Bank of England' -u idontwanttoplease&quot;" />
         </list>
       </option>
       <option name="vmOptions" />

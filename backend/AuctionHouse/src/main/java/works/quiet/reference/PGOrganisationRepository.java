@@ -25,7 +25,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
     }
 
     @Override
-    public Optional<Organisation> findOne(final int id) {
+    public Optional<Organisation> findById(final int id) {
         return orgRepoQuery.queryOne(conn -> {
             var st = conn.prepareStatement("SELECT * from organisations WHERE id=?");
             st.setInt(1, id);
