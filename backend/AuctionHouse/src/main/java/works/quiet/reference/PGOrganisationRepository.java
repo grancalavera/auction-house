@@ -2,7 +2,7 @@ package works.quiet.reference;
 
 import lombok.extern.java.Log;
 import works.quiet.db.PGMapper;
-import works.quiet.db.RepositoryQuery;
+import works.quiet.db.QueryHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,13 +10,13 @@ import java.util.logging.Level;
 
 @Log
 public class PGOrganisationRepository implements OrganisationRepository {
-    private final RepositoryQuery<Organisation> orgRepoQuery;
+    private final QueryHelper<Organisation> orgRepoQuery;
     private final PGMapper<Organisation> mapper;
 
 
     public PGOrganisationRepository(
             final Level logLevel,
-            final RepositoryQuery<Organisation> orgRepoQuery,
+            final QueryHelper<Organisation> orgRepoQuery,
             final PGMapper<Organisation> mapper
     ) {
         this.orgRepoQuery = orgRepoQuery;

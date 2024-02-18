@@ -1,23 +1,19 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.db.DBConnection;
-import works.quiet.db.UpsertHelper;
+import works.quiet.db.MutationHelper;
 import works.quiet.db.PGMapper;
-import works.quiet.db.RepositoryQuery;
+import works.quiet.db.QueryHelper;
 
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
-    private final DBConnection connection; // still need this for mutations, but maybe I can move into the query "proxy"
-    private final RepositoryQuery<User> userRepoQuery;
+    private final QueryHelper<User> queryHelper;
+    private final MutationHelper mutationHelper;
     private final PGMapper<User> mapper;
 
     private final String usersQuery =
@@ -37,17 +33,17 @@ public class PGUserRepository implements UserRepository {
                     + " LEFT JOIN roles r on u.role_id = r.id";
 
     public PGUserRepository(
-            final Level logLevel, final RepositoryQuery<User> userRepoQuery, final DBConnection connection,
-            final PGMapper<User> mapper) {
-        this.userRepoQuery = userRepoQuery;
-        this.connection = connection;
+            final Level logLevel, final QueryHelper<User> queryHelper,
+            final PGMapper<User> mapper, final MutationHelper mutationHelper) {
+        this.queryHelper = queryHelper;
+        this.mutationHelper = mutationHelper;
         this.mapper = mapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public List<User> findAll() {
-        return userRepoQuery.queryMany(
+        return queryHelper.queryMany(
                 (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
                 mapper::fromResulSet
         );
@@ -55,12 +51,12 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public long count() {
-        return userRepoQuery.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
+        return queryHelper.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
     }
 
     @Override
     public boolean exists(final int id) {
-        return userRepoQuery.queryExists(conn -> {
+        return queryHelper.queryExists(conn -> {
             var st = conn.prepareStatement("SELECT id FROM users WHERE id=?");
             st.setInt(1, id);
             return st;
@@ -69,7 +65,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findWithCredentials(final String username, final String password) {
-        return userRepoQuery.queryOne(
+        return queryHelper.queryOne(
                 (conn) -> {
                     PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
                     st.setString(1, username);
@@ -82,19 +78,20 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findByUsername(final String username) {
-        return userRepoQuery.queryOne(
+        return queryHelper.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
                     );
                     st.setString(1, username);
                     return st;
                 },
-                mapper::fromResulSet);
+                mapper::fromResulSet
+        );
     }
 
     @Override
     public Optional<User> findById(final int id) {
-        return userRepoQuery.queryOne(
+        return queryHelper.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
                     );
@@ -107,9 +104,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public User save(final User user) {
-        AtomicReference<Integer> idRef = new AtomicReference<>();
-
-        var helper = new UpsertHelper(
+        var id = mutationHelper.save(
                 user.getId() == 0,
                 new String[]{
                         "id",
@@ -132,40 +127,11 @@ public class PGUserRepository implements UserRepository {
                         user.getRole().getId()
                 });
 
-        String sql = "INSERT INTO users (" + helper.getFieldNames() + ")"
-                + " VALUES (" + helper.getPlaceholders() + ")"
-                + " ON CONFLICT (id)"
-                + " DO UPDATE SET"
-                + " " + helper.getUpdateDescription();
-
-        connection.getConnection().ifPresent(conn -> {
-            try (var st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                userRepoQuery.setStatementValues(st, helper.getValues());
-                st.executeUpdate();
-                var rs = st.getGeneratedKeys();
-                var hasNext = rs.next();
-                var id = rs.getInt("id");
-                idRef.set(id);
-            } catch (final SQLException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-
-        return user.toBuilder().id(idRef.get()).build();
+        return user.toBuilder().id(id).build();
     }
 
     @Override
-    public void delete(final User entity) throws Exception {
-        connection.getConnection().ifPresent(conn -> {
-            try (
-                    PreparedStatement st = conn.prepareStatement("DELETE FROM users WHERE id=?");
-            ) {
-                st.setObject(1, entity.getId());
-                st.executeUpdate();
-            } catch (final SQLException ex) {
-                log.severe(ex.toString());
-                throw new RuntimeException(ex);
-            }
-        });
+    public void delete(final User user) {
+        mutationHelper.delete(user.getId());
     }
 }

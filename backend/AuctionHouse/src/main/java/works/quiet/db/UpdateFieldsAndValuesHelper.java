@@ -5,17 +5,17 @@ import lombok.Getter;
 import java.util.Arrays;
 
 @Getter
-public final class UpsertHelper {
+public final class UpdateFieldsAndValuesHelper {
     private final String fieldNames;
-    private final String placeholders;
-    private final String updateDescription;
+    private final String valuePlaceholders;
+    private final String conflictResolution;
     private final Object[] values;
 
-    public UpsertHelper(final boolean omitId, final String[] fields, final Object[] values) {
+    public UpdateFieldsAndValuesHelper(final boolean omitId, final String[] fields, final Object[] values) {
         var processedFields = processElements(omitId, fields);
         this.fieldNames = join(processedFields);
-        this.placeholders = join(processPlaceholders(processedFields));
-        this.updateDescription = join(processUpdateDescription(processElements(true, fields)));
+        this.valuePlaceholders = join(processPlaceholders(processedFields));
+        this.conflictResolution = join(processUpdateDescription(processElements(true, fields)));
         this.values = processElements(omitId, values);
     }
 

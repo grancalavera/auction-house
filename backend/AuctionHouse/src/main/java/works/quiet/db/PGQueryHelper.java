@@ -6,17 +6,16 @@ import works.quiet.etc.FunctionThrows;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
-public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
+public abstract class PGQueryHelper<T> implements QueryHelper<T> {
     private final DBConnection connection;
 
-    public PGRepositoryQuery(final Level logLevel, final DBConnection connection) {
+    public PGQueryHelper(final Level logLevel, final DBConnection connection) {
         this.connection = connection;
         log.setLevel(logLevel);
     }
@@ -58,20 +57,6 @@ public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
         }
 
         return 0;
-    }
-
-    // https://stackoverflow.com/a/2563492
-    // https://balusc.omnifaces.org/2008/07/dao-tutorial-data-layer.html
-    // will extract to somewhere later on...
-    @Override
-    public void setStatementValues(final PreparedStatement st, final Object... values) throws SQLException {
-        if (values == null) {
-            return;
-        }
-
-        for (int i = 0; i < values.length; i++) {
-            st.setObject(i + 1, values[i]);
-        }
     }
 
     private <U> List<U> genericQueryMany(

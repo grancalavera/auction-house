@@ -6,16 +6,16 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class UpsertHelperTest {
+class UpdateFieldsAndValuesHelperTest {
     @Test
     @DisplayName("Exclude first field, then generate names, placeholders and update description.")
     void excludeFirstField() {
         String[] fields = {"a", "b", "c"};
         Object[] values = {1, 2, 3};
-        var helper = new UpsertHelper(true, fields, values);
+        var helper = new UpdateFieldsAndValuesHelper(true, fields, values);
         assertEquals("b,c", helper.getFieldNames());
-        assertEquals("?,?", helper.getPlaceholders());
-        assertEquals("b=excluded.b,c=excluded.c", helper.getUpdateDescription());
+        assertEquals("?,?", helper.getValuePlaceholders());
+        assertEquals("b=excluded.b,c=excluded.c", helper.getConflictResolution());
         assertArrayEquals(new Object[]{2, 3}, helper.getValues());
 
     }
@@ -25,10 +25,10 @@ class UpsertHelperTest {
     void includeFirstField() {
         String[] fields = {"a", "b", "c"};
         Object[] values = {1, 2, 3};
-        var helper = new UpsertHelper(false, fields, values);
+        var helper = new UpdateFieldsAndValuesHelper(false, fields, values);
         assertEquals("a,b,c", helper.getFieldNames());
-        assertEquals("?,?,?", helper.getPlaceholders());
-        assertEquals("b=excluded.b,c=excluded.c", helper.getUpdateDescription());
+        assertEquals("?,?,?", helper.getValuePlaceholders());
+        assertEquals("b=excluded.b,c=excluded.c", helper.getConflictResolution());
         assertArrayEquals(new Object[]{1, 2, 3}, helper.getValues());
     }
 }

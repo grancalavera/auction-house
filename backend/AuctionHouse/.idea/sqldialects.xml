@@ -2,7 +2,7 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/src/main/java/works/quiet/cli/LoginCommand.java" dialect="PostgreSQL" />
-    <file url="file://$PROJECT_DIR$/src/main/java/works/quiet/db/PGRepositoryQuery.java" dialect="GenericSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/java/works/quiet/db/PGQueryHelper.java" dialect="GenericSQL" />
     <file url="file://$PROJECT_DIR$/src/main/java/works/quiet/reference/PGOrganisationRepository.java" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/main/java/works/quiet/user/PGUserRepository.java" dialect="PostgreSQL" />
     <file url="PROJECT" dialect="PostgreSQL" />

@@ -22,21 +22,17 @@ import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
 import works.quiet.db.DBConnection;
 import works.quiet.db.PGConnection;
-import works.quiet.db.PGMapper;
-import works.quiet.db.RepositoryQuery;
-import works.quiet.reference.Organisation;
+import works.quiet.db.PGMutationHelper;
 import works.quiet.reference.OrganisationRepository;
 import works.quiet.reference.PGOrganisationMapper;
+import works.quiet.reference.PGOrganisationQueryHelper;
 import works.quiet.reference.PGOrganisationRepository;
-import works.quiet.reference.PGOrganisationRepositoryQuery;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
 import works.quiet.user.PGUserMapper;
+import works.quiet.user.PGUserQueryHelper;
 import works.quiet.user.PGUserRepository;
-import works.quiet.user.PGUserRepositoryQuery;
-import works.quiet.user.Session;
-import works.quiet.user.User;
 import works.quiet.user.UserRepository;
 import works.quiet.user.UserValidator;
 
@@ -111,16 +107,31 @@ class AuctionHouse {
     }
 
     private static AdminService getAdminService(
-            final Level logLevel, final DBConnection connection, final Resources resources) {
-        Session session = new FileSystemSession(logLevel, resources);
-        PGUserRepositoryQuery userRepoQuery = new PGUserRepositoryQuery(logLevel, connection);
-        RepositoryQuery<Organisation> organisationRepoQuery = new PGOrganisationRepositoryQuery(logLevel, connection);
-        PGMapper<Organisation> orgMapper = new PGOrganisationMapper();
+            final Level logLevel,
+            final DBConnection connection,
+            final Resources resources
+    ) {
+
         OrganisationRepository organisationRepository = new PGOrganisationRepository(
-                logLevel, organisationRepoQuery, orgMapper);
-        PGMapper<User> userMapper = new PGUserMapper(logLevel);
-        UserRepository userRepository = new PGUserRepository(logLevel, userRepoQuery, connection, userMapper);
-        UserValidator userValidator = new UserValidator(logLevel, resources);
-        return new AdminService(logLevel, resources, userRepository, organisationRepository, session, userValidator);
+                logLevel,
+                new PGOrganisationQueryHelper(logLevel, connection),
+                new PGOrganisationMapper()
+        );
+
+        UserRepository userRepository = new PGUserRepository(
+                logLevel,
+                new PGUserQueryHelper(logLevel, connection),
+                new PGUserMapper(logLevel),
+                new PGMutationHelper(logLevel, connection, "users")
+        );
+
+        return new AdminService(
+                logLevel,
+                resources,
+                userRepository,
+                organisationRepository,
+                new FileSystemSession(logLevel, resources),
+                new UserValidator(logLevel, resources)
+        );
     }
 }
