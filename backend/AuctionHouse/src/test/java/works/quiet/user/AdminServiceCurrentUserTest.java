@@ -14,7 +14,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class AdminServiceCurrentUserTest {
-
     @Test
     @DisplayName("Should cache current username from session (only open session once).")
     void ensureCurrentUsernameIsCached() {

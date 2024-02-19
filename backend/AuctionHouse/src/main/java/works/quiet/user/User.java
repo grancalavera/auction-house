@@ -14,7 +14,8 @@ public class User {
     // small i integer is primitive "stack allocated"
     // while Integer is an object reference that needs
     // to be de-ref from the heap 🐢
-    @Builder.Default private int id = Integer.MIN_VALUE;
+    
+    private int id;
     // strings are special, there is an allocated part but
     // the backing object is stored into a "global pool"
     // of strings, and the JVM does fancy magic to dealloc

@@ -12,10 +12,10 @@ import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
-public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
+public abstract class PGQueryHelper<T> implements QueryHelper<T> {
     private final DBConnection connection;
 
-    public PGRepositoryQuery(final Level logLevel, final DBConnection connection) {
+    public PGQueryHelper(final Level logLevel, final DBConnection connection) {
         this.connection = connection;
         log.setLevel(logLevel);
     }
@@ -53,7 +53,7 @@ public abstract class PGRepositoryQuery<T> implements RepositoryQuery<T> {
         var maybeCount = genericQueryOne(query, rs -> rs.getLong("count"));
 
         if (maybeCount.isPresent()) {
-            return  maybeCount.get();
+            return maybeCount.get();
         }
 
         return 0;

@@ -184,7 +184,7 @@ public class AdminService {
     }
 
     public User findUserById(final int userId) {
-        return userRepository.findOne(userId)
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException(resources.getFormattedString("errors.badUserId", userId)));
     }
 }

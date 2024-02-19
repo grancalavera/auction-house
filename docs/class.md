@@ -102,10 +102,15 @@ class AuctionStatus {
 
 class Bid {
   int id
-  int auctionId
+  int auction_id
+  int bidder_id
   BigDecimal amount
   Instant timestamp
 }
+```
+
+```mermaid
+classDiagram
 
 %% back office stuff
 class AuctionReport {

@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
-public interface RepositoryQuery<T> {
+public interface QueryHelper<T> {
     List<T> queryMany(
             FunctionThrows<Connection, PreparedStatement, Exception> statement,
             FunctionThrows<ResultSet, T, Exception> mapper
@@ -19,7 +19,8 @@ public interface RepositoryQuery<T> {
             FunctionThrows<ResultSet, T, Exception> mapper
     );
 
-   boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
+    boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
 
-   long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
+    long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
+
 }
