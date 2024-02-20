@@ -12,6 +12,7 @@ import works.quiet.cli.AuctionCommand;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
 import works.quiet.cli.CheckUserExistsCommand;
+import works.quiet.cli.CloseAuctionCommand;
 import works.quiet.cli.CountUsersCommand;
 import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
@@ -100,13 +101,15 @@ class AuctionHouse {
         adminCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // auction command
-        AuctionService auctionService = getAuctionService(logLevel, connection);
+        AuctionService auctionService = getAuctionService(logLevel, resources, connection);
 
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
         auctionCommand.addSubcommand("create",
                 new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("list",
                 new ListAuctionsCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("close",
+                new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // hidden commands
@@ -161,6 +164,7 @@ class AuctionHouse {
 
     private static AuctionService getAuctionService(
             final Level logLevel,
+            final Resources resources,
             final DBConnection connection
     ) {
 
@@ -172,6 +176,6 @@ class AuctionHouse {
                 new PGMutationHelper(logLevel, connection, "auctions")
         );
 
-        return new AuctionService(logLevel, auctionRepository);
+        return new AuctionService(logLevel, resources, auctionRepository);
     }
 }

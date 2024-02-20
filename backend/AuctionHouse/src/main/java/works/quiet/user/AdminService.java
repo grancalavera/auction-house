@@ -15,7 +15,6 @@ public class AdminService {
     private final Session session;
     private final UserValidator userValidator;
     private final Resources resources;
-
     private String currentUsername;
     private User currentUser;
 

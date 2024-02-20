@@ -87,4 +87,16 @@ public class PGAuctionRepository implements AuctionRepository {
                 mapper::fromResulSet
         );
     }
+
+    @Override
+    public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
+        return queryHelper.queryOne(conn -> {
+                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id=? AND id=?");
+                    st.setInt(1, sellerId);
+                    st.setInt(2, auctionId);
+                    return st;
+                },
+                mapper::fromResulSet
+        );
+    }
 }
