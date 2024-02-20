@@ -1,7 +1,9 @@
 package works.quiet.auction;
 
 import lombok.extern.java.Log;
+import works.quiet.user.User;
 
+import java.util.List;
 import java.util.logging.Level;
 
 @Log
@@ -18,5 +20,9 @@ public class AuctionService {
 
     public Auction createAuction(final Auction auction) {
         return auctionRepository.save(auction);
+    }
+
+    public List<Auction> listAuctions(final User user) {
+        return auctionRepository.listAuctionsBySellerId(user.getId());
     }
 }

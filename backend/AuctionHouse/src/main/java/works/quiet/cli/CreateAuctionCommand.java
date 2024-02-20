@@ -47,7 +47,7 @@ public class CreateAuctionCommand extends CommandWithAdminAndAuction {
                 .symbol(symbol)
                 .quantity(quantity)
                 .price(price)
-                .seller(adminService.getCurrentUser())
+                .sellerId(adminService.getCurrentUser().getId())
                 .build();
 
         var created = auctionService.createAuction(auction);

@@ -2,17 +2,28 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.MutationHelper;
+import works.quiet.db.PGMapper;
+import works.quiet.db.QueryHelper;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
+
 @Log
 public class PGAuctionRepository implements AuctionRepository {
+    private final QueryHelper<Auction> queryHelper;
+    private final PGMapper<Auction> mapper;
     private final MutationHelper mutationHelper;
+
 
     public PGAuctionRepository(
             final Level logLevel,
-            final MutationHelper mutationHelper) {
+            final QueryHelper<Auction> queryHelper,
+            final PGMapper<Auction> mapper,
+            final MutationHelper mutationHelper
+    ) {
+        this.queryHelper = queryHelper;
+        this.mapper = mapper;
         this.mutationHelper = mutationHelper;
         log.setLevel(logLevel);
     }
@@ -36,6 +47,7 @@ public class PGAuctionRepository implements AuctionRepository {
     public boolean exists(final int id) {
         return false;
     }
+
     @Override
     public Auction save(final Auction entity) {
         var id = mutationHelper.save(
@@ -50,7 +62,7 @@ public class PGAuctionRepository implements AuctionRepository {
                 },
                 new Object[]{
                         entity.getId(),
-                        entity.getSeller().getId(),
+                        entity.getSellerId(),
                         entity.getSymbol(),
                         entity.getQuantity(),
                         entity.getPrice(),
@@ -63,5 +75,16 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public void delete(final Auction entity) {
 
+    }
+
+    @Override
+    public List<Auction> listAuctionsBySellerId(final int sellerId) {
+        return queryHelper.queryMany(conn -> {
+                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id=?");
+                    st.setInt(1, sellerId);
+                    return st;
+                },
+                mapper::fromResulSet
+        );
     }
 }

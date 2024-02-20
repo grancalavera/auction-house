@@ -4,6 +4,8 @@ import lombok.extern.java.Log;
 import picocli.CommandLine;
 import works.quiet.auction.AuctionRepository;
 import works.quiet.auction.AuctionService;
+import works.quiet.auction.PGAuctionMapper;
+import works.quiet.auction.PGAuctionQueryHelper;
 import works.quiet.auction.PGAuctionRepository;
 import works.quiet.cli.AdminCommand;
 import works.quiet.cli.AuctionCommand;
@@ -15,6 +17,7 @@ import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
+import works.quiet.cli.ListAuctionsCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
@@ -26,7 +29,6 @@ import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
 import works.quiet.db.DBConnection;
-import works.quiet.db.MutationHelper;
 import works.quiet.db.PGConnection;
 import works.quiet.db.PGMutationHelper;
 import works.quiet.reference.OrganisationRepository;
@@ -98,13 +100,13 @@ class AuctionHouse {
         adminCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // auction command
-        MutationHelper auctionMutationHelper = new PGMutationHelper(logLevel, connection, "auctions");
-        AuctionRepository auctionRepository = new PGAuctionRepository(logLevel, auctionMutationHelper);
-        AuctionService auctionService = new AuctionService(logLevel, auctionRepository);
+        AuctionService auctionService = getAuctionService(logLevel, connection);
 
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
-        auctionCommand.addSubcommand("create", new CreateAuctionCommand(
-                logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("create",
+                new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("list",
+                new ListAuctionsCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // hidden commands
@@ -155,5 +157,21 @@ class AuctionHouse {
                 new FileSystemSession(logLevel, resources),
                 new UserValidator(logLevel, resources)
         );
+    }
+
+    private static AuctionService getAuctionService(
+            final Level logLevel,
+            final DBConnection connection
+    ) {
+
+
+        AuctionRepository auctionRepository = new PGAuctionRepository(
+                logLevel,
+                new PGAuctionQueryHelper(logLevel, connection),
+                new PGAuctionMapper(logLevel),
+                new PGMutationHelper(logLevel, connection, "auctions")
+        );
+
+        return new AuctionService(logLevel, auctionRepository);
     }
 }
