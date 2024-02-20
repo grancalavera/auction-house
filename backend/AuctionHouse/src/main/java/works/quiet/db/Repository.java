@@ -12,7 +12,7 @@ public interface Repository<T> {
 
     boolean exists(int id);
 
-    T save(T entity) throws Exception;
+    T save(T entity);
 
-    void delete(T entity) throws Exception;
+    void delete(T entity);
 }

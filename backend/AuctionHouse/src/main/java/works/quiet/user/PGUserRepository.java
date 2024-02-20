@@ -103,9 +103,9 @@ public class PGUserRepository implements UserRepository {
     }
 
     @Override
-    public User save(final User user) {
+    public User save(final User entity) {
         var id = mutationHelper.save(
-                user.getId() == 0,
+                entity.getId() == 0,
                 new String[]{
                         "id",
                         "username",
@@ -117,17 +117,17 @@ public class PGUserRepository implements UserRepository {
                         "accountStatus_id"
                 },
                 new Object[]{
-                        user.getId(),
-                        user.getUsername(),
-                        user.getPassword(),
-                        user.getFirstName(),
-                        user.getLastName(),
-                        user.getOrganisation().getId(),
-                        user.getAccountStatus().getId(),
-                        user.getRole().getId()
+                        entity.getId(),
+                        entity.getUsername(),
+                        entity.getPassword(),
+                        entity.getFirstName(),
+                        entity.getLastName(),
+                        entity.getOrganisation().getId(),
+                        entity.getAccountStatus().getId(),
+                        entity.getRole().getId()
                 });
 
-        return user.toBuilder().id(id).build();
+        return entity.toBuilder().id(id).build();
     }
 
     @Override

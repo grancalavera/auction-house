@@ -2,14 +2,15 @@ package works.quiet.cli;
 
 import picocli.CommandLine;
 import works.quiet.auction.Auction;
-import works.quiet.auction.AuctionStatus;
+import works.quiet.auction.AuctionService;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.math.BigDecimal;
 import java.util.logging.Level;
 
-@CommandLine.Command(name = "create", description = "Creates a new auction under the current user's account.", sortOptions = false)
+@CommandLine.Command(
+        name = "create", description = "Creates a new auction under the current user's account.", sortOptions = false)
 public class CreateAuctionCommand extends CommandWithAdminAndAuction {
 
     @CommandLine.Option(
@@ -33,8 +34,10 @@ public class CreateAuctionCommand extends CommandWithAdminAndAuction {
     )
     private BigDecimal price;
 
-    public CreateAuctionCommand(final Level logLevel, final Resources resources, final AdminService adminService) {
-        super(logLevel, resources, adminService);
+    public CreateAuctionCommand(
+            final Level logLevel,
+            final Resources resources, final AdminService adminService, final AuctionService auctionService) {
+        super(logLevel, resources, adminService, auctionService);
     }
 
     @Override
@@ -47,6 +50,7 @@ public class CreateAuctionCommand extends CommandWithAdminAndAuction {
                 .seller(adminService.getCurrentUser())
                 .build();
 
-        spec.commandLine().getOut().println(auction);
+        var created = auctionService.createAuction(auction);
+        spec.commandLine().getOut().printf("Created Auction.id=%d\n", created.getId());
     }
 }

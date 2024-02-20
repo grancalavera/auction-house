@@ -2,6 +2,9 @@ package works.quiet;
 
 import lombok.extern.java.Log;
 import picocli.CommandLine;
+import works.quiet.auction.AuctionRepository;
+import works.quiet.auction.AuctionService;
+import works.quiet.auction.PGAuctionRepository;
 import works.quiet.cli.AdminCommand;
 import works.quiet.cli.AuctionCommand;
 import works.quiet.cli.BlockUserCommand;
@@ -23,6 +26,7 @@ import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
 import works.quiet.db.DBConnection;
+import works.quiet.db.MutationHelper;
 import works.quiet.db.PGConnection;
 import works.quiet.db.PGMutationHelper;
 import works.quiet.reference.OrganisationRepository;
@@ -70,6 +74,7 @@ class AuctionHouse {
         Resources resources = new Resources();
         AdminService adminService = getAdminService(logLevel, connection, resources);
 
+
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());
         mainCommand.addSubcommand("login", new LoginCommand(logLevel, resources, adminService));
@@ -93,8 +98,13 @@ class AuctionHouse {
         adminCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // auction command
+        MutationHelper auctionMutationHelper = new PGMutationHelper(logLevel, connection, "auctions");
+        AuctionRepository auctionRepository = new PGAuctionRepository(logLevel, auctionMutationHelper);
+        AuctionService auctionService = new AuctionService(logLevel, auctionRepository);
+
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
-        auctionCommand.addSubcommand("create", new CreateAuctionCommand(logLevel, resources, adminService));
+        auctionCommand.addSubcommand("create", new CreateAuctionCommand(
+                logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // hidden commands

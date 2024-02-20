@@ -94,9 +94,9 @@ public class AdminService {
                 new RuntimeException(resources.getFormattedString("errors.badOrganisationName", name)));
     }
 
-    public int createUser(final User user) {
+    public User createUser(final User user) {
         userValidator.validate(user);
-        User created = null;
+        User created;
         try {
             created = userRepository.save(user);
         } catch (final Exception e) {
@@ -104,19 +104,21 @@ public class AdminService {
         }
         var id = created.getId();
         log.info("created user with id=" + id);
-        return id;
+        return created;
     }
 
-    public void updateUser(final User updatedUser) {
-        userValidator.validate(updatedUser);
+    public User updateUser(final User user) {
+        userValidator.validate(user);
+        User updated;
 
         try {
-            userRepository.save(updatedUser);
+            updated = userRepository.save(user);
         } catch (final Exception e) {
             throw new RuntimeException(resources.getString("errors.updateUserFailed"));
         }
 
-        log.info("updated user with id=" + updatedUser.getId());
+        log.info("updated user with id=" + updated.getId());
+        return updated;
     }
 
     public List<User> listUsers() {
