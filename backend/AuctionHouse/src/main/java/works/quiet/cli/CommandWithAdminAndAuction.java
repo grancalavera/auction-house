@@ -7,12 +7,6 @@ import works.quiet.user.AdminService;
 
 import java.util.logging.Level;
 
-@CommandLine.Command(
-        name = "create-auction",
-        description = "Creates a new auction.",
-        mixinStandardHelpOptions = true,
-        sortOptions = false
-)
 public abstract class CommandWithAdminAndAuction implements Runnable {
     protected final Level logLevel;
     protected final Resources resources;
