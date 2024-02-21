@@ -22,6 +22,6 @@ public class ListUsersCommand extends CommandWithAdmin {
     public void run() {
         adminService.assertIsAdmin();
         adminService.assertIsNotBlocked();
-        adminService.listUsers().forEach(System.out::println);
+        adminService.listUsers().forEach(spec.commandLine().getOut()::println);
     }
 }

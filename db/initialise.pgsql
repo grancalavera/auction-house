@@ -53,9 +53,9 @@ create table if not exists bids (
     bidder_id int references users(id) not null,
     auction_id int references auctions(id) not null,
     amount numeric(19, 4) not null,
-    bidtimestamp timestamp with time zone not null
     -- https://stackoverflow.com/a/42779109
     -- https://stackoverflow.com/a/6627999
+    bidtimestamp timestamp with time zone not null
 );
 
 insert into organisations (name)

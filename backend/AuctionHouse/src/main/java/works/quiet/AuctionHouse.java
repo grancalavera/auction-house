@@ -2,14 +2,23 @@ package works.quiet;
 
 import lombok.extern.java.Log;
 import picocli.CommandLine;
+import works.quiet.auction.AuctionRepository;
+import works.quiet.auction.AuctionService;
+import works.quiet.auction.PGAuctionMapper;
+import works.quiet.auction.PGAuctionQueryHelper;
+import works.quiet.auction.PGAuctionRepository;
 import works.quiet.cli.AdminCommand;
+import works.quiet.cli.AuctionCommand;
 import works.quiet.cli.BlockUserCommand;
 import works.quiet.cli.BoomCommand;
 import works.quiet.cli.CheckUserExistsCommand;
+import works.quiet.cli.CloseAuctionCommand;
 import works.quiet.cli.CountUsersCommand;
+import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
+import works.quiet.cli.ListAuctionsCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
@@ -68,32 +77,50 @@ class AuctionHouse {
         Resources resources = new Resources();
         AdminService adminService = getAdminService(logLevel, connection, resources);
 
-        CommandLine mainProgram = new CommandLine(new MainCommand());
-        mainProgram.addSubcommand("login", new LoginCommand(logLevel, resources, adminService));
-        mainProgram.addSubcommand("logout", new LogoutCommand(logLevel, resources, adminService));
-        mainProgram.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
-        mainProgram.addSubcommand("help", new CommandLine.HelpCommand());
 
-        CommandLine adminProgram = new CommandLine(new AdminCommand());
-        mainProgram.addSubcommand("admin", adminProgram);
-        adminProgram.addSubcommand("find-user", new FindUserCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("list-users", new ListUsersCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("count-users", new CountUsersCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("check-user-exists", new CheckUserExistsCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("create-user", new CreateUserCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("update-user", new UpdateUserCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("delete-user", new DeleteUserCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("list-organisations", new ListOrganisationsCommand(
+        // main command
+        CommandLine mainCommand = new CommandLine(new MainCommand());
+        mainCommand.addSubcommand("login", new LoginCommand(logLevel, resources, adminService));
+        mainCommand.addSubcommand("logout", new LogoutCommand(logLevel, resources, adminService));
+        mainCommand.addSubcommand("whoami", new WhoAmICommand(logLevel, adminService));
+        mainCommand.addSubcommand("help", new CommandLine.HelpCommand());
+
+        // admin command
+        CommandLine adminCommand = new CommandLine(new AdminCommand());
+        adminCommand.addSubcommand("find-user", new FindUserCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("list-users", new ListUsersCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("count-users", new CountUsersCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("check-user-exists", new CheckUserExistsCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("create-user", new CreateUserCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("update-user", new UpdateUserCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("delete-user", new DeleteUserCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("list-organisations", new ListOrganisationsCommand(
                 logLevel, resources, adminService));
-        adminProgram.addSubcommand("block-user", new BlockUserCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, resources, adminService));
-        adminProgram.addSubcommand("help", new CommandLine.HelpCommand());
+        adminCommand.addSubcommand("block-user", new BlockUserCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("unblock-user", new UnblockUserCommand(logLevel, resources, adminService));
+        adminCommand.addSubcommand("help", new CommandLine.HelpCommand());
+
+        // auction command
+        AuctionService auctionService = getAuctionService(logLevel, resources, connection);
+
+        CommandLine auctionCommand = new CommandLine(new AuctionCommand());
+        auctionCommand.addSubcommand("create",
+                new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("list",
+                new ListAuctionsCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("close",
+                new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // hidden commands
-        mainProgram.addSubcommand("boom", new BoomCommand());
-        mainProgram.addSubcommand("show-config", new ShowConfigCommand(ahDbUrl, ahDbUser, logLevel));
+        mainCommand.addSubcommand("boom", new BoomCommand());
+        mainCommand.addSubcommand("show-config", new ShowConfigCommand(ahDbUrl, ahDbUser, logLevel));
 
-        int exitCode = mainProgram
+        // sub commands
+        mainCommand.addSubcommand("admin", adminCommand);
+        mainCommand.addSubcommand("auction", auctionCommand);
+
+        int exitCode = mainCommand
                 .setExecutionExceptionHandler(new PrintExceptionMessageHandler())
                 .execute(argv);
 
@@ -133,5 +160,22 @@ class AuctionHouse {
                 new FileSystemSession(logLevel, resources),
                 new UserValidator(logLevel, resources)
         );
+    }
+
+    private static AuctionService getAuctionService(
+            final Level logLevel,
+            final Resources resources,
+            final DBConnection connection
+    ) {
+
+
+        AuctionRepository auctionRepository = new PGAuctionRepository(
+                logLevel,
+                new PGAuctionQueryHelper(logLevel, connection),
+                new PGAuctionMapper(logLevel),
+                new PGMutationHelper(logLevel, connection, "auctions")
+        );
+
+        return new AuctionService(logLevel, resources, auctionRepository);
     }
 }

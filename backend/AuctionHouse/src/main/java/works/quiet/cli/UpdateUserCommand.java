@@ -130,7 +130,7 @@ public class UpdateUserCommand extends CommandWithAdmin {
         }
 
         User updatedUser = updateBuilder.build();
-        adminService.updateUser(updatedUser);
-        System.out.printf("Updated user with user.id=%d\n", userId);
+        var updated = adminService.updateUser(updatedUser);
+        System.out.printf("Updated user with user.id=%d\n", updated.getId());
     }
 }

@@ -1,5 +1,6 @@
 select  
     a.id, 
+    a.seller_id as seller_id,
     u.username as seller,
     a.symbol,
     a.quantity,

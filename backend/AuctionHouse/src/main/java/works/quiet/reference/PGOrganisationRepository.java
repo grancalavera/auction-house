@@ -35,6 +35,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     /**
      * Case-insensitive organisation search.
+     *
      * @param name The case-insensitive organisation name.
      * @return Optional<Organisation>
      */
@@ -50,7 +51,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
     @Override
     public List<Organisation> findAll() {
         return orgRepoQuery.queryMany(conn ->
-                conn.prepareStatement("SELECT * FROM organisations"),
+                        conn.prepareStatement("SELECT * FROM organisations"),
                 mapper::fromResulSet
         );
     }
@@ -72,12 +73,12 @@ public class PGOrganisationRepository implements OrganisationRepository {
     }
 
     @Override
-    public Organisation save(final Organisation entity) throws Exception {
-        throw new Exception("Not Implemented");
+    public Organisation save(final Organisation entity) {
+        throw new RuntimeException("Not Implemented");
     }
 
     @Override
-    public void delete(final Organisation entity) throws Exception {
-        throw new Exception("Not Implemented");
+    public void delete(final Organisation entity) {
+        throw new RuntimeException("Not Implemented");
     }
 }
