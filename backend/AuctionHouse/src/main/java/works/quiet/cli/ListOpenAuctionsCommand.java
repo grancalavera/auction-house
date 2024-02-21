@@ -8,13 +8,13 @@ import works.quiet.user.AdminService;
 import java.util.logging.Level;
 
 @CommandLine.Command(
-        name = "list",
-        description = "List all auctions for the current user.",
+        name = "list-open",
+        description = "List all open auctions.",
         sortOptions = false
 )
-public class ListAuctionsCommand extends CommandWithAdminAndAuction {
+public class ListOpenAuctionsCommand extends CommandWithAdminAndAuction {
 
-    public ListAuctionsCommand(
+    public ListOpenAuctionsCommand(
             final Level logLevel,
             final Resources resources, final AdminService adminService, final AuctionService auctionService) {
         super(logLevel, resources, adminService, auctionService);
@@ -22,8 +22,9 @@ public class ListAuctionsCommand extends CommandWithAdminAndAuction {
 
     @Override
     public void run() {
+        adminService.assertIsNotBlocked();
         adminService.assertIsUser();
         var user = adminService.getCurrentUser();
-        auctionService.listAuctionsForUser(user).forEach(spec.commandLine().getOut()::println);
+        auctionService.listOpenAuctionsForBidder(user).forEach(spec.commandLine().getOut()::println);
     }
 }

@@ -18,12 +18,14 @@ import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
-import works.quiet.cli.ListAuctionsCommand;
+import works.quiet.cli.ListMyAuctionsCommand;
+import works.quiet.cli.ListOpenAuctionsCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
 import works.quiet.cli.LogoutCommand;
 import works.quiet.cli.MainCommand;
+import works.quiet.cli.PlaceBidCommand;
 import works.quiet.cli.PrintExceptionMessageHandler;
 import works.quiet.cli.ShowConfigCommand;
 import works.quiet.cli.UnblockUserCommand;
@@ -106,10 +108,14 @@ class AuctionHouse {
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
         auctionCommand.addSubcommand("create",
                 new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
-        auctionCommand.addSubcommand("list",
-                new ListAuctionsCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("list-mine",
+                new ListMyAuctionsCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("list-open",
+                new ListOpenAuctionsCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("close",
                 new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("bid",
+                new PlaceBidCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // hidden commands

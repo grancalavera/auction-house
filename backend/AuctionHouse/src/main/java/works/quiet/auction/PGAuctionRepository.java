@@ -89,6 +89,18 @@ public class PGAuctionRepository implements AuctionRepository {
     }
 
     @Override
+    public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
+        return queryHelper.queryMany(conn -> {
+                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id!=? AND status_id=?");
+                    st.setInt(1, bidderId);
+                    st.setInt(2, AuctionStatus.OPEN.getId());
+                    return st;
+                },
+                mapper::fromResulSet
+        );
+    }
+
+    @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
         return queryHelper.queryOne(conn -> {
                     var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id=? AND id=?");

@@ -31,6 +31,10 @@ public class AuctionService {
         return auctionRepository.listAuctionsBySellerId(user.getId());
     }
 
+    public List<Auction> listOpenAuctionsForBidder(final User bidder) {
+        return auctionRepository.listOpenAuctionsForBidderId(bidder.getId());
+    }
+
     public void closeAuctionForUserByAuctionId(final User user, final int auctionId) {
         var auction = auctionRepository
                 .findAuctionBySellerIdAndAuctionId(user.getId(), auctionId)

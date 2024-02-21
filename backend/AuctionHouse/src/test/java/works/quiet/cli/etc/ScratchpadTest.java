@@ -45,7 +45,6 @@ public class ScratchpadTest {
         var a = instant.toString();
         var b = timestamp.toString();
 
-
         instant = timestamp.toInstant();
         assertEquals(instant.toEpochMilli(), timestamp.getTime());
     }

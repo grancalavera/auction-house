@@ -8,16 +8,13 @@ import works.quiet.user.AdminService;
 import java.util.logging.Level;
 
 @CommandLine.Command(
-        name = "close",
-        description = "Closes an existing auction under the current user's account.",
+        name = "list-mine",
+        description = "List all open and closed auctions owned by the current user.",
         sortOptions = false
 )
-public class CloseAuctionCommand extends CommandWithAdminAndAuction {
+public class ListMyAuctionsCommand extends CommandWithAdminAndAuction {
 
-    @CommandLine.Parameters(paramLabel = "AUCTION_ID", description = "The auction id to close.")
-    private int auctionId;
-
-    public CloseAuctionCommand(
+    public ListMyAuctionsCommand(
             final Level logLevel,
             final Resources resources, final AdminService adminService, final AuctionService auctionService) {
         super(logLevel, resources, adminService, auctionService);
@@ -28,7 +25,6 @@ public class CloseAuctionCommand extends CommandWithAdminAndAuction {
         adminService.assertIsNotBlocked();
         adminService.assertIsUser();
         var user = adminService.getCurrentUser();
-        auctionService.closeAuctionForUserByAuctionId(user, auctionId);
-        spec.commandLine().getOut().println(resources.getFormattedString("messages.auctionClosed", auctionId));
+        auctionService.listAuctionsForUser(user).forEach(spec.commandLine().getOut()::println);
     }
 }
