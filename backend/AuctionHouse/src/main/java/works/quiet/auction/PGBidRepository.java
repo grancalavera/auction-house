@@ -1,7 +1,7 @@
 package works.quiet.auction;
 
 import lombok.extern.java.Log;
-import works.quiet.db.MutationHelper;
+import works.quiet.db.DBInterface;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -11,14 +11,14 @@ import java.util.logging.Level;
 @Log
 public class PGBidRepository implements BidRepository {
 
-    private final MutationHelper mutationHelper;
+    private final DBInterface dbInterface;
 
     public PGBidRepository(
             final Level logLevel,
-            final MutationHelper mutationHelper
+            final DBInterface dbInterface
     ) {
         log.setLevel(logLevel);
-        this.mutationHelper = mutationHelper;
+        this.dbInterface = dbInterface;
     }
 
     @Override
@@ -33,16 +33,17 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public long count() {
-        return 0;
+        return dbInterface.queryCount(conn -> conn.prepareStatement("SELECT count(id) from bids"));
     }
 
     @Override
     public boolean exists(final int id) {
         return false;
     }
+
     @Override
     public Bid save(final Bid entity) {
-        var id = mutationHelper.save(
+        var id = dbInterface.upsert(
                 "bids",
                 entity.getId() == 0,
                 new String[]{

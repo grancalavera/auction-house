@@ -31,11 +31,9 @@ import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
 import works.quiet.db.DBConnection;
-import works.quiet.db.MutationHelper;
+import works.quiet.db.DBInterface;
 import works.quiet.db.PGConnection;
-import works.quiet.db.PGMutationHelper;
-import works.quiet.db.PGQueryHelper;
-import works.quiet.db.QueryHelper;
+import works.quiet.db.PGDBInterface;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.resources.Resources;
@@ -74,12 +72,11 @@ class AuctionHouse {
                 ahDbPassword
         );
 
-        var queryHelper = new PGQueryHelper(logLevel, connection);
-        var mutationHelper = new PGMutationHelper(logLevel, connection);
+        var dbInterface = new PGDBInterface(logLevel, connection);
 
         var resources = new Resources();
-        var adminService = getAdminService(logLevel, connection, resources, queryHelper, mutationHelper);
-        var auctionService = getAuctionService(logLevel, resources, connection, queryHelper, mutationHelper);
+        var adminService = getAdminService(logLevel, resources, dbInterface);
+        var auctionService = getAuctionService(logLevel, resources, dbInterface);
 
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());
@@ -140,23 +137,20 @@ class AuctionHouse {
 
     private static AdminService getAdminService(
             final Level logLevel,
-            final DBConnection connection,
             final Resources resources,
-            final QueryHelper queryHelper,
-            final MutationHelper mutationHelper
+            final DBInterface dbInterface
     ) {
 
         var organisationRepository = new PGOrganisationRepository(
                 logLevel,
-                queryHelper,
+                dbInterface,
                 new PGOrganisationMapper()
         );
 
         var userRepository = new PGUserRepository(
                 logLevel,
-                queryHelper,
-                new PGUserMapper(logLevel),
-                mutationHelper
+                dbInterface,
+                new PGUserMapper(logLevel)
         );
 
         return new AdminService(
@@ -172,21 +166,18 @@ class AuctionHouse {
     private static AuctionService getAuctionService(
             final Level logLevel,
             final Resources resources,
-            final DBConnection connection,
-            final QueryHelper queryHelper,
-            final MutationHelper mutationHelper
+            final DBInterface dbInterface
     ) {
 
         var auctionRepository = new PGAuctionRepository(
                 logLevel,
-                queryHelper,
-                new PGAuctionMapper(logLevel),
-                mutationHelper
+                dbInterface,
+                new PGAuctionMapper(logLevel)
         );
 
         var bidRepository = new PGBidRepository(
                 logLevel,
-                mutationHelper
+                dbInterface
         );
 
         return new AuctionService(logLevel, resources, auctionRepository, bidRepository);

@@ -8,7 +8,7 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
-public interface QueryHelper {
+public interface DBInterface {
     <T> List<T> queryMany(
             FunctionThrows<Connection, PreparedStatement, Exception> query,
             FunctionThrows<ResultSet, T, Exception> rowMapper
@@ -27,4 +27,6 @@ public interface QueryHelper {
     boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
 
     long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
+    int upsert(String tableName, boolean omitId, String[] fields, Object[] values);
+    void delete(String tableName, int id);
 }
