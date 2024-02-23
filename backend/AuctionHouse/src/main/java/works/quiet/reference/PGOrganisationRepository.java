@@ -10,24 +10,24 @@ import java.util.logging.Level;
 
 @Log
 public class PGOrganisationRepository implements OrganisationRepository {
-    private final QueryHelper<Organisation> orgRepoQuery;
+    private final QueryHelper<Organisation> queryHelper;
     private final PGMapper<Organisation> mapper;
 
 
     public PGOrganisationRepository(
             final Level logLevel,
-            final QueryHelper<Organisation> orgRepoQuery,
+            final QueryHelper<Organisation> queryHelper,
             final PGMapper<Organisation> mapper
     ) {
-        this.orgRepoQuery = orgRepoQuery;
+        this.queryHelper = queryHelper;
         this.mapper = mapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public Optional<Organisation> findById(final int id) {
-        return orgRepoQuery.queryOne(conn -> {
-            var st = conn.prepareStatement("SELECT * from organisations WHERE id=?");
+        return queryHelper.queryOne(conn -> {
+            var st = conn.prepareStatement("SELECT * from organisations WHERE id=? LIMIT 1");
             st.setInt(1, id);
             return st;
         }, mapper::fromResulSet);
@@ -41,7 +41,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
      */
     @Override
     public Optional<Organisation> findByName(final String name) {
-        return orgRepoQuery.queryOne(conn -> {
+        return queryHelper.queryOne(conn -> {
             var st = conn.prepareStatement("SELECT * from organisations WHERE name=?");
             st.setString(1, name);
             return st;
@@ -50,7 +50,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     @Override
     public List<Organisation> findAll() {
-        return orgRepoQuery.queryMany(conn ->
+        return queryHelper.queryMany(conn ->
                         conn.prepareStatement("SELECT * FROM organisations"),
                 mapper::fromResulSet
         );
@@ -58,14 +58,14 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     @Override
     public long count() {
-        return orgRepoQuery.queryCount(
+        return queryHelper.queryCount(
                 conn -> conn.prepareStatement("SELECT count(id) from organisations")
         );
     }
 
     @Override
     public boolean exists(final int id) {
-        return orgRepoQuery.queryExists(conn -> {
+        return queryHelper.queryExists(conn -> {
             var st = conn.prepareStatement("SELECT id FROM organisations WHERE id=?");
             st.setInt(1, id);
             return st;

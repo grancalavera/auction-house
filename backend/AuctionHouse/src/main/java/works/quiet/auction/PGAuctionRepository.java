@@ -30,7 +30,11 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public Optional<Auction> findById(final int id) {
-        return Optional.empty();
+        return queryHelper.queryOne(conn -> {
+            var st = conn.prepareStatement("SELECT * from auctions WHERE id=? LIMIT 1");
+            st.setInt(1, id);
+            return st;
+        }, mapper::fromResulSet);
     }
 
     @Override

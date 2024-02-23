@@ -4,9 +4,11 @@ import lombok.extern.java.Log;
 import picocli.CommandLine;
 import works.quiet.auction.AuctionRepository;
 import works.quiet.auction.AuctionService;
+import works.quiet.auction.BidRepository;
 import works.quiet.auction.PGAuctionMapper;
 import works.quiet.auction.PGAuctionQueryHelper;
 import works.quiet.auction.PGAuctionRepository;
+import works.quiet.auction.PGBidRepository;
 import works.quiet.cli.AdminCommand;
 import works.quiet.cli.AuctionCommand;
 import works.quiet.cli.BlockUserCommand;
@@ -173,8 +175,6 @@ class AuctionHouse {
             final Resources resources,
             final DBConnection connection
     ) {
-
-
         AuctionRepository auctionRepository = new PGAuctionRepository(
                 logLevel,
                 new PGAuctionQueryHelper(logLevel, connection),
@@ -182,6 +182,11 @@ class AuctionHouse {
                 new PGMutationHelper(logLevel, connection, "auctions")
         );
 
-        return new AuctionService(logLevel, resources, auctionRepository);
+        BidRepository bidRepository = new PGBidRepository(
+                logLevel,
+                new PGMutationHelper(logLevel, connection, "bids")
+        );
+
+        return new AuctionService(logLevel, resources, auctionRepository, bidRepository);
     }
 }

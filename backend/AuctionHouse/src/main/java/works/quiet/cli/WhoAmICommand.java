@@ -26,7 +26,7 @@ public class WhoAmICommand implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         adminService.assertIsNotBlocked();
-        spec.commandLine().getOut().println(adminService.getCurrentUsername());
+        spec.commandLine().getOut().println(adminService.getCurrentUser());
         return 0;
     }
 }

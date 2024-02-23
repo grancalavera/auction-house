@@ -16,7 +16,7 @@ create table if not exists account_status (
     name varchar(256) unique not null
 );
 
-create table if not exists roles (    
+create table if not exists roles (
     id serial primary key,
     name varchar(256) unique not null
 );
@@ -88,7 +88,7 @@ insert into users
         ('u2', '123', 'Alice', 'Smith', 2, 1, 1),           -- 5
         ('u3', '123', 'Jiří', 'Novák', 1, 1, 1),            -- 6
         ('u4', '123', 'Marta', 'García', 2, 1, 1),          -- 7
-        ('u5', '123', 'Andrea', 'Rossi', 1, 1, 1),          -- 8    
+        ('u5', '123', 'Andrea', 'Rossi', 1, 1, 1),          -- 8
         ('u6', '123', 'Jens', 'Hansen', 2, 1, 1),           -- 9
         ('u7', '123', 'Piotr', 'Nowak', 4, 1, 1)            -- 10
     on conflict do nothing;

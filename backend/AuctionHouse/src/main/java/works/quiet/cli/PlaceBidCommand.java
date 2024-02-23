@@ -40,6 +40,8 @@ public class PlaceBidCommand extends CommandWithAdminAndAuction {
                 .bidTimestamp(Instant.now())
                 .build();
 
-        spec.commandLine().getOut().println(bid);
+        var placed = auctionService.placeBid(bid);
+
+        spec.commandLine().getOut().println(resources.getFormattedString("messages.bidPlaced", placed.getId()));
     }
 }

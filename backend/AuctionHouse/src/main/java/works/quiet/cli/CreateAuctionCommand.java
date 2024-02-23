@@ -44,6 +44,7 @@ public class CreateAuctionCommand extends CommandWithAdminAndAuction {
     public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsUser();
+
         var auction = Auction.builder()
                 .symbol(symbol)
                 .quantity(quantity)
