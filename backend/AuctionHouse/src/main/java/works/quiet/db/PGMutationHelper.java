@@ -12,16 +12,14 @@ import java.util.logging.Level;
 @Log
 public class PGMutationHelper implements MutationHelper {
     private final DBConnection connection;
-    private final String tableName;
 
-    public PGMutationHelper(final Level logLevel, final DBConnection connection, final String tableName) {
+    public PGMutationHelper(final Level logLevel, final DBConnection connection) {
         log.setLevel(logLevel);
         this.connection = connection;
-        this.tableName = tableName;
     }
 
     @Override
-    public int save(final boolean omitId, final String[] fields, final Object[] values) {
+    public int save(final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         var helper = new UpdateFieldsAndValuesHelper(omitId, fields, values);
 
@@ -36,7 +34,6 @@ public class PGMutationHelper implements MutationHelper {
                 setStatementValues(st, helper.getValues());
                 st.executeUpdate();
                 var rs = st.getGeneratedKeys();
-                var hasNext = rs.next();
                 var id = rs.getInt("id");
                 idRef.set(id);
             } catch (final SQLException ex) {
@@ -48,7 +45,7 @@ public class PGMutationHelper implements MutationHelper {
     }
 
     @Override
-    public void delete(final int id) {
+    public void delete(final String tableName, final int id) {
         connection.getConnection().ifPresent(conn -> {
             try (
                     PreparedStatement st = conn.prepareStatement("DELETE FROM " + tableName + " WHERE id=?");

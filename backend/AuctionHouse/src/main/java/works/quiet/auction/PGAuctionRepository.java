@@ -2,7 +2,7 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.MutationHelper;
-import works.quiet.db.PGMapper;
+import works.quiet.db.PGRowMapper;
 import works.quiet.db.QueryHelper;
 
 import java.util.List;
@@ -11,15 +11,15 @@ import java.util.logging.Level;
 
 @Log
 public class PGAuctionRepository implements AuctionRepository {
-    private final QueryHelper<Auction> queryHelper;
-    private final PGMapper<Auction> mapper;
+    private final QueryHelper queryHelper;
+    private final PGRowMapper<Auction> mapper;
     private final MutationHelper mutationHelper;
 
 
     public PGAuctionRepository(
             final Level logLevel,
-            final QueryHelper<Auction> queryHelper,
-            final PGMapper<Auction> mapper,
+            final QueryHelper queryHelper,
+            final PGRowMapper<Auction> mapper,
             final MutationHelper mutationHelper
     ) {
         this.queryHelper = queryHelper;
@@ -55,6 +55,7 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public Auction save(final Auction entity) {
         var id = mutationHelper.save(
+                "auctions",
                 entity.getId() == 0,
                 new String[]{
                         "id",

@@ -2,11 +2,8 @@ package works.quiet;
 
 import lombok.extern.java.Log;
 import picocli.CommandLine;
-import works.quiet.auction.AuctionRepository;
 import works.quiet.auction.AuctionService;
-import works.quiet.auction.BidRepository;
 import works.quiet.auction.PGAuctionMapper;
-import works.quiet.auction.PGAuctionQueryHelper;
 import works.quiet.auction.PGAuctionRepository;
 import works.quiet.auction.PGBidRepository;
 import works.quiet.cli.AdminCommand;
@@ -34,19 +31,18 @@ import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
 import works.quiet.db.DBConnection;
+import works.quiet.db.MutationHelper;
 import works.quiet.db.PGConnection;
 import works.quiet.db.PGMutationHelper;
-import works.quiet.reference.OrganisationRepository;
+import works.quiet.db.PGQueryHelper;
+import works.quiet.db.QueryHelper;
 import works.quiet.reference.PGOrganisationMapper;
-import works.quiet.reference.PGOrganisationQueryHelper;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
 import works.quiet.user.PGUserMapper;
-import works.quiet.user.PGUserQueryHelper;
 import works.quiet.user.PGUserRepository;
-import works.quiet.user.UserRepository;
 import works.quiet.user.UserValidator;
 
 import java.util.logging.Level;
@@ -78,9 +74,12 @@ class AuctionHouse {
                 ahDbPassword
         );
 
-        Resources resources = new Resources();
-        AdminService adminService = getAdminService(logLevel, connection, resources);
+        var queryHelper = new PGQueryHelper(logLevel, connection);
+        var mutationHelper = new PGMutationHelper(logLevel, connection);
 
+        var resources = new Resources();
+        var adminService = getAdminService(logLevel, connection, resources, queryHelper, mutationHelper);
+        var auctionService = getAuctionService(logLevel, resources, connection, queryHelper, mutationHelper);
 
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());
@@ -105,8 +104,6 @@ class AuctionHouse {
         adminCommand.addSubcommand("help", new CommandLine.HelpCommand());
 
         // auction command
-        AuctionService auctionService = getAuctionService(logLevel, resources, connection);
-
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
         auctionCommand.addSubcommand("create",
                 new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
@@ -144,20 +141,22 @@ class AuctionHouse {
     private static AdminService getAdminService(
             final Level logLevel,
             final DBConnection connection,
-            final Resources resources
+            final Resources resources,
+            final QueryHelper queryHelper,
+            final MutationHelper mutationHelper
     ) {
 
-        OrganisationRepository organisationRepository = new PGOrganisationRepository(
+        var organisationRepository = new PGOrganisationRepository(
                 logLevel,
-                new PGOrganisationQueryHelper(logLevel, connection),
+                queryHelper,
                 new PGOrganisationMapper()
         );
 
-        UserRepository userRepository = new PGUserRepository(
+        var userRepository = new PGUserRepository(
                 logLevel,
-                new PGUserQueryHelper(logLevel, connection),
+                queryHelper,
                 new PGUserMapper(logLevel),
-                new PGMutationHelper(logLevel, connection, "users")
+                mutationHelper
         );
 
         return new AdminService(
@@ -173,18 +172,21 @@ class AuctionHouse {
     private static AuctionService getAuctionService(
             final Level logLevel,
             final Resources resources,
-            final DBConnection connection
+            final DBConnection connection,
+            final QueryHelper queryHelper,
+            final MutationHelper mutationHelper
     ) {
-        AuctionRepository auctionRepository = new PGAuctionRepository(
+
+        var auctionRepository = new PGAuctionRepository(
                 logLevel,
-                new PGAuctionQueryHelper(logLevel, connection),
+                queryHelper,
                 new PGAuctionMapper(logLevel),
-                new PGMutationHelper(logLevel, connection, "auctions")
+                mutationHelper
         );
 
-        BidRepository bidRepository = new PGBidRepository(
+        var bidRepository = new PGBidRepository(
                 logLevel,
-                new PGMutationHelper(logLevel, connection, "bids")
+                mutationHelper
         );
 
         return new AuctionService(logLevel, resources, auctionRepository, bidRepository);

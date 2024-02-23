@@ -43,6 +43,7 @@ public class PGBidRepository implements BidRepository {
     @Override
     public Bid save(final Bid entity) {
         var id = mutationHelper.save(
+                "bids",
                 entity.getId() == 0,
                 new String[]{
                         "id",

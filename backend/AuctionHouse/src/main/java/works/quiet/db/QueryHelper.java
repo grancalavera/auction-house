@@ -8,19 +8,23 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Optional;
 
-public interface QueryHelper<T> {
-    List<T> queryMany(
-            FunctionThrows<Connection, PreparedStatement, Exception> statement,
-            FunctionThrows<ResultSet, T, Exception> mapper
+public interface QueryHelper {
+    <T> List<T> queryMany(
+            FunctionThrows<Connection, PreparedStatement, Exception> query,
+            FunctionThrows<ResultSet, T, Exception> rowMapper
     );
 
-    Optional<T> queryOne(
-            FunctionThrows<Connection, PreparedStatement, Exception> statement,
-            FunctionThrows<ResultSet, T, Exception> mapper
+    <T> Optional<T> queryOne(
+            FunctionThrows<Connection, PreparedStatement, Exception> query,
+            FunctionThrows<ResultSet, T, Exception> rowMapper
+    );
+
+    <T> T rawQuery(
+            FunctionThrows<Connection, PreparedStatement, Exception> query,
+            FunctionThrows<ResultSet, T, Exception> resultSetMapper
     );
 
     boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
 
     long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
-
 }

@@ -2,7 +2,7 @@ package works.quiet.user;
 
 import lombok.extern.java.Log;
 import works.quiet.db.MutationHelper;
-import works.quiet.db.PGMapper;
+import works.quiet.db.PGRowMapper;
 import works.quiet.db.QueryHelper;
 
 import java.sql.PreparedStatement;
@@ -12,32 +12,31 @@ import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
-    private final QueryHelper<User> queryHelper;
+    private final QueryHelper queryHelper;
     private final MutationHelper mutationHelper;
-    private final PGMapper<User> mapper;
+    private final PGRowMapper<User> rowMapper;
 
-    private final String usersQuery =
-            "SELECT"
-                    + " u.id,"
-                    + " u.username,"
-                    + " u.password,"
-                    + " u.firstname,"
-                    + " u.lastname,"
-                    + " a.name as accountStatus,"
-                    + " r.name as role,"
-                    + " u.organisation_id as organisationId,"
-                    + " o.name as organisation"
-                    + " FROM users u"
-                    + " LEFT JOIN organisations o on u.organisation_id = o.id"
-                    + " LEFT JOIN account_status a on u.accountstatus_id = a.id"
-                    + " LEFT JOIN roles r on u.role_id = r.id";
+    private final String usersQuery = "SELECT"
+            + " u.id,"
+            + " u.username,"
+            + " u.password,"
+            + " u.firstname,"
+            + " u.lastname,"
+            + " a.name as accountStatus,"
+            + " r.name as role,"
+            + " u.organisation_id as organisationId,"
+            + " o.name as organisation"
+            + " FROM users u"
+            + " LEFT JOIN organisations o on u.organisation_id = o.id"
+            + " LEFT JOIN account_status a on u.accountstatus_id = a.id"
+            + " LEFT JOIN roles r on u.role_id = r.id";
 
     public PGUserRepository(
-            final Level logLevel, final QueryHelper<User> queryHelper,
-            final PGMapper<User> mapper, final MutationHelper mutationHelper) {
+            final Level logLevel, final QueryHelper queryHelper,
+            final PGRowMapper<User> mapper, final MutationHelper mutationHelper) {
         this.queryHelper = queryHelper;
         this.mutationHelper = mutationHelper;
-        this.mapper = mapper;
+        this.rowMapper = mapper;
         log.setLevel(logLevel);
     }
 
@@ -45,7 +44,7 @@ public class PGUserRepository implements UserRepository {
     public List<User> findAll() {
         return queryHelper.queryMany(
                 (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
@@ -67,12 +66,14 @@ public class PGUserRepository implements UserRepository {
     public Optional<User> findWithCredentials(final String username, final String password) {
         return queryHelper.queryOne(
                 (conn) -> {
-                    PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
+                    PreparedStatement st = conn.prepareStatement(
+                            usersQuery + " WHERE u.username=? AND u.password=?"
+                    );
                     st.setString(1, username);
                     st.setString(2, password);
                     return st;
                 },
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
@@ -85,7 +86,7 @@ public class PGUserRepository implements UserRepository {
                     st.setString(1, username);
                     return st;
                 },
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
@@ -98,13 +99,14 @@ public class PGUserRepository implements UserRepository {
                     st.setInt(1, id);
                     return st;
                 },
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
     @Override
     public User save(final User entity) {
         var id = mutationHelper.save(
+                "users",
                 entity.getId() == 0,
                 new String[]{
                         "id",
@@ -132,6 +134,6 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public void delete(final User user) {
-        mutationHelper.delete(user.getId());
+        mutationHelper.delete("users", user.getId());
     }
 }
