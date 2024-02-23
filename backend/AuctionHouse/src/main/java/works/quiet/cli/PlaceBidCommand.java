@@ -12,7 +12,7 @@ import java.util.logging.Level;
 
 @CommandLine.Command(
         name = "bid",
-        description = "Places a bid on another selle's auction.",
+        description = "Places a bid on another seller's auction.",
         mixinStandardHelpOptions = true,
         sortOptions = false
 )
