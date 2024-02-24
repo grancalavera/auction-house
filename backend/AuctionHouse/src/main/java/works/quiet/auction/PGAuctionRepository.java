@@ -4,23 +4,29 @@ import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.PGRowMapper;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
 public class PGAuctionRepository implements AuctionRepository {
     private final DBInterface dbInterface;
-    private final PGRowMapper<Auction> mapper;
+    private final PGRowMapper<Auction> auctionRowMapper;
+    private final PGRowMapper<Bid> bidRowMapper;
 
 
     public PGAuctionRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGRowMapper<Auction> mapper
+            final PGRowMapper<Auction> auctionRowMapper,
+            final PGRowMapper<Bid> bidRowMapper
     ) {
         this.dbInterface = dbInterface;
-        this.mapper = mapper;
+        this.auctionRowMapper = auctionRowMapper;
+        this.bidRowMapper = bidRowMapper;
         log.setLevel(logLevel);
     }
 
@@ -30,7 +36,7 @@ public class PGAuctionRepository implements AuctionRepository {
             var st = conn.prepareStatement("SELECT * from auctions WHERE id=? LIMIT 1");
             st.setInt(1, id);
             return st;
-        }, mapper::fromResulSet);
+        }, auctionRowMapper::fromResulSet);
     }
 
     @Override
@@ -80,12 +86,50 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
-        return dbInterface.queryMany(conn -> {
-                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id=?");
+        return dbInterface.rawQuery(conn -> {
+                    var st = conn.prepareStatement("SELECT"
+                            + " auction.id,"
+                            + " auction.seller_id,"
+                            + " auction.symbol,"
+                            + " auction.quantity,"
+                            + " auction.price,"
+                            + " auction.status_id,"
+                            + " bid.id as bid_id,"
+                            + " bid.auction_id as bid_auction_id,"
+                            + " bid.bidder_id as bid_bidder_id,"
+                            + " bid.amount as bid_amount,"
+                            + " bid.bidtimestamp as bid_bidtimestamp"
+                            + " FROM auctions auction"
+                            + " LEFT JOIN bids bid ON bid.auction_id = auction.id"
+                            + " WHERE auction.seller_id=?");
+
                     st.setInt(1, sellerId);
                     return st;
                 },
-                mapper::fromResulSet
+                rs -> {
+                    Map<Integer, Auction> result = new HashMap<>();
+
+                    while (rs.next()) {
+                        var auctionId = rs.getInt("id");
+                        Auction row;
+
+                        if (result.containsKey(auctionId)) {
+                            row = result.get(auctionId);
+                        } else {
+                            row = auctionRowMapper.fromResulSet(rs);
+                            result.put(auctionId, row);
+                        }
+
+                        if (rs.getInt("bid_id") == 0) {
+                            break;
+                        }
+
+                        var bid = bidRowMapper.fromResulSet(rs);
+                        row.getBids().add(bid);
+                    }
+
+                    return new ArrayList<>(result.values());
+                }
         );
     }
 
@@ -97,7 +141,7 @@ public class PGAuctionRepository implements AuctionRepository {
                     st.setInt(2, AuctionStatus.OPEN.getId());
                     return st;
                 },
-                mapper::fromResulSet
+                auctionRowMapper::fromResulSet
         );
     }
 
@@ -109,7 +153,7 @@ public class PGAuctionRepository implements AuctionRepository {
                     st.setInt(2, auctionId);
                     return st;
                 },
-                mapper::fromResulSet
+                auctionRowMapper::fromResulSet
         );
     }
 }
