@@ -1,8 +1,8 @@
 package works.quiet.reference;
 
 import lombok.extern.java.Log;
-import works.quiet.db.PGMapper;
-import works.quiet.db.QueryHelper;
+import works.quiet.db.DBInterface;
+import works.quiet.db.PGRowMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,23 +10,23 @@ import java.util.logging.Level;
 
 @Log
 public class PGOrganisationRepository implements OrganisationRepository {
-    private final QueryHelper<Organisation> queryHelper;
-    private final PGMapper<Organisation> mapper;
+    private final DBInterface dbInterface;
+    private final PGRowMapper<Organisation> mapper;
 
 
     public PGOrganisationRepository(
             final Level logLevel,
-            final QueryHelper<Organisation> queryHelper,
-            final PGMapper<Organisation> mapper
+            final DBInterface dbInterface,
+            final PGRowMapper<Organisation> mapper
     ) {
-        this.queryHelper = queryHelper;
+        this.dbInterface = dbInterface;
         this.mapper = mapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public Optional<Organisation> findById(final int id) {
-        return queryHelper.queryOne(conn -> {
+        return dbInterface.queryOne(conn -> {
             var st = conn.prepareStatement("SELECT * from organisations WHERE id=? LIMIT 1");
             st.setInt(1, id);
             return st;
@@ -41,7 +41,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
      */
     @Override
     public Optional<Organisation> findByName(final String name) {
-        return queryHelper.queryOne(conn -> {
+        return dbInterface.queryOne(conn -> {
             var st = conn.prepareStatement("SELECT * from organisations WHERE name=?");
             st.setString(1, name);
             return st;
@@ -50,7 +50,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     @Override
     public List<Organisation> findAll() {
-        return queryHelper.queryMany(conn ->
+        return dbInterface.queryMany(conn ->
                         conn.prepareStatement("SELECT * FROM organisations"),
                 mapper::fromResulSet
         );
@@ -58,14 +58,14 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     @Override
     public long count() {
-        return queryHelper.queryCount(
+        return dbInterface.queryCount(
                 conn -> conn.prepareStatement("SELECT count(id) from organisations")
         );
     }
 
     @Override
     public boolean exists(final int id) {
-        return queryHelper.queryExists(conn -> {
+        return dbInterface.queryExists(conn -> {
             var st = conn.prepareStatement("SELECT id FROM organisations WHERE id=?");
             st.setInt(1, id);
             return st;

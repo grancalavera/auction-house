@@ -1,9 +1,8 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.db.MutationHelper;
-import works.quiet.db.PGMapper;
-import works.quiet.db.QueryHelper;
+import works.quiet.db.DBInterface;
+import works.quiet.db.PGRowMapper;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -12,51 +11,50 @@ import java.util.logging.Level;
 
 @Log
 public class PGUserRepository implements UserRepository {
-    private final QueryHelper<User> queryHelper;
-    private final MutationHelper mutationHelper;
-    private final PGMapper<User> mapper;
+    private final DBInterface dbInterface;
+    private final PGRowMapper<User> rowMapper;
 
-    private final String usersQuery =
-            "SELECT"
-                    + " u.id,"
-                    + " u.username,"
-                    + " u.password,"
-                    + " u.firstname,"
-                    + " u.lastname,"
-                    + " a.name as accountStatus,"
-                    + " r.name as role,"
-                    + " u.organisation_id as organisationId,"
-                    + " o.name as organisation"
-                    + " FROM users u"
-                    + " LEFT JOIN organisations o on u.organisation_id = o.id"
-                    + " LEFT JOIN account_status a on u.accountstatus_id = a.id"
-                    + " LEFT JOIN roles r on u.role_id = r.id";
+    private final String usersQuery = "SELECT"
+            + " u.id,"
+            + " u.username,"
+            + " u.password,"
+            + " u.firstname,"
+            + " u.lastname,"
+            + " a.name as accountStatus,"
+            + " r.name as role,"
+            + " u.organisation_id as organisationId,"
+            + " o.name as organisation"
+            + " FROM users u"
+            + " LEFT JOIN organisations o on u.organisation_id = o.id"
+            + " LEFT JOIN account_status a on u.accountstatus_id = a.id"
+            + " LEFT JOIN roles r on u.role_id = r.id";
 
     public PGUserRepository(
-            final Level logLevel, final QueryHelper<User> queryHelper,
-            final PGMapper<User> mapper, final MutationHelper mutationHelper) {
-        this.queryHelper = queryHelper;
-        this.mutationHelper = mutationHelper;
-        this.mapper = mapper;
+            final Level logLevel,
+            final DBInterface dbInterface,
+            final PGRowMapper<User> rowMapper
+    ) {
+        this.dbInterface = dbInterface;
+        this.rowMapper = rowMapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public List<User> findAll() {
-        return queryHelper.queryMany(
+        return dbInterface.queryMany(
                 (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
     @Override
     public long count() {
-        return queryHelper.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
+        return dbInterface.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
     }
 
     @Override
     public boolean exists(final int id) {
-        return queryHelper.queryExists(conn -> {
+        return dbInterface.queryExists(conn -> {
             var st = conn.prepareStatement("SELECT id FROM users WHERE id=?");
             st.setInt(1, id);
             return st;
@@ -65,46 +63,49 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public Optional<User> findWithCredentials(final String username, final String password) {
-        return queryHelper.queryOne(
+        return dbInterface.queryOne(
                 (conn) -> {
-                    PreparedStatement st = conn.prepareStatement(usersQuery + " WHERE u.username=? AND u.password=?");
+                    PreparedStatement st = conn.prepareStatement(
+                            usersQuery + " WHERE u.username=? AND u.password=?"
+                    );
                     st.setString(1, username);
                     st.setString(2, password);
                     return st;
                 },
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
     @Override
     public Optional<User> findByUsername(final String username) {
-        return queryHelper.queryOne(
+        return dbInterface.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
                     );
                     st.setString(1, username);
                     return st;
                 },
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
     @Override
     public Optional<User> findById(final int id) {
-        return queryHelper.queryOne(
+        return dbInterface.queryOne(
                 (conn) -> {
                     var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
                     );
                     st.setInt(1, id);
                     return st;
                 },
-                mapper::fromResulSet
+                rowMapper::fromResulSet
         );
     }
 
     @Override
     public User save(final User entity) {
-        var id = mutationHelper.save(
+        var id = dbInterface.upsert(
+                "users",
                 entity.getId() == 0,
                 new String[]{
                         "id",
@@ -132,6 +133,6 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public void delete(final User user) {
-        mutationHelper.delete(user.getId());
+        dbInterface.delete("users", user.getId());
     }
 }
