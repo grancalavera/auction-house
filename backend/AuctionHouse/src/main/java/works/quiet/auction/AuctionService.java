@@ -4,6 +4,7 @@ import lombok.extern.java.Log;
 import works.quiet.resources.Resources;
 import works.quiet.user.User;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -66,12 +67,16 @@ public class AuctionService {
                 ));
 
         if (auction.getStatus() == AuctionStatus.CLOSED) {
-            log.info("Auction.id=" + auctionId + " already closed.");
-            return;
+            var message = resources.getFormattedString("errors.auctionAlreadyClosed", auctionId);
+            log.severe(message);
+            throw new RuntimeException(message);
         }
 
-        var closed = auction.toBuilder().status(AuctionStatus.CLOSED).build();
+        var closed = auction.toBuilder()
+                .status(AuctionStatus.CLOSED)
+                .closedAt(Instant.now())
+                .build();
+
         auctionRepository.save(closed);
     }
-
 }

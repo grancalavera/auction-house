@@ -22,14 +22,20 @@ public class PGAuctionRowMapper implements PGRowMapper<Auction> {
     public Auction fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
         var status = AuctionStatus.ofInt(resultSet.getInt(fieldPrefix + "status_id"));
 
-        return Auction.builder()
+        var builder = Auction.builder()
                 .id(resultSet.getInt(fieldPrefix + "id"))
                 .symbol(resultSet.getString(fieldPrefix + "symbol"))
                 .quantity(resultSet.getInt(fieldPrefix + "quantity"))
                 .price(resultSet.getBigDecimal(fieldPrefix + "price"))
                 .sellerId(resultSet.getInt(fieldPrefix + "seller_id"))
                 .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
-                .status(status)
-                .build();
+                .status(status);
+
+        var closedAt = resultSet.getTimestamp(fieldPrefix + "closedAt");
+        if (closedAt != null) {
+            builder.closedAt(closedAt.toInstant());
+        }
+
+        return builder.build();
     }
 }

@@ -25,4 +25,5 @@ public class Auction {
     @Builder.Default
     private List<Bid> bids = new ArrayList<>();
     private Instant createdAt;
+    private Instant closedAt;
 }

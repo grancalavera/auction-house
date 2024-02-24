@@ -102,21 +102,25 @@ insert into auction_status (name)
     on conflict do nothing;
 
 insert into auctions
-        (seller_id, symbol, quantity, price, status_id, createdAt)
+        (seller_id, symbol, quantity, price, status_id, createdAt, closedAt)
     values
-        (4, 'A', 1, 100.13, 1, now() at time zone 'utc'),     -- 1
-        (4, 'B', 1, 100.13, 1, now() at time zone 'utc'),     -- 2
-        (4, 'C', 1, 100.13, 1, now() at time zone 'utc'),     -- 3
-        (5, 'ZA', 1, 200.13, 1, now() at time zone 'utc'),    -- 4
-        (5, 'ZB', 1, 200.13, 1, now() at time zone 'utc'),    -- 5
-        (6, 'ZC', 1, 200.13, 1, now() at time zone 'utc'),    -- 6
-        (5, 'ZA', 1, 200.13, 2, now() at time zone 'utc'),    -- 7
-        (5, 'ZB', 1, 200.13, 2, now() at time zone 'utc'),    -- 8
-        
-        (8, 'ZC', 1, 200.13, 2, now() at time zone 'utc'),    -- 9
-        (8, 'ZD', 1, 200.13, 1, now() at time zone 'utc'),    -- 10
-        (8, 'Zr', 1, 200.13, 1, now() at time zone 'utc'),    -- 11
-        (8, 'hK', 1, 200.13, 2, now() at time zone 'utc');    -- 12
+        (4, 'A', 1, 100.13, 1, now() at time zone 'utc', null),     
+        (4, 'B', 1, 100.13, 1, now() at time zone 'utc', null),     
+        (4, 'C', 1, 100.13, 1, now() at time zone 'utc', null),   
+
+        (5, 'ZA', 1, 200.13, 1, now() at time zone 'utc', null),    
+        (5, 'ZB', 1, 200.13, 1, now() at time zone 'utc', null),    
+        (6, 'ZC', 1, 200.13, 1, now() at time zone 'utc', null),    
+        (8, 'ZD', 1, 200.13, 1, now() at time zone 'utc', null),    
+        (8, 'Zr', 1, 200.13, 1, now() at time zone 'utc', null),    
+
+        (5, 'ZA', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
+        (5, 'ZB', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
+        (8, 'ZC', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
+        (8, 'hK', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),
+
+        (10, 'ODDITY', 23, 101.101, 1, now() at time zone 'utc', null);
+
 
 insert into bids
         (bidder_id, auction_id, amount, createdAt)

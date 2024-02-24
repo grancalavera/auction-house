@@ -67,7 +67,8 @@ public class PGAuctionRepository implements AuctionRepository {
                         "quantity",
                         "price",
                         "status_id",
-                        "createdAt"
+                        "createdAt",
+                        "closedAt"
                 },
                 new Object[]{
                         entity.getId(),
@@ -76,7 +77,8 @@ public class PGAuctionRepository implements AuctionRepository {
                         entity.getQuantity(),
                         entity.getPrice(),
                         entity.getStatus().getId(),
-                        Timestamp.from(entity.getCreatedAt())
+                        Timestamp.from(entity.getCreatedAt()),
+                        Timestamp.from(entity.getClosedAt())
                 });
 
         return entity.toBuilder().id(id).build();
@@ -98,6 +100,7 @@ public class PGAuctionRepository implements AuctionRepository {
                             + " auction.price,"
                             + " auction.status_id,"
                             + " auction.createdAt,"
+                            + " auction.closedAt,"
                             + " bid.id as bid_id,"
                             + " bid.auction_id as bid_auction_id,"
                             + " bid.bidder_id as bid_bidder_id,"
