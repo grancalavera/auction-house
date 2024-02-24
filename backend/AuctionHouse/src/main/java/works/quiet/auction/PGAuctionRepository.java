@@ -4,6 +4,7 @@ import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.PGRowMapper;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,7 @@ public class PGAuctionRepository implements AuctionRepository {
                         "quantity",
                         "price",
                         "status_id",
+                        "createdAt"
                 },
                 new Object[]{
                         entity.getId(),
@@ -73,7 +75,8 @@ public class PGAuctionRepository implements AuctionRepository {
                         entity.getSymbol(),
                         entity.getQuantity(),
                         entity.getPrice(),
-                        entity.getStatus().getId()
+                        entity.getStatus().getId(),
+                        Timestamp.from(entity.getCreatedAt())
                 });
 
         return entity.toBuilder().id(id).build();
@@ -94,6 +97,7 @@ public class PGAuctionRepository implements AuctionRepository {
                             + " auction.quantity,"
                             + " auction.price,"
                             + " auction.status_id,"
+                            + " auction.createdAt,"
                             + " bid.id as bid_id,"
                             + " bid.auction_id as bid_auction_id,"
                             + " bid.bidder_id as bid_bidder_id,"

@@ -28,6 +28,7 @@ public class PGAuctionRowMapper implements PGRowMapper<Auction> {
                 .quantity(resultSet.getInt(fieldPrefix + "quantity"))
                 .price(resultSet.getBigDecimal(fieldPrefix + "price"))
                 .sellerId(resultSet.getInt(fieldPrefix + "seller_id"))
+                .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
                 .status(status)
                 .build();
     }

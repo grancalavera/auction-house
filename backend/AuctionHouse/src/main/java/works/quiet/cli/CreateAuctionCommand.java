@@ -7,6 +7,7 @@ import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.logging.Level;
 
 @CommandLine.Command(
@@ -50,6 +51,7 @@ public class CreateAuctionCommand extends CommandWithAdminAndAuction {
                 .quantity(quantity)
                 .price(price)
                 .sellerId(adminService.getCurrentUser().getId())
+                .createdAt(Instant.now())
                 .build();
 
         var created = auctionService.createAuction(auction);

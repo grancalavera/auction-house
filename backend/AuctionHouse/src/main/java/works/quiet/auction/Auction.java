@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,4 +24,5 @@ public class Auction {
     private AuctionStatus status = AuctionStatus.OPEN;
     @Builder.Default
     private List<Bid> bids = new ArrayList<>();
+    private Instant createdAt;
 }

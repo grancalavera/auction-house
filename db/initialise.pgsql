@@ -45,7 +45,9 @@ create table if not exists auctions (
     -- not that I know
     -- https://stackoverflow.com/a/224866
     price numeric(19, 4) not null,
-    status_id int references auction_status(id) not null
+    status_id int references auction_status(id) not null,
+    createdAt timestamp with time zone not null,
+    closedAt timestamp with time zone
 );
 
 create table if not exists bids (
@@ -100,38 +102,38 @@ insert into auction_status (name)
     on conflict do nothing;
 
 insert into auctions
-        (seller_id, symbol, quantity, price, status_id)
+        (seller_id, symbol, quantity, price, status_id, createdAt)
     values
-        (4, 'A', 1, 100.13, 1),     -- 1
-        (4, 'B', 1, 100.13, 1),     -- 2
-        (4, 'C', 1, 100.13, 1),     -- 3
-        (5, 'ZA', 1, 200.13, 1),    -- 4
-        (5, 'ZB', 1, 200.13, 1),    -- 5
-        (6, 'ZC', 1, 200.13, 1),    -- 6
-        (5, 'ZA', 1, 200.13, 2),    -- 7
-        (5, 'ZB', 1, 200.13, 2),    -- 8
+        (4, 'A', 1, 100.13, 1, now() at time zone 'utc'),     -- 1
+        (4, 'B', 1, 100.13, 1, now() at time zone 'utc'),     -- 2
+        (4, 'C', 1, 100.13, 1, now() at time zone 'utc'),     -- 3
+        (5, 'ZA', 1, 200.13, 1, now() at time zone 'utc'),    -- 4
+        (5, 'ZB', 1, 200.13, 1, now() at time zone 'utc'),    -- 5
+        (6, 'ZC', 1, 200.13, 1, now() at time zone 'utc'),    -- 6
+        (5, 'ZA', 1, 200.13, 2, now() at time zone 'utc'),    -- 7
+        (5, 'ZB', 1, 200.13, 2, now() at time zone 'utc'),    -- 8
         
-        (8, 'ZC', 1, 200.13, 2),    -- 9
-        (8, 'ZD', 1, 200.13, 1),    -- 10
-        (8, 'Zr', 1, 200.13, 1),    -- 11
-        (8, 'hK', 1, 200.13, 2);    -- 12
+        (8, 'ZC', 1, 200.13, 2, now() at time zone 'utc'),    -- 9
+        (8, 'ZD', 1, 200.13, 1, now() at time zone 'utc'),    -- 10
+        (8, 'Zr', 1, 200.13, 1, now() at time zone 'utc'),    -- 11
+        (8, 'hK', 1, 200.13, 2, now() at time zone 'utc');    -- 12
 
 insert into bids
         (bidder_id, auction_id, amount, createdAt)
     values
-        (9, 1, 100.17, '2021-01-01 12:00:04'),
-        (10, 1, 100.17, '2021-01-01 12:00:05'),
-        (9, 2, 100.17, '2021-01-01 12:00:06'),
-        (10, 2, 100.17, '2021-01-01 12:00:07'),
-        (9, 3, 100.17, '2021-01-01 12:00:08'),
-        (10, 3, 100.17, '2021-01-01 12:00:09'),
-        (9, 4, 200.17, '2021-01-01 12:00:10'),
-        (10, 4, 200.17, '2021-01-01 12:00:11'),
-        (9, 5, 200.17, '2021-01-01 12:00:12'),
-        (10, 5, 200.17, '2021-01-01 12:00:13'),
+        (9, 1, 100.17, (now() at time zone 'utc')),
+        (10, 1, 100.17, (now() at time zone 'utc')),
+        (9, 2, 100.17, (now() at time zone 'utc')),
+        (10, 2, 100.17, (now() at time zone 'utc')),
+        (9, 3, 100.17, (now() at time zone 'utc')),
+        (10, 3, 100.17, (now() at time zone 'utc')),
+        (9, 4, 200.17, (now() at time zone 'utc')),
+        (10, 4, 200.17, (now() at time zone 'utc')),
+        (9, 5, 200.17, (now() at time zone 'utc')),
+        (10, 5, 200.17, (now() at time zone 'utc')),
 
-        (9, 6, 200.17, '2021-01-01 12:00:14'),
-        (10, 6, 200.17, '2021-01-01 12:00:15'),
-        (10, 11, 200.17, '2021-01-01 12:00:15'),
-        (8, 11, 200.17, '2021-01-01 12:00:15'),
-        (4, 9, 200.17, '2021-01-01 12:00:15');
+        (9, 6, 200.17, (now() at time zone 'utc')),
+        (10, 6, 200.17, (now() at time zone 'utc')),
+        (10, 11, 200.17, (now() at time zone 'utc')),
+        (8, 11, 200.17, (now() at time zone 'utc')),
+        (4, 9, 200.17, (now() at time zone 'utc'));
