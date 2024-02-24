@@ -3,9 +3,10 @@ package works.quiet;
 import lombok.extern.java.Log;
 import picocli.CommandLine;
 import works.quiet.auction.AuctionService;
-import works.quiet.auction.PGAuctionMapper;
+import works.quiet.auction.PGAuctionRowMapper;
 import works.quiet.auction.PGAuctionRepository;
 import works.quiet.auction.PGBidRepository;
+import works.quiet.auction.PGBidRowMapper;
 import works.quiet.cli.AdminCommand;
 import works.quiet.cli.AuctionCommand;
 import works.quiet.cli.BlockUserCommand;
@@ -172,7 +173,8 @@ class AuctionHouse {
         var auctionRepository = new PGAuctionRepository(
                 logLevel,
                 dbInterface,
-                new PGAuctionMapper(logLevel)
+                new PGAuctionRowMapper(logLevel),
+                new PGBidRowMapper(logLevel)
         );
 
         var bidRepository = new PGBidRepository(

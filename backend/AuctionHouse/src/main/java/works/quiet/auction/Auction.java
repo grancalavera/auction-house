@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @EqualsAndHashCode
@@ -18,6 +20,6 @@ public class Auction {
     private int quantity;
     // price numeric(19, 4) not null,
     private BigDecimal price;
-    @Builder.Default
-    private AuctionStatus status = AuctionStatus.OPEN;
+    @Builder.Default private AuctionStatus status = AuctionStatus.OPEN;
+    @Builder.Default private List<Bid> bids = new ArrayList<>();
 }

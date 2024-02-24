@@ -15,22 +15,29 @@ public class PGUserMapper implements PGRowMapper<User> {
 
     @Override
     public User fromResulSet(final ResultSet resultSet) throws Exception {
+        return fromResulSet("", resultSet);
+    }
+
+    @Override
+    public User fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
         var organisation = Organisation
                 .builder()
-                .id(resultSet.getInt("organisationId"))
-                .name(resultSet.getString("organisation"))
+                .id(resultSet.getInt(fieldPrefix + "organisationId"))
+                .name(resultSet.getString(fieldPrefix + "organisation"))
                 .build();
+
         var role = Role
-                .valueOf(resultSet.getString("role"));
+                .valueOf(resultSet.getString(fieldPrefix + "role"));
+
         var accountStatus = AccountStatus
-                .valueOf(resultSet.getString("accountStatus"));
+                .valueOf(resultSet.getString(fieldPrefix + "accountStatus"));
 
         return User.builder()
-                .id(resultSet.getInt("id"))
-                .username(resultSet.getString("username"))
-                .password(resultSet.getString("password"))
-                .firstName(resultSet.getString("firstName"))
-                .lastName(resultSet.getString("lastName"))
+                .id(resultSet.getInt(fieldPrefix + "id"))
+                .username(resultSet.getString(fieldPrefix + "username"))
+                .password(resultSet.getString(fieldPrefix + "password"))
+                .firstName(resultSet.getString(fieldPrefix + "firstName"))
+                .lastName(resultSet.getString(fieldPrefix + "lastName"))
                 .accountStatus(accountStatus)
                 .role(role)
                 .organisation(organisation)
