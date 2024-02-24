@@ -55,7 +55,7 @@ create table if not exists bids (
     amount numeric(19, 4) not null,
     -- https://stackoverflow.com/a/42779109
     -- https://stackoverflow.com/a/6627999
-    bidtimestamp timestamp with time zone not null
+    createdAt timestamp with time zone not null
 );
 
 insert into organisations (name)
@@ -117,7 +117,7 @@ insert into auctions
         (8, 'hK', 1, 200.13, 2);    -- 12
 
 insert into bids
-        (bidder_id, auction_id, amount, bidtimestamp)
+        (bidder_id, auction_id, amount, createdAt)
     values
         (9, 1, 100.17, '2021-01-01 12:00:04'),
         (10, 1, 100.17, '2021-01-01 12:00:05'),

@@ -17,5 +17,5 @@ public class Bid {
     private int bidderId;
     private int auctionId;
     private BigDecimal amount;
-    private Instant bidTimestamp;
+    private Instant createdAt;
 }

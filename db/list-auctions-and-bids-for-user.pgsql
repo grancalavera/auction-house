@@ -9,7 +9,7 @@ select
     b.id as bid_id,
     b.amount as bid_amount,
     z.username as bidder,
-    b.bidtimestamp as timestamp
+    b.createdAt as bid_createdAt
 from auctions a
     left join users u on a.seller_id = u.id
     left join auction_status s on a.status_id = s.id

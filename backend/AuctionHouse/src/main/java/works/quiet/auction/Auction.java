@@ -18,8 +18,9 @@ public class Auction {
     private int sellerId;
     private String symbol;
     private int quantity;
-    // price numeric(19, 4) not null,
     private BigDecimal price;
-    @Builder.Default private AuctionStatus status = AuctionStatus.OPEN;
-    @Builder.Default private List<Bid> bids = new ArrayList<>();
+    @Builder.Default
+    private AuctionStatus status = AuctionStatus.OPEN;
+    @Builder.Default
+    private List<Bid> bids = new ArrayList<>();
 }
