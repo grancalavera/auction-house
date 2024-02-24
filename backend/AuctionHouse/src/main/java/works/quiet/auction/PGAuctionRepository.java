@@ -4,6 +4,7 @@ import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.PGRowMapper;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,8 @@ public class PGAuctionRepository implements AuctionRepository {
                         "quantity",
                         "price",
                         "status_id",
+                        "createdAt",
+                        "closedAt"
                 },
                 new Object[]{
                         entity.getId(),
@@ -73,7 +76,9 @@ public class PGAuctionRepository implements AuctionRepository {
                         entity.getSymbol(),
                         entity.getQuantity(),
                         entity.getPrice(),
-                        entity.getStatus().getId()
+                        entity.getStatus().getId(),
+                        Timestamp.from(entity.getCreatedAt()),
+                        Timestamp.from(entity.getClosedAt())
                 });
 
         return entity.toBuilder().id(id).build();
@@ -94,11 +99,13 @@ public class PGAuctionRepository implements AuctionRepository {
                             + " auction.quantity,"
                             + " auction.price,"
                             + " auction.status_id,"
+                            + " auction.createdAt,"
+                            + " auction.closedAt,"
                             + " bid.id as bid_id,"
                             + " bid.auction_id as bid_auction_id,"
                             + " bid.bidder_id as bid_bidder_id,"
                             + " bid.amount as bid_amount,"
-                            + " bid.bidtimestamp as bid_bidtimestamp"
+                            + " bid.createdAt as bid_createdAt"
                             + " FROM auctions auction"
                             + " LEFT JOIN bids bid ON bid.auction_id = auction.id"
                             + " WHERE auction.seller_id=?");
@@ -124,7 +131,7 @@ public class PGAuctionRepository implements AuctionRepository {
                             break;
                         }
 
-                        var bid = bidRowMapper.fromResulSet(rs);
+                        var bid = bidRowMapper.fromResulSet("bid_", rs);
                         row.getBids().add(bid);
                     }
 

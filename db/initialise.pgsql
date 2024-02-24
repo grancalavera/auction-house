@@ -45,7 +45,9 @@ create table if not exists auctions (
     -- not that I know
     -- https://stackoverflow.com/a/224866
     price numeric(19, 4) not null,
-    status_id int references auction_status(id) not null
+    status_id int references auction_status(id) not null,
+    createdAt timestamp with time zone not null,
+    closedAt timestamp with time zone
 );
 
 create table if not exists bids (
@@ -55,7 +57,7 @@ create table if not exists bids (
     amount numeric(19, 4) not null,
     -- https://stackoverflow.com/a/42779109
     -- https://stackoverflow.com/a/6627999
-    bidtimestamp timestamp with time zone not null
+    createdAt timestamp with time zone not null
 );
 
 insert into organisations (name)
@@ -82,15 +84,16 @@ insert into users
         (username, password, firstName, lastName, organisation_id, accountstatus_id, role_id)
     values
         ('admin', 'admin', 'Coyote', 'Jackson', 1, 1, 2),   -- 1
-        ('blockedu', '123', 'Blocked', 'User', 3, 2, 1),    -- 2
-        ('blockeda', '123', 'Blocked', 'Admin', 3, 2, 2),   -- 3
-        ('u1', '123', 'Frank', 'Takahashi', 2, 1, 1),       -- 4
-        ('u2', '123', 'Alice', 'Smith', 2, 1, 1),           -- 5
-        ('u3', '123', 'Jiří', 'Novák', 1, 1, 1),            -- 6
-        ('u4', '123', 'Marta', 'García', 2, 1, 1),          -- 7
-        ('u5', '123', 'Andrea', 'Rossi', 1, 1, 1),          -- 8
-        ('u6', '123', 'Jens', 'Hansen', 2, 1, 1),           -- 9
-        ('u7', '123', 'Piotr', 'Nowak', 4, 1, 1)            -- 10
+        ('bu', '123', 'Blocked', 'User', 3, 2, 1),          -- 2
+        ('ba', '123', 'Blocked', 'Admin', 3, 2, 2),         -- 3
+
+        ('u4', '123', 'Frank', 'Takahashi', 2, 1, 1),       -- 4
+        ('u5', '123', 'Alice', 'Smith', 2, 1, 1),           -- 5
+        ('u6', '123', 'Jiří', 'Novák', 1, 1, 1),            -- 6
+        ('u7', '123', 'Marta', 'García', 2, 1, 1),          -- 7
+        ('u8', '123', 'Andrea', 'Rossi', 1, 1, 1),          -- 8
+        ('u9', '123', 'Jens', 'Hansen', 2, 1, 1),           -- 9
+        ('u10', '123', 'Piotr', 'Nowak', 4, 1, 1)           -- 10
     on conflict do nothing;
 
 insert into auction_status (name)
@@ -100,38 +103,54 @@ insert into auction_status (name)
     on conflict do nothing;
 
 insert into auctions
-        (seller_id, symbol, quantity, price, status_id)
+        (id, seller_id, symbol, quantity, price, status_id, createdAt, closedAt)
     values
-        (4, 'A', 1, 100.13, 1),     -- 1
-        (4, 'B', 1, 100.13, 1),     -- 2
-        (4, 'C', 1, 100.13, 1),     -- 3
-        (5, 'ZA', 1, 200.13, 1),    -- 4
-        (5, 'ZB', 1, 200.13, 1),    -- 5
-        (6, 'ZC', 1, 200.13, 1),    -- 6
-        (5, 'ZA', 1, 200.13, 2),    -- 7
-        (5, 'ZB', 1, 200.13, 2),    -- 8
+        (1, 4, 'A', 1, 100.13, 1, now() at time zone 'utc', null),     
+        (2, 4, 'B', 1, 100.13, 1, now() at time zone 'utc', null),     
+        (3, 4, 'C', 1, 100.13, 1, now() at time zone 'utc', null),   
+
+        (4, 5, 'ZA', 1, 200.13, 1, now() at time zone 'utc', null),    
+        (5, 5, 'ZB', 1, 200.13, 1, now() at time zone 'utc', null),    
         
-        (8, 'ZC', 1, 200.13, 2),    -- 9
-        (8, 'ZD', 1, 200.13, 1),    -- 10
-        (8, 'Zr', 1, 200.13, 1),    -- 11
-        (8, 'hK', 1, 200.13, 2);    -- 12
+        (6, 6, 'ZC', 1, 200.13, 1, now() at time zone 'utc', null),    
+        
+        (7, 8, 'ZD', 1, 200.13, 1, now() at time zone 'utc', null),    
+        (8, 8, 'Zr', 1, 200.13, 1, now() at time zone 'utc', null),    
+
+        (9, 5, 'ZA', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
+        (10, 5, 'ZB', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),   
+
+        (11, 8, 'ZC', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
+        (12, 8, 'hK', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),
+
+        (13, 10, 'ODDITY', 23, 101.101, 1, now() at time zone 'utc', null);
+
 
 insert into bids
-        (bidder_id, auction_id, amount, bidtimestamp)
+        (auction_id, bidder_id, amount, createdAt)
     values
-        (9, 1, 100.17, '2021-01-01 12:00:04'),
-        (10, 1, 100.17, '2021-01-01 12:00:05'),
-        (9, 2, 100.17, '2021-01-01 12:00:06'),
-        (10, 2, 100.17, '2021-01-01 12:00:07'),
-        (9, 3, 100.17, '2021-01-01 12:00:08'),
-        (10, 3, 100.17, '2021-01-01 12:00:09'),
-        (9, 4, 200.17, '2021-01-01 12:00:10'),
-        (10, 4, 200.17, '2021-01-01 12:00:11'),
-        (9, 5, 200.17, '2021-01-01 12:00:12'),
-        (10, 5, 200.17, '2021-01-01 12:00:13'),
+        (1, 10, 100.17, (now() at time zone 'utc')),
+        (1, 9, 100.17, (now() at time zone 'utc')),
+        
+        (2, 10, 100.17, (now() at time zone 'utc')),
+        (2, 9, 100.17, (now() at time zone 'utc')),
+        
+        (3, 10, 100.17, (now() at time zone 'utc')),
+        (3, 9, 100.17, (now() at time zone 'utc')),
+        
+        (4, 10, 200.17, (now() at time zone 'utc')),
+        (4, 9, 200.17, (now() at time zone 'utc')),
+        
+        (5, 10, 200.17, (now() at time zone 'utc')),
+        (5, 9, 200.17, (now() at time zone 'utc')),
+        
+        (6, 10, 200.17, (now() at time zone 'utc')),
+        (6, 9, 200.17, (now() at time zone 'utc')),
+        
+        (9, 4, 200.17, (now() at time zone 'utc')),
 
-        (9, 6, 200.17, '2021-01-01 12:00:14'),
-        (10, 6, 200.17, '2021-01-01 12:00:15'),
-        (10, 11, 200.17, '2021-01-01 12:00:15'),
-        (8, 11, 200.17, '2021-01-01 12:00:15'),
-        (4, 9, 200.17, '2021-01-01 12:00:15');
+        (11, 10, 200.17, (now() at time zone 'utc')),
+        (11, 8, 200.17, (now() at time zone 'utc'));
+        
+        
+        

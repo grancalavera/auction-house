@@ -37,7 +37,7 @@ public class PlaceBidCommand extends CommandWithAdminAndAuction {
                 .bidderId(adminService.getCurrentUser().getId())
                 .auctionId(auctionId)
                 .amount(amount)
-                .bidTimestamp(Instant.now())
+                .createdAt(Instant.now())
                 .build();
 
         var placed = auctionService.placeBid(bid);

@@ -92,6 +92,7 @@ public class PGDBInterface implements DBInterface {
                 setStatementValues(st, helper.getValues());
                 st.executeUpdate();
                 var rs = st.getGeneratedKeys();
+                rs.next();
                 var id = rs.getInt("id");
                 idRef.set(id);
             } catch (final SQLException ex) {

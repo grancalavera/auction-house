@@ -3,6 +3,6 @@ select
     b.auction_id,
     u.username as bidder,
     b.amount,
-    b.bidtimestamp
+    b.createdAt
 from bids b
     left join users u on u.id = b.bidder_id;

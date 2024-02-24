@@ -58,7 +58,7 @@ public class PGBidRepository implements BidRepository {
                         entity.getBidderId(),
                         entity.getAuctionId(),
                         entity.getAmount(),
-                        Timestamp.from(entity.getBidTimestamp())
+                        Timestamp.from(entity.getCreatedAt())
                 }
         );
         return entity.toBuilder().id(id).build();

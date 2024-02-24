@@ -21,11 +21,11 @@ public class PGBidRowMapper implements PGRowMapper<Bid> {
     @Override
     public Bid fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
         return Bid.builder()
-                .id(resultSet.getInt(fieldPrefix + "bid_id"))
-                .auctionId(resultSet.getInt(fieldPrefix + "bid_auction_id"))
-                .amount(resultSet.getBigDecimal(fieldPrefix + "bid_amount"))
-                .bidderId(resultSet.getInt(fieldPrefix + "bid_bidder_id"))
-                .bidTimestamp(resultSet.getTimestamp(fieldPrefix + "bid_bidtimestamp").toInstant())
+                .id(resultSet.getInt(fieldPrefix + "id"))
+                .auctionId(resultSet.getInt(fieldPrefix + "auction_id"))
+                .amount(resultSet.getBigDecimal(fieldPrefix + "amount"))
+                .bidderId(resultSet.getInt(fieldPrefix + "bidder_id"))
+                .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
                 .build();
     }
 }

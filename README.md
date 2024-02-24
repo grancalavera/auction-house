@@ -27,7 +27,7 @@
 - [x] View a list of all of my auctions, including whether it is still open or has been closed
 - [x] as well as all bids on the auction so far.
 - [ ] For closed auctions, also see a summary of the auction result, which includes the total revenue, total sold quantity, and winning bid(s), as well as the closing time of the auction.
-- [ ] Bid on any open auctions, created by other users (users cannot bid on their own auctions).
+- [x] Bid on any open auctions, created by other users (users cannot bid on their own auctions).
   - [lc] should the bid be rejected if the seller is blocked?
   - [lc] should auctions for a blocked seller be closed?
   - [lc] do we need another state for the auction, like "blocked"? or "cancelled"?
