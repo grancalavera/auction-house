@@ -43,7 +43,7 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public Bid save(final Bid entity) {
-        var id = dbInterface.upsert(
+        var id = dbInterface.upsertDeprecated(
                 "bids",
                 entity.getId() == 0,
                 new String[]{
@@ -68,4 +68,10 @@ public class PGBidRepository implements BidRepository {
     public void delete(final Bid entity) {
 
     }
+
+    @Override
+    public int nextId() {
+        return 0;
+    }
+
 }

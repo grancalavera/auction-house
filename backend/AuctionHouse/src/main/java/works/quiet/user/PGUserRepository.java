@@ -84,20 +84,19 @@ public class PGUserRepository implements UserRepository {
     @Override
     public User save(final User entity) {
         var id = dbInterface.upsert(
-                "users",
-                entity.getId() == 0,
-                new String[]{
-                        "id",
-                        "username",
-                        "password",
-                        "firstName",
-                        "lastName",
-                        "organisationId",
-                        "roleId",
-                        "accountStatusId"
-                },
+                "INSERT INTO users"
+                        + "(id, username, password, firstName, lastName, organisationid, roleId, accountStatusId)"
+                        + "values (?, ?, ?, ?, ?, ?, ?, ?)"
+                        + "ON CONFLICT (id) DO UPDATE SET "
+                        + "username = EXCLUDED.username,"
+                        + "password = EXCLUDED.password,"
+                        + "firstName = EXCLUDED.firstName,"
+                        + "lastName = EXCLUDED.lastName,"
+                        + "organisationId = EXCLUDED.organisationId,"
+                        + "roleId = EXCLUDED.roleId,"
+                        + "accountStatusId = EXCLUDED.accountStatusId",
                 new Object[]{
-                        entity.getId(),
+                        entity.getId() == 0 ? nextId() : entity.getId(),
                         entity.getUsername(),
                         entity.getPassword(),
                         entity.getFirstName(),
@@ -105,6 +104,9 @@ public class PGUserRepository implements UserRepository {
                         entity.getOrganisation().getId(),
                         entity.getAccountStatus().getId(),
                         entity.getRole().getId()
+                }, rs -> {
+                    rs.next();
+                    return rs.getInt("id");
                 });
 
         return entity.toBuilder().id(id).build();
@@ -112,6 +114,11 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public void delete(final User user) {
-        dbInterface.delete("users", user.getId());
+        dbInterface.deleteDeprecated("users", user.getId());
+    }
+
+    @Override
+    public int nextId() {
+        return dbInterface.nextVal("SELECT nextval('users_id_seq')");
     }
 }

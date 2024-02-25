@@ -24,23 +24,10 @@ public class PGDBInterface implements DBInterface {
         log.setLevel(logLevel);
     }
 
-    @Override
-    public <T> T rawQuery_deprecated(
-            final FunctionThrows<Connection, PreparedStatement, Exception> query,
-            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
-    ) {
-        var conn = connection.getConnection().orElseThrow(
+    private Connection getUnsafeConnection() {
+        return connection.getConnection().orElseThrow(
                 () -> new RuntimeException("SQL: getConnection boom 💥!")
         );
-
-        try (
-                var preparedStatement = query.apply(conn);
-                var resultSet = preparedStatement.executeQuery()
-        ) {
-            return resultSetMapper.apply(resultSet);
-        } catch (final Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     @Override
@@ -96,9 +83,7 @@ public class PGDBInterface implements DBInterface {
     ) {
         ResultSet resultSet = null;
 
-        var conn = connection.getConnection().orElseThrow(
-                () -> new RuntimeException("SQL: getConnection boom 💥!")
-        );
+        var conn = getUnsafeConnection();
 
         try (
                 var preparedStatement = conn.prepareStatement(query);
@@ -133,7 +118,50 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public int upsert(final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
+    public int nextVal(final String query) {
+        return rawQuery(query, rs -> {
+            rs.next();
+            return rs.getInt("nextval");
+        });
+    }
+
+    @Override
+    public int upsert(
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
+            final FunctionThrows<ResultSet, Integer, Exception> idMapper
+    ) {
+        var conn = getUnsafeConnection();
+        ResultSet resultSet = null;
+
+        try (var preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            if (values != null) {
+                setStatementValues(preparedStatement, values);
+            }
+            preparedStatement.executeUpdate();
+            resultSet = preparedStatement.getGeneratedKeys();
+            return idMapper.apply(resultSet);
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (final Exception ex) {
+                    log.severe("Failed to close ResultSet");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void delete(final String query, final Object[] values) {
+
+    }
+
+    @Override
+    public int upsertDeprecated(
+            final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         var helper = new UpdateFieldsAndValuesHelper(omitId, fields, values);
 
@@ -162,7 +190,7 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public void delete(final String tableName, final int id) {
+    public void deleteDeprecated(final String tableName, final int id) {
         var sql = "DELETE FROM " + tableName + " WHERE id=?";
         connection.getConnection().ifPresent(conn -> {
             try (

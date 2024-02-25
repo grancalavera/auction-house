@@ -3,6 +3,7 @@ package works.quiet.cli.etc;
 import org.junit.jupiter.api.Test;
 import works.quiet.user.User;
 
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -33,6 +34,9 @@ public class ScratchpadTest {
         // Java: Instant (Java 8 , or Jodatime).
         //         JDBC: java.sql.Timestamp
         // PostgreSQL: TIMESTAMP WITH TIMEZONE (TIMESTAMPTZ)
+
+        BigInteger x = BigInteger.valueOf(1);
+        int y = x.intValueExact();
     }
 
 
