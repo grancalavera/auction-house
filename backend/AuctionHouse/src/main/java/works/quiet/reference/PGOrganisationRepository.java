@@ -26,11 +26,11 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     @Override
     public Optional<Organisation> findById(final int id) {
-        return dbInterface.queryOne(conn -> {
-            var st = conn.prepareStatement("SELECT * from organisations WHERE id=? LIMIT 1");
-            st.setInt(1, id);
-            return st;
-        }, rowMapper::fromResulSet);
+        return dbInterface.queryOne(
+                "SELECT * from organisations WHERE id=? LIMIT 1",
+                new Object[]{id},
+                rowMapper::fromResulSet
+        );
     }
 
     /**
@@ -41,11 +41,11 @@ public class PGOrganisationRepository implements OrganisationRepository {
      */
     @Override
     public Optional<Organisation> findByName(final String name) {
-        return dbInterface.queryOne(conn -> {
-            var st = conn.prepareStatement("SELECT * from organisations WHERE name=?");
-            st.setString(1, name);
-            return st;
-        }, rowMapper::fromResulSet);
+        return dbInterface.queryOne(
+                "SELECT * from organisations WHERE name=?",
+                new Object[]{name},
+                rowMapper::fromResulSet
+        );
     }
 
     @Override

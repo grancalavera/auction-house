@@ -72,6 +72,22 @@ public class PGDBInterface implements DBInterface {
         });
     }
 
+    public <T> Optional<T> queryOne(
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
+            final FunctionThrows<ResultSet, T, Exception> rowMapper
+    ) {
+        return rawQuery(query, values, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
+    }
+
+    @Override
+    public <T> Optional<T> queryOne(
+            @Language("PostgreSQL") final String query,
+            final FunctionThrows<ResultSet, T, Exception> rowMapper
+    ) {
+        return queryOne(query, null, rowMapper);
+    }
+
     @Override
     public <T> T rawQuery(
             @Language("PostgreSQL") final String query,
@@ -107,20 +123,12 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public <T> Optional<T> queryOne(
-            final FunctionThrows<Connection, PreparedStatement, Exception> query,
-            final FunctionThrows<ResultSet, T, Exception> rowMapper
-    ) {
-        return rawQuery_deprecated(query, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
-    }
-
-    @Override
     public boolean queryExists(@Language("PostgreSQL") final String query, final Object[] values) {
         return rawQuery(query, values, ResultSet::next);
     }
 
     @Override
-    public long queryCount(final String query) {
+    public long queryCount(@Language("PostgreSQL") final String query) {
         return rawQuery(query, rs -> rs.next() ? rs.getLong("count") : 0);
     }
 

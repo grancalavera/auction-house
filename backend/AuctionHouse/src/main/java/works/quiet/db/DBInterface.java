@@ -38,7 +38,15 @@ public interface DBInterface {
     );
 
     <T> Optional<T> queryOne(
-            FunctionThrows<Connection, PreparedStatement, Exception> query,
+            @Language("PostgreSQL")
+            String query,
+            Object[] values,
+            FunctionThrows<ResultSet, T, Exception> rowMapper
+    );
+
+    <T> Optional<T> queryOne(
+            @Language("PostgreSQL")
+            String query,
             FunctionThrows<ResultSet, T, Exception> rowMapper
     );
 
