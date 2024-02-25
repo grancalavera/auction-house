@@ -1,14 +1,14 @@
 package works.quiet.user;
 
 import lombok.extern.java.Log;
-import works.quiet.db.PGRowMapper;
+import works.quiet.db.PGMapper;
 import works.quiet.reference.Organisation;
 
 import java.sql.ResultSet;
 import java.util.logging.Level;
 
 @Log
-public class PGUserMapper implements PGRowMapper<User> {
+public class PGUserMapper implements PGMapper<User> {
     public PGUserMapper(final Level logLevel) {
         log.setLevel(logLevel);
     }
