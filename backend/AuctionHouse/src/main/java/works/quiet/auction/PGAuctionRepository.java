@@ -69,19 +69,19 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public Auction save(final Auction entity) {
         var closedAt = entity.getClosedAt();
-        var id = dbInterface.upsertDeprecated(
-                "auctions",
-                entity.getId() == 0,
-                new String[]{
-                        "id",
-                        "sellerId",
-                        "symbol",
-                        "quantity",
-                        "price",
-                        "statusId",
-                        "createdAt",
-                        "closedAt"
-                },
+
+        var id = dbInterface.upsert(
+                "INSERT INTO auctions"
+                + "(id, sellerid, symbol, quantity, price, statusid, createdat, closedat) "
+                + "values (?, ?, ?, ?, ?, ?, ?, ?)"
+                + "ON CONFLICT (id) DO UPDATE SET "
+                + "sellerid = excluded.sellerid,"
+                + "symbol = excluded.symbol,"
+                + "quantity = excluded.quantity,"
+                + "price = excluded.price,"
+                + "statusid = excluded.statusid,"
+                + "createdat = excluded.createdat,"
+                + "closedat = excluded.closedat",
                 new Object[]{
                         entity.getId(),
                         entity.getSellerId(),
@@ -91,7 +91,12 @@ public class PGAuctionRepository implements AuctionRepository {
                         entity.getStatus().getId(),
                         Timestamp.from(entity.getCreatedAt()),
                         closedAt == null ? null : Timestamp.from(entity.getClosedAt())
-                });
+                },
+                rs -> {
+                    rs.next();
+                    return rs.getInt("id");
+                }
+        );
 
         return entity.toBuilder().id(id).build();
     }
@@ -127,7 +132,7 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
         return dbInterface.rawQuery(
-                "SELECT * FROM auctions WHERE sellerId=? AND id=?",
+                auctionsQuery + " WHERE auction.sellerId=? AND auction.id=?",
                 new Object[]{sellerId, auctionId},
                 rs -> {
                     var result = auctionRawQueryMapper.fromResulSet(rs);

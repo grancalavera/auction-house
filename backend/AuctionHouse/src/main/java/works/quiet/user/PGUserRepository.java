@@ -88,13 +88,13 @@ public class PGUserRepository implements UserRepository {
                         + "(id, username, password, firstName, lastName, organisationid, roleId, accountStatusId)"
                         + "values (?, ?, ?, ?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
-                        + "username = EXCLUDED.username,"
-                        + "password = EXCLUDED.password,"
-                        + "firstName = EXCLUDED.firstName,"
-                        + "lastName = EXCLUDED.lastName,"
-                        + "organisationId = EXCLUDED.organisationId,"
-                        + "roleId = EXCLUDED.roleId,"
-                        + "accountStatusId = EXCLUDED.accountStatusId",
+                        + "username = excluded.username,"
+                        + "password = excluded.password,"
+                        + "firstName = excluded.firstName,"
+                        + "lastName = excluded.lastName,"
+                        + "organisationId = excluded.organisationId,"
+                        + "roleId = excluded.roleId,"
+                        + "accountStatusId = excluded.accountStatusId",
                 new Object[]{
                         entity.getId() == 0 ? nextId() : entity.getId(),
                         entity.getUsername(),

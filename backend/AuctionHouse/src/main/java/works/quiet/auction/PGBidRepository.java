@@ -43,24 +43,27 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public Bid save(final Bid entity) {
-        var id = dbInterface.upsertDeprecated(
-                "bids",
-                entity.getId() == 0,
-                new String[]{
-                        "id",
-                        "bidderId",
-                        "auctionId",
-                        "amount",
-                        "createdAt",
-                },
+        var id = dbInterface.upsert(
+                "INSERT INTO bids"
+                        + "(id, bidderId, auctionId, amount, createdAt)"
+                        + "values (?, ?, ?, ?, ?)"
+                        + "ON CONFLICT (id) DO UPDATE SET "
+                        + "bidderId = excluded.bidderId,"
+                        + "auctionId = excluded.auctionId,"
+                        + "amount = excluded.amount,"
+                        + "createdAt = excluded.createdAt",
                 new Object[]{
-                        entity.getId(),
+                        entity.getId() == 0 ? nextId() : entity.getId(),
                         entity.getBidderId(),
                         entity.getAuctionId(),
                         entity.getAmount(),
                         Timestamp.from(entity.getCreatedAt())
+                }, rs -> {
+                    rs.next();
+                    return rs.getInt("id");
                 }
         );
+
         return entity.toBuilder().id(id).build();
     }
 
@@ -71,7 +74,6 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public int nextId() {
-        return 0;
+        return dbInterface.nextVal("SELECT nextval('bids_id_seq')");
     }
-
 }

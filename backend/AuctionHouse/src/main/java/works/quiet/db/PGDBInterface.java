@@ -12,7 +12,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
@@ -157,36 +156,6 @@ public class PGDBInterface implements DBInterface {
     @Override
     public void delete(final String query, final Object[] values) {
 
-    }
-
-    @Override
-    public int upsertDeprecated(
-            final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
-        AtomicReference<Integer> idRef = new AtomicReference<>();
-        var helper = new UpdateFieldsAndValuesHelper(omitId, fields, values);
-
-        var sql = "INSERT INTO " + tableName + " (" + helper.getFieldNames() + ")"
-                + " VALUES (" + helper.getValuePlaceholders() + ")"
-                + " ON CONFLICT (id)"
-                + " DO UPDATE SET"
-                + " " + helper.getConflictResolution();
-
-        connection.getConnection().ifPresent(conn -> {
-            try (var st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                var stValues = helper.getValues();
-                setStatementValues(st, stValues);
-                st.executeUpdate();
-                var rs = st.getGeneratedKeys();
-                rs.next();
-                var id = rs.getInt("id");
-                idRef.set(id);
-            } catch (final SQLException ex) {
-                log.severe(ex.toString());
-                throw new RuntimeException(ex);
-            }
-        });
-
-        return idRef.get();
     }
 
     @Override
