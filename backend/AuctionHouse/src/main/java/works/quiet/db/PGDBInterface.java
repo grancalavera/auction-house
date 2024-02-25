@@ -1,6 +1,7 @@
 package works.quiet.db;
 
 import lombok.extern.java.Log;
+import org.intellij.lang.annotations.Language;
 import works.quiet.etc.FunctionThrows;
 
 import java.sql.Connection;
@@ -44,6 +45,39 @@ public class PGDBInterface implements DBInterface {
 
 
     @Override
+    public <T> T rawQ(
+            @Language("PostgreSQL")
+            final String query,
+            final Object[] values,
+            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
+    ) {
+        ResultSet resultSet = null;
+
+        var conn = connection.getConnection().orElseThrow(
+                () -> new RuntimeException("SQL: getConnection boom 💥!")
+        );
+
+        try (
+                var preparedStatement = conn.prepareStatement(query);
+        ) {
+            setStatementValues(preparedStatement, values);
+            resultSet = preparedStatement.executeQuery();
+            return resultSetMapper.apply(resultSet);
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (final Exception ex) {
+                    log.severe("Failed to close ResultSet");
+                }
+            }
+
+        }
+    }
+
+    @Override
     public <T> List<T> queryMany(
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
@@ -77,6 +111,7 @@ public class PGDBInterface implements DBInterface {
     public long queryCount(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
         return rawQuery(query, rs -> rs.next() ? rs.getLong("count") : 0);
     }
+
     @Override
     public int upsert(final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
         AtomicReference<Integer> idRef = new AtomicReference<>();

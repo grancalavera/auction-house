@@ -1,5 +1,6 @@
 package works.quiet.db;
 
+import org.intellij.lang.annotations.Language;
 import works.quiet.etc.FunctionThrows;
 
 import java.sql.Connection;
@@ -9,6 +10,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DBInterface {
+
+    <T> T rawQ(
+            @Language("PostgreSQL") String query,
+            Object[] values,
+            FunctionThrows<ResultSet, T, Exception> resultSetMapper
+    );
+
     <T> List<T> queryMany(
             FunctionThrows<Connection, PreparedStatement, Exception> query,
             FunctionThrows<ResultSet, T, Exception> rowMapper
