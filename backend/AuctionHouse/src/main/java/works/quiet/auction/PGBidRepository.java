@@ -48,10 +48,10 @@ public class PGBidRepository implements BidRepository {
                 entity.getId() == 0,
                 new String[]{
                         "id",
-                        "bidder_id",
-                        "auction_id",
+                        "bidderId",
+                        "auctionId",
                         "amount",
-                        "bidTimestamp",
+                        "createdAt",
                 },
                 new Object[]{
                         entity.getId(),

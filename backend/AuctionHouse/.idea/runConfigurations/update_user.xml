@@ -20,7 +20,7 @@
         <list>
           <option value="run" />
           <option value="--args" />
-          <option value="&quot;admin update-user -f changed 1" />
+          <option value="&quot;admin update-user -f updated 1" />
         </list>
       </option>
       <option name="vmOptions" />

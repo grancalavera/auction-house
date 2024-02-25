@@ -14,5 +14,4 @@ from auctions a
     left join users u on a.sellerId = u.id
     left join auctionStatus s on a.statusId = s.id
     left join bids b on b.auctionId = a.id
-    left join users z on b.bidderId = z.id
-where u.id=:user_id
+    left join users z on b.bidderId = z.id;
