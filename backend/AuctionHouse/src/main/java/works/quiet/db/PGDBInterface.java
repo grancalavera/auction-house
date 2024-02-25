@@ -12,7 +12,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 
 @Log
@@ -24,23 +23,10 @@ public class PGDBInterface implements DBInterface {
         log.setLevel(logLevel);
     }
 
-    @Override
-    public <T> T rawQuery_deprecated(
-            final FunctionThrows<Connection, PreparedStatement, Exception> query,
-            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
-    ) {
-        var conn = connection.getConnection().orElseThrow(
+    private Connection getUnsafeConnection() {
+        return connection.getConnection().orElseThrow(
                 () -> new RuntimeException("SQL: getConnection boom 💥!")
         );
-
-        try (
-                var preparedStatement = query.apply(conn);
-                var resultSet = preparedStatement.executeQuery()
-        ) {
-            return resultSetMapper.apply(resultSet);
-        } catch (final Exception ex) {
-            throw new RuntimeException(ex);
-        }
     }
 
     @Override
@@ -96,9 +82,7 @@ public class PGDBInterface implements DBInterface {
     ) {
         ResultSet resultSet = null;
 
-        var conn = connection.getConnection().orElseThrow(
-                () -> new RuntimeException("SQL: getConnection boom 💥!")
-        );
+        var conn = getUnsafeConnection();
 
         try (
                 var preparedStatement = conn.prepareStatement(query);
@@ -133,47 +117,53 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public int upsert(final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
-        AtomicReference<Integer> idRef = new AtomicReference<>();
-        var helper = new UpdateFieldsAndValuesHelper(omitId, fields, values);
-
-        var sql = "INSERT INTO " + tableName + " (" + helper.getFieldNames() + ")"
-                + " VALUES (" + helper.getValuePlaceholders() + ")"
-                + " ON CONFLICT (id)"
-                + " DO UPDATE SET"
-                + " " + helper.getConflictResolution();
-
-        connection.getConnection().ifPresent(conn -> {
-            try (var st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                var stValues = helper.getValues();
-                setStatementValues(st, stValues);
-                st.executeUpdate();
-                var rs = st.getGeneratedKeys();
-                rs.next();
-                var id = rs.getInt("id");
-                idRef.set(id);
-            } catch (final SQLException ex) {
-                log.severe(ex.toString());
-                throw new RuntimeException(ex);
-            }
+    public int nextVal(final String query) {
+        return rawQuery(query, rs -> {
+            rs.next();
+            return rs.getInt("nextval");
         });
-
-        return idRef.get();
     }
 
     @Override
-    public void delete(final String tableName, final int id) {
-        var sql = "DELETE FROM " + tableName + " WHERE id=?";
-        connection.getConnection().ifPresent(conn -> {
-            try (
-                    PreparedStatement st = conn.prepareStatement(sql);
-            ) {
-                st.setInt(1, id);
-                st.executeUpdate();
-            } catch (final SQLException ex) {
-                throw new RuntimeException(ex);
+    public int upsert(
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
+            final FunctionThrows<ResultSet, Integer, Exception> idMapper
+    ) {
+        var conn = getUnsafeConnection();
+        ResultSet resultSet = null;
+
+        try (var preparedStatement = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+            if (values != null) {
+                setStatementValues(preparedStatement, values);
             }
-        });
+            preparedStatement.executeUpdate();
+            resultSet = preparedStatement.getGeneratedKeys();
+            return idMapper.apply(resultSet);
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (final Exception ex) {
+                    log.severe("Failed to close ResultSet");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void delete(final String query, final Object[] values) {
+        var conn = getUnsafeConnection();
+        try (var preparedStatement = conn.prepareStatement(query)) {
+            if (values != null) {
+                setStatementValues(preparedStatement, values);
+                preparedStatement.executeUpdate();
+            }
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     // https://stackoverflow.com/a/2563492

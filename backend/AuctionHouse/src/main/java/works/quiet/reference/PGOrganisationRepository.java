@@ -72,4 +72,9 @@ public class PGOrganisationRepository implements OrganisationRepository {
     public void delete(final Organisation entity) {
         throw new RuntimeException("Not Implemented");
     }
+
+    @Override
+    public int nextId() {
+        return 0;
+    }
 }
