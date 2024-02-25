@@ -17,7 +17,9 @@ public class PGAuctionRawQueryMapper implements PGMapper<List<Auction>> {
 
     public PGAuctionRawQueryMapper(
             final Level logLevel,
-            final PGMapper<Auction> auctionRowMapper, final PGMapper<Bid> bidRowMapper) {
+            final PGMapper<Auction> auctionRowMapper,
+            final PGMapper<Bid> bidRowMapper
+    ) {
         this.auctionRowMapper = auctionRowMapper;
         this.bidRowMapper = bidRowMapper;
         log.setLevel(logLevel);

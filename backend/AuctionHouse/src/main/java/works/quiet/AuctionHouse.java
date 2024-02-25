@@ -174,8 +174,7 @@ class AuctionHouse {
         var auctionRepository = new PGAuctionRepository(
                 logLevel,
                 dbInterface,
-                new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel)),
-                new PGAuctionRowMapper(logLevel)
+                new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel))
         );
 
         var bidRepository = new PGBidRepository(

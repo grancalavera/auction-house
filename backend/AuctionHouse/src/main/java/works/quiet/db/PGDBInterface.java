@@ -42,6 +42,7 @@ public class PGDBInterface implements DBInterface {
         }
     }
 
+
     @Override
     public <T> List<T> queryMany(
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
@@ -81,7 +82,7 @@ public class PGDBInterface implements DBInterface {
         AtomicReference<Integer> idRef = new AtomicReference<>();
         var helper = new UpdateFieldsAndValuesHelper(omitId, fields, values);
 
-        String sql = "INSERT INTO " + tableName + " (" + helper.getFieldNames() + ")"
+        var sql = "INSERT INTO " + tableName + " (" + helper.getFieldNames() + ")"
                 + " VALUES (" + helper.getValuePlaceholders() + ")"
                 + " ON CONFLICT (id)"
                 + " DO UPDATE SET"
@@ -107,9 +108,10 @@ public class PGDBInterface implements DBInterface {
 
     @Override
     public void delete(final String tableName, final int id) {
+        var sql = "DELETE FROM " + tableName + " WHERE id=?";
         connection.getConnection().ifPresent(conn -> {
             try (
-                    PreparedStatement st = conn.prepareStatement("DELETE FROM " + tableName + " WHERE id=?");
+                    PreparedStatement st = conn.prepareStatement(sql);
             ) {
                 st.setInt(1, id);
                 st.executeUpdate();

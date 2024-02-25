@@ -13,7 +13,6 @@ import java.util.logging.Level;
 public class PGAuctionRepository implements AuctionRepository {
     private final DBInterface dbInterface;
     private final PGMapper<List<Auction>> auctionRawQueryMapper;
-    private final PGMapper<Auction> auctionRowMapper;
     private final String auctionsQuery = "SELECT"
             + " auction.id,"
             + " auction.sellerId,"
@@ -34,22 +33,23 @@ public class PGAuctionRepository implements AuctionRepository {
     public PGAuctionRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGMapper<List<Auction>> auctionRawQueryMapper,
-            final PGMapper<Auction> auctionRowMapper
+            final PGMapper<List<Auction>> auctionRawQueryMapper
     ) {
         this.dbInterface = dbInterface;
-        this.auctionRowMapper = auctionRowMapper;
         this.auctionRawQueryMapper = auctionRawQueryMapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public Optional<Auction> findById(final int id) {
-        return dbInterface.queryOne(conn -> {
-            var st = conn.prepareStatement("SELECT * from auctions WHERE id=? LIMIT 1");
+        return dbInterface.rawQuery(conn -> {
+            var st = conn.prepareStatement(auctionsQuery + " WHERE auction.id=? LIMIT 1");
             st.setInt(1, id);
             return st;
-        }, auctionRowMapper::fromResulSet);
+        }, rs -> {
+            var result = auctionRawQueryMapper.fromResulSet(rs);
+            return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+        });
     }
 
     @Override
@@ -106,7 +106,6 @@ public class PGAuctionRepository implements AuctionRepository {
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
         return dbInterface.rawQuery(conn -> {
                     var st = conn.prepareStatement(auctionsQuery + " WHERE auction.sellerId=?");
-
                     st.setInt(1, sellerId);
                     return st;
                 },
@@ -116,29 +115,32 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
-        return dbInterface.queryMany(conn -> {
+        return dbInterface.rawQuery(conn -> {
                     var st = conn.prepareStatement(
                             // the comparison with NULL is "require" because an illegal state is representable:
                             // status can be CLOSED and the auction can have a closedAt timestamp.
-                            "SELECT * FROM auctions WHERE sellerId!=? AND statusId=? AND closedAt IS NULL"
+                            auctionsQuery + " WHERE sellerId!=? AND statusId=? AND closedAt IS NULL"
                     );
                     st.setInt(1, bidderId);
                     st.setInt(2, AuctionStatus.OPEN.getId());
                     return st;
                 },
-                auctionRowMapper::fromResulSet
+                auctionRawQueryMapper::fromResulSet
         );
     }
 
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
-        return dbInterface.queryOne(conn -> {
+        return dbInterface.rawQuery(conn -> {
                     var st = conn.prepareStatement("SELECT * FROM auctions WHERE sellerId=? AND id=?");
                     st.setInt(1, sellerId);
                     st.setInt(2, auctionId);
                     return st;
                 },
-                auctionRowMapper::fromResulSet
+                rs -> {
+                    var result = auctionRawQueryMapper.fromResulSet(rs);
+                    return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+                }
         );
     }
 }

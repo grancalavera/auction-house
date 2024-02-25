@@ -27,6 +27,8 @@ public interface DBInterface {
     boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
 
     long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
+
     int upsert(String tableName, boolean omitId, String[] fields, Object[] values);
+
     void delete(String tableName, int id);
 }
