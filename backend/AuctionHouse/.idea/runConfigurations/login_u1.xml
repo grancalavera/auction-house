@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="create-user" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="login u1" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
@@ -20,13 +20,19 @@
         <list>
           <option value="run" />
           <option value="--args" />
-          <option value="&quot;admin create-user -p 123 -f first -l last -o 'The Bank of England' -u crated&quot;" />
+          <option value="&quot;login -u u1 -p 123&quot;" />
         </list>
       </option>
       <option name="vmOptions" />
     </ExternalSystemSettings>
     <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
     <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+    <EXTENSION ID="com.intellij.execution.ExternalSystemRunConfigurationJavaExtension">
+      <extension name="com.fapiko.jetbrains.plugins.better_direnv.runconfigs.IdeaRunConfigurationExtension">
+        <option name="DIRENV_ENABLED" value="true" />
+        <option name="DIRENV_TRUSTED" value="true" />
+      </extension>
+    </EXTENSION>
     <DebugAllEnabled>false</DebugAllEnabled>
     <RunAsTest>false</RunAsTest>
     <method v="2" />

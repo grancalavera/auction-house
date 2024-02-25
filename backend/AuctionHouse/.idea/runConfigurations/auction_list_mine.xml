@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="create-user" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="auction list-mine" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
@@ -20,7 +20,7 @@
         <list>
           <option value="run" />
           <option value="--args" />
-          <option value="&quot;admin create-user -p 123 -f first -l last -o 'The Bank of England' -u crated&quot;" />
+          <option value="&quot;auction list-mine&quot;" />
         </list>
       </option>
       <option name="vmOptions" />

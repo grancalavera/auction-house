@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="delete-user" type="GradleRunConfiguration" factoryName="Gradle">
+  <configuration default="false" name="auction create" type="GradleRunConfiguration" factoryName="Gradle">
     <ExternalSystemSettings>
       <option name="env">
         <map>
@@ -20,7 +20,7 @@
         <list>
           <option value="run" />
           <option value="--args" />
-          <option value="&quot;admin delete-user 0&quot;" />
+          <option value="&quot;auction create -s Z -q 1 -p 1.000&quot;" />
         </list>
       </option>
       <option name="vmOptions" />
