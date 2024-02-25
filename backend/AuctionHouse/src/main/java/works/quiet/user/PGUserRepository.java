@@ -22,12 +22,12 @@ public class PGUserRepository implements UserRepository {
             + " u.lastname,"
             + " a.name as accountStatus,"
             + " r.name as role,"
-            + " u.organisation_id as organisationId,"
+            + " u.organisationId as organisationId,"
             + " o.name as organisation"
             + " FROM users u"
-            + " LEFT JOIN organisations o on u.organisation_id = o.id"
-            + " LEFT JOIN account_status a on u.accountstatus_id = a.id"
-            + " LEFT JOIN roles r on u.role_id = r.id";
+            + " LEFT JOIN organisations o on u.organisationId = o.id"
+            + " LEFT JOIN accountStatus a on u.accountstatusId = a.id"
+            + " LEFT JOIN roles r on u.roleid = r.id";
 
     public PGUserRepository(
             final Level logLevel,
@@ -113,9 +113,9 @@ public class PGUserRepository implements UserRepository {
                         "password",
                         "firstName",
                         "lastName",
-                        "organisation_id",
-                        "role_id",
-                        "accountStatus_id"
+                        "organisationId",
+                        "roleId",
+                        "accountStatusId"
                 },
                 new Object[]{
                         entity.getId(),

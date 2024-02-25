@@ -1,6 +1,6 @@
 select  
     a.id, 
-    a.seller_id as seller_id,
+    a.sellerId as sellerId,
     u.username as seller,
     a.symbol,
     a.quantity,
@@ -9,5 +9,5 @@ select
     a.createdAt,
     a.closedAt
 from auctions a
-    left join users u on a.seller_id = u.id
-    left join auction_status s on a.status_id = s.id;
+    left join users u on a.sellerId = u.id
+    left join auctionStatus s on a.statusId = s.id;

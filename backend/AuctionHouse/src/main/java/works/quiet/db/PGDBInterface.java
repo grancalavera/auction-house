@@ -89,13 +89,15 @@ public class PGDBInterface implements DBInterface {
 
         connection.getConnection().ifPresent(conn -> {
             try (var st = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-                setStatementValues(st, helper.getValues());
+                var stValues = helper.getValues();
+                setStatementValues(st, stValues);
                 st.executeUpdate();
                 var rs = st.getGeneratedKeys();
                 rs.next();
                 var id = rs.getInt("id");
                 idRef.set(id);
             } catch (final SQLException ex) {
+                log.severe(ex.toString());
                 throw new RuntimeException(ex);
             }
         });

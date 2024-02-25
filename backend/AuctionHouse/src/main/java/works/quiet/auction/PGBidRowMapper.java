@@ -22,9 +22,9 @@ public class PGBidRowMapper implements PGRowMapper<Bid> {
     public Bid fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
         return Bid.builder()
                 .id(resultSet.getInt(fieldPrefix + "id"))
-                .auctionId(resultSet.getInt(fieldPrefix + "auction_id"))
+                .auctionId(resultSet.getInt(fieldPrefix + "auctionId"))
                 .amount(resultSet.getBigDecimal(fieldPrefix + "amount"))
-                .bidderId(resultSet.getInt(fieldPrefix + "bidder_id"))
+                .bidderId(resultSet.getInt(fieldPrefix + "bidderId"))
                 .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
                 .build();
     }

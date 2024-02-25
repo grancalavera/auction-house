@@ -1,1 +1,1 @@
-select * from auction_status;
+select * from auctionStatus;

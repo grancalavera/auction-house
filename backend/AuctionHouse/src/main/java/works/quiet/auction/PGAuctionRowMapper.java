@@ -20,14 +20,14 @@ public class PGAuctionRowMapper implements PGRowMapper<Auction> {
 
     @Override
     public Auction fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
-        var status = AuctionStatus.ofInt(resultSet.getInt(fieldPrefix + "status_id"));
+        var status = AuctionStatus.ofInt(resultSet.getInt(fieldPrefix + "statusId"));
 
         var builder = Auction.builder()
                 .id(resultSet.getInt(fieldPrefix + "id"))
                 .symbol(resultSet.getString(fieldPrefix + "symbol"))
                 .quantity(resultSet.getInt(fieldPrefix + "quantity"))
                 .price(resultSet.getBigDecimal(fieldPrefix + "price"))
-                .sellerId(resultSet.getInt(fieldPrefix + "seller_id"))
+                .sellerId(resultSet.getInt(fieldPrefix + "sellerId"))
                 .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
                 .status(status);
 

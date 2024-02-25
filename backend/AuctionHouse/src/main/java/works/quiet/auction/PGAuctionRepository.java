@@ -57,16 +57,17 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public Auction save(final Auction entity) {
+        var closedAt = entity.getClosedAt();
         var id = dbInterface.upsert(
                 "auctions",
                 entity.getId() == 0,
                 new String[]{
                         "id",
-                        "seller_id",
+                        "sellerId",
                         "symbol",
                         "quantity",
                         "price",
-                        "status_id",
+                        "statusId",
                         "createdAt",
                         "closedAt"
                 },
@@ -78,7 +79,7 @@ public class PGAuctionRepository implements AuctionRepository {
                         entity.getPrice(),
                         entity.getStatus().getId(),
                         Timestamp.from(entity.getCreatedAt()),
-                        Timestamp.from(entity.getClosedAt())
+                        closedAt == null ? null : Timestamp.from(entity.getClosedAt())
                 });
 
         return entity.toBuilder().id(id).build();
@@ -94,21 +95,21 @@ public class PGAuctionRepository implements AuctionRepository {
         return dbInterface.rawQuery(conn -> {
                     var st = conn.prepareStatement("SELECT"
                             + " auction.id,"
-                            + " auction.seller_id,"
+                            + " auction.sellerId,"
                             + " auction.symbol,"
                             + " auction.quantity,"
                             + " auction.price,"
-                            + " auction.status_id,"
+                            + " auction.statusId,"
                             + " auction.createdAt,"
                             + " auction.closedAt,"
                             + " bid.id as bid_id,"
-                            + " bid.auction_id as bid_auction_id,"
-                            + " bid.bidder_id as bid_bidder_id,"
+                            + " bid.auctionId as bid_auction_id,"
+                            + " bid.bidderId as bid_bidder_id,"
                             + " bid.amount as bid_amount,"
                             + " bid.createdAt as bid_createdAt"
                             + " FROM auctions auction"
-                            + " LEFT JOIN bids bid ON bid.auction_id = auction.id"
-                            + " WHERE auction.seller_id=?");
+                            + " LEFT JOIN bids bid ON bid.auctionId = auction.id"
+                            + " WHERE auction.sellerId=?");
 
                     st.setInt(1, sellerId);
                     return st;
@@ -127,7 +128,7 @@ public class PGAuctionRepository implements AuctionRepository {
                             result.put(auctionId, row);
                         }
 
-                        if (rs.getInt("bid_id") == 0) {
+                        if (rs.getInt("bidId") == 0) {
                             break;
                         }
 
@@ -143,7 +144,11 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
         return dbInterface.queryMany(conn -> {
-                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id!=? AND status_id=?");
+                    var st = conn.prepareStatement(
+                            // the comparison with NULL is "require" because an illegal state is representable:
+                            // status can be CLOSED and the auction can have a closedAt timestamp.
+                            "SELECT * FROM auctions WHERE sellerId!=? AND statusId=? AND closedAt IS NULL"
+                    );
                     st.setInt(1, bidderId);
                     st.setInt(2, AuctionStatus.OPEN.getId());
                     return st;
@@ -155,7 +160,7 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
         return dbInterface.queryOne(conn -> {
-                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE seller_id=? AND id=?");
+                    var st = conn.prepareStatement("SELECT * FROM auctions WHERE sellerId=? AND id=?");
                     st.setInt(1, sellerId);
                     st.setInt(2, auctionId);
                     return st;

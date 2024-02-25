@@ -95,12 +95,7 @@ public class AdminService {
 
     public User createUser(final User user) {
         userValidator.validate(user);
-        User created;
-        try {
-            created = userRepository.save(user);
-        } catch (final Exception e) {
-            throw new RuntimeException(resources.getString("errors.createUserFailed"));
-        }
+        var created = userRepository.save(user);
         var id = created.getId();
         log.info("created user with id=" + id);
         return created;
@@ -108,14 +103,7 @@ public class AdminService {
 
     public User updateUser(final User user) {
         userValidator.validate(user);
-        User updated;
-
-        try {
-            updated = userRepository.save(user);
-        } catch (final Exception e) {
-            throw new RuntimeException(resources.getString("errors.updateUserFailed"));
-        }
-
+        var updated = userRepository.save(user);
         log.info("updated user with id=" + updated.getId());
         return updated;
     }

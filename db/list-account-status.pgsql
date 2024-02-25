@@ -1,1 +1,1 @@
-select * from account_status;
+select * from accountStatus;

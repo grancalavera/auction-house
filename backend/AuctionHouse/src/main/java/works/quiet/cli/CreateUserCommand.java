@@ -96,7 +96,7 @@ public class CreateUserCommand extends CommandWithAdmin {
                 .accountStatus(accountStatus)
                 .build();
 
-        var userId = adminService.createUser(user);
-        System.out.printf("Created user with user.id=%d\n", userId);
+        var userId = adminService.createUser(user).getId();
+        spec.commandLine().getOut().printf("Created user with user.id=%d.\n", userId);
     }
 }
