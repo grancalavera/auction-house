@@ -114,7 +114,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public void delete(final User user) {
-        dbInterface.deleteDeprecated("users", user.getId());
+        dbInterface.delete("DELETE FROM users WHERE id=?", new Object[]{user.getId()});
     }
 
     @Override

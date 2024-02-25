@@ -155,22 +155,15 @@ public class PGDBInterface implements DBInterface {
 
     @Override
     public void delete(final String query, final Object[] values) {
-
-    }
-
-    @Override
-    public void deleteDeprecated(final String tableName, final int id) {
-        var sql = "DELETE FROM " + tableName + " WHERE id=?";
-        connection.getConnection().ifPresent(conn -> {
-            try (
-                    PreparedStatement st = conn.prepareStatement(sql);
-            ) {
-                st.setInt(1, id);
-                st.executeUpdate();
-            } catch (final SQLException ex) {
-                throw new RuntimeException(ex);
+        var conn = getUnsafeConnection();
+        try (var preparedStatement = conn.prepareStatement(query)) {
+            if (values != null) {
+                setStatementValues(preparedStatement, values);
+                preparedStatement.executeUpdate();
             }
-        });
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     // https://stackoverflow.com/a/2563492

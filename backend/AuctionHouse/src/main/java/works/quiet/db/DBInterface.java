@@ -61,9 +61,4 @@ public interface DBInterface {
     );
 
     void delete(@Language("PostgreSQL") String query, Object[] values);
-
-    void deleteDeprecated(
-            String tableName,
-            int id
-    );
 }

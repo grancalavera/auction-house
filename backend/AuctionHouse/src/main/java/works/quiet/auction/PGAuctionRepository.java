@@ -113,7 +113,8 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
-        return dbInterface.rawQuery(auctionsQuery + " WHERE auction.sellerId=?",
+        return dbInterface.rawQuery(
+                auctionsQuery + " WHERE auction.sellerId=?",
                 new Object[]{sellerId},
                 auctionRawQueryMapper::fromResulSet
         );
