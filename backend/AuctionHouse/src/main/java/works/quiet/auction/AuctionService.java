@@ -67,9 +67,7 @@ public class AuctionService {
                 ));
 
         if (auction.getStatus() == AuctionStatus.CLOSED) {
-            var message = resources.getFormattedString("errors.auctionAlreadyClosed", auctionId);
-            log.severe(message);
-            throw new RuntimeException(message);
+            throw new RuntimeException(resources.getFormattedString("errors.auctionAlreadyClosed", auctionId));
         }
 
         var closed = auction.toBuilder()
