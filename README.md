@@ -23,7 +23,11 @@
 ### As a normal user I can:
 
 - [x] Create an auction, with a symbol, non-negative quantity, and a minimum accepted price for the auction, which has to be a positive value. After an auction has been created it is automatically open for bidding.
-- [x] Close an open auction created by myself (but not auctions created by other users). The bids with the best prices are selected to fulfil the auction, in descending order. Bids can be partially filled if total bids exceed the quantity available. Ties between matching bids are broken by submission time (i.e. earlier bids win). [lc] I'll process the results of the auction as a projection of the bids, so that I can have a single source of truth for the auction results.
+- [x] Close an open auction created by myself (but not auctions created by other users):
+  - [ ] The bids with the best prices are selected to fulfil the auction, in descending order.
+  - [ ] Bids can be partially filled if total bids exceed the quantity available.
+  - [ ] Ties between matching bids are broken by submission time (i.e. earlier bids win).
+  - [lc] I'll process the results of the auction as a projection of the bids, so that I can have a single source of truth for the auction results.
 - [x] View a list of all of my auctions, including whether it is still open or has been closed
 - [x] as well as all bids on the auction so far.
 - [ ] For closed auctions, also see a summary of the auction result, which includes the total revenue, total sold quantity, and winning bid(s), as well as the closing time of the auction.
