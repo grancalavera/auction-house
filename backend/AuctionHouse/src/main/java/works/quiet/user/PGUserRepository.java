@@ -4,7 +4,6 @@ import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.PGMapper;
 
-import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -41,37 +40,25 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        return dbInterface.queryMany(
-                (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
-                rowMapper::fromResulSet
+        return dbInterface.queryMany(usersQuery + " ORDER BY id", rowMapper::fromResulSet
         );
     }
 
     @Override
     public long count() {
-        return dbInterface.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
+        return dbInterface.queryCount("SELECT count(id) FROM users");
     }
 
     @Override
     public boolean exists(final int id) {
-        return dbInterface.queryExists(conn -> {
-            var st = conn.prepareStatement("SELECT id FROM users WHERE id=?");
-            st.setInt(1, id);
-            return st;
-        });
+        return dbInterface.queryExists("SELECT id FROM users WHERE id=?", new Object[]{id});
     }
 
     @Override
     public Optional<User> findWithCredentials(final String username, final String password) {
         return dbInterface.queryOne(
-                (conn) -> {
-                    PreparedStatement st = conn.prepareStatement(
-                            usersQuery + " WHERE u.username=? AND u.password=?"
-                    );
-                    st.setString(1, username);
-                    st.setString(2, password);
-                    return st;
-                },
+                usersQuery + " WHERE u.username=? AND u.password=?",
+                new Object[]{username, password},
                 rowMapper::fromResulSet
         );
     }
@@ -79,12 +66,8 @@ public class PGUserRepository implements UserRepository {
     @Override
     public Optional<User> findByUsername(final String username) {
         return dbInterface.queryOne(
-                (conn) -> {
-                    var st = conn.prepareStatement(usersQuery + " WHERE u.username=?"
-                    );
-                    st.setString(1, username);
-                    return st;
-                },
+                usersQuery + " WHERE u.username=?",
+                new Object[]{username},
                 rowMapper::fromResulSet
         );
     }
@@ -92,12 +75,8 @@ public class PGUserRepository implements UserRepository {
     @Override
     public Optional<User> findById(final int id) {
         return dbInterface.queryOne(
-                (conn) -> {
-                    var st = conn.prepareStatement(usersQuery + " WHERE u.id=?"
-                    );
-                    st.setInt(1, id);
-                    return st;
-                },
+                usersQuery + " WHERE u.id=?",
+                new Object[]{id},
                 rowMapper::fromResulSet
         );
     }

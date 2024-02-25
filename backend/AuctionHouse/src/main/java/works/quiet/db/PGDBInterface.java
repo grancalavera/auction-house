@@ -1,6 +1,7 @@
 package works.quiet.db;
 
 import lombok.extern.java.Log;
+import org.intellij.lang.annotations.Language;
 import works.quiet.etc.FunctionThrows;
 
 import java.sql.Connection;
@@ -24,7 +25,7 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public <T> T rawQuery(
+    public <T> T rawQuery_deprecated(
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
             final FunctionThrows<ResultSet, T, Exception> resultSetMapper
     ) {
@@ -42,13 +43,26 @@ public class PGDBInterface implements DBInterface {
         }
     }
 
+    @Override
+    public <T> T rawQuery(
+            @Language("PostgreSQL") final String query,
+            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
+    ) {
+        return rawQuery(query, null, resultSetMapper);
+    }
+
+    @Override
+    public <T> List<T> queryMany(final String query, final FunctionThrows<ResultSet, T, Exception> rowMapper) {
+        return queryMany(query, null, rowMapper);
+    }
 
     @Override
     public <T> List<T> queryMany(
-            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
     ) {
-        return rawQuery(query, resultSet -> {
+        return rawQuery(query, values, resultSet -> {
             var result = new ArrayList<T>();
             while (resultSet.next()) {
                 var row = rowMapper.apply(resultSet);
@@ -58,25 +72,66 @@ public class PGDBInterface implements DBInterface {
         });
     }
 
-    @Override
     public <T> Optional<T> queryOne(
-            final FunctionThrows<Connection, PreparedStatement, Exception> query,
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
     ) {
-        return rawQuery(query, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
+        return rawQuery(query, values, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
     }
 
     @Override
-    public boolean queryExists(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        return queryOne(query,
-                rs -> rs.next() ? Optional.of(rs.getInt("id")) : Optional.empty()
-        ).isPresent();
+    public <T> Optional<T> queryOne(
+            @Language("PostgreSQL") final String query,
+            final FunctionThrows<ResultSet, T, Exception> rowMapper
+    ) {
+        return queryOne(query, null, rowMapper);
     }
 
     @Override
-    public long queryCount(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
+    public <T> T rawQuery(
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
+            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
+    ) {
+        ResultSet resultSet = null;
+
+        var conn = connection.getConnection().orElseThrow(
+                () -> new RuntimeException("SQL: getConnection boom 💥!")
+        );
+
+        try (
+                var preparedStatement = conn.prepareStatement(query);
+        ) {
+            if (values != null) {
+                setStatementValues(preparedStatement, values);
+            }
+            resultSet = preparedStatement.executeQuery();
+            return resultSetMapper.apply(resultSet);
+        } catch (final Exception ex) {
+            throw new RuntimeException(ex);
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (final Exception ex) {
+                    log.severe("Failed to close ResultSet");
+                }
+            }
+
+        }
+    }
+
+    @Override
+    public boolean queryExists(@Language("PostgreSQL") final String query, final Object[] values) {
+        return rawQuery(query, values, ResultSet::next);
+    }
+
+    @Override
+    public long queryCount(@Language("PostgreSQL") final String query) {
         return rawQuery(query, rs -> rs.next() ? rs.getLong("count") : 0);
     }
+
     @Override
     public int upsert(final String tableName, final boolean omitId, final String[] fields, final Object[] values) {
         AtomicReference<Integer> idRef = new AtomicReference<>();
