@@ -103,8 +103,8 @@ public class PGAuctionRepository implements AuctionRepository {
                             + " auction.createdAt,"
                             + " auction.closedAt,"
                             + " bid.id as bid_id,"
-                            + " bid.auctionId as bid_auction_id,"
-                            + " bid.bidderId as bid_bidder_id,"
+                            + " bid.auctionId as bid_auctionId,"
+                            + " bid.bidderId as bid_bidderId,"
                             + " bid.amount as bid_amount,"
                             + " bid.createdAt as bid_createdAt"
                             + " FROM auctions auction"
@@ -128,7 +128,8 @@ public class PGAuctionRepository implements AuctionRepository {
                             result.put(auctionId, row);
                         }
 
-                        if (rs.getInt("bidId") == 0) {
+                        // all bid-related columns use the "bid_" prefix
+                        if (rs.getInt("bid_id") == 0) {
                             break;
                         }
 
