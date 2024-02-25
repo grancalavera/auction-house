@@ -41,15 +41,13 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public List<User> findAll() {
-        return dbInterface.queryMany(
-                (conn) -> conn.prepareStatement(usersQuery + " ORDER BY id"),
-                rowMapper::fromResulSet
+        return dbInterface.queryMany(usersQuery + " ORDER BY id", rowMapper::fromResulSet
         );
     }
 
     @Override
     public long count() {
-        return dbInterface.queryCount(conn -> conn.prepareStatement("SELECT count(id) FROM users"));
+        return dbInterface.queryCount("SELECT count(id) FROM users");
     }
 
     @Override

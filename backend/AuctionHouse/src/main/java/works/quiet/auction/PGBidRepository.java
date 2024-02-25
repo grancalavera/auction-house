@@ -33,7 +33,7 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public long count() {
-        return dbInterface.queryCount(conn -> conn.prepareStatement("SELECT count(id) from bids"));
+        return dbInterface.queryCount("SELECT count(id) from bids");
     }
 
     @Override

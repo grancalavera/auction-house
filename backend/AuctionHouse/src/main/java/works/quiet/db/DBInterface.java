@@ -18,8 +18,22 @@ public interface DBInterface {
             FunctionThrows<ResultSet, T, Exception> resultSetMapper
     );
 
+    <T> T rawQuery(
+            @Language("PostgreSQL")
+            String query,
+            FunctionThrows<ResultSet, T, Exception> resultSetMapper
+    );
+
     <T> List<T> queryMany(
-            FunctionThrows<Connection, PreparedStatement, Exception> query,
+            @Language("PostgreSQL")
+            String query,
+            FunctionThrows<ResultSet, T, Exception> rowMapper
+    );
+
+    <T> List<T> queryMany(
+            @Language("PostgreSQL")
+            String query,
+            Object[] values,
             FunctionThrows<ResultSet, T, Exception> rowMapper
     );
 
@@ -34,15 +48,9 @@ public interface DBInterface {
             FunctionThrows<ResultSet, T, Exception> resultSetMapper
     );
 
-    boolean queryExists(
-            @Language("PostgreSQL")
-            String query,
-            Object[] values
-    );
+    boolean queryExists(@Language("PostgreSQL") String query, Object[] values);
 
-    long queryCount(
-            FunctionThrows<Connection, PreparedStatement, Exception> query
-    );
+    long queryCount(@Language("PostgreSQL") String query);
 
     int upsert(
             String tableName,

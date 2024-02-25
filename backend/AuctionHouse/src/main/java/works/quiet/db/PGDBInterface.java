@@ -43,6 +43,34 @@ public class PGDBInterface implements DBInterface {
         }
     }
 
+    @Override
+    public <T> T rawQuery(
+            @Language("PostgreSQL") final String query,
+            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
+    ) {
+        return rawQuery(query, null, resultSetMapper);
+    }
+
+    @Override
+    public <T> List<T> queryMany(final String query, final FunctionThrows<ResultSet, T, Exception> rowMapper) {
+        return queryMany(query, null, rowMapper);
+    }
+
+    @Override
+    public <T> List<T> queryMany(
+            @Language("PostgreSQL") final String query,
+            final Object[] values,
+            final FunctionThrows<ResultSet, T, Exception> rowMapper
+    ) {
+        return rawQuery(query, values, resultSet -> {
+            var result = new ArrayList<T>();
+            while (resultSet.next()) {
+                var row = rowMapper.apply(resultSet);
+                result.add(row);
+            }
+            return result;
+        });
+    }
 
     @Override
     public <T> T rawQuery(
@@ -59,7 +87,9 @@ public class PGDBInterface implements DBInterface {
         try (
                 var preparedStatement = conn.prepareStatement(query);
         ) {
-            setStatementValues(preparedStatement, values);
+            if (values != null) {
+                setStatementValues(preparedStatement, values);
+            }
             resultSet = preparedStatement.executeQuery();
             return resultSetMapper.apply(resultSet);
         } catch (final Exception ex) {
@@ -77,21 +107,6 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public <T> List<T> queryMany(
-            final FunctionThrows<Connection, PreparedStatement, Exception> query,
-            final FunctionThrows<ResultSet, T, Exception> rowMapper
-    ) {
-        return rawQuery_deprecated(query, resultSet -> {
-            var result = new ArrayList<T>();
-            while (resultSet.next()) {
-                var row = rowMapper.apply(resultSet);
-                result.add(row);
-            }
-            return result;
-        });
-    }
-
-    @Override
     public <T> Optional<T> queryOne(
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
@@ -105,8 +120,8 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public long queryCount(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        return rawQuery_deprecated(query, rs -> rs.next() ? rs.getLong("count") : 0);
+    public long queryCount(final String query) {
+        return rawQuery(query, rs -> rs.next() ? rs.getLong("count") : 0);
     }
 
     @Override

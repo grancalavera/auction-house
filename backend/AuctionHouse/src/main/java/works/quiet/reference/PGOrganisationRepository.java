@@ -11,16 +11,16 @@ import java.util.logging.Level;
 @Log
 public class PGOrganisationRepository implements OrganisationRepository {
     private final DBInterface dbInterface;
-    private final PGMapper<Organisation> mapper;
+    private final PGMapper<Organisation> rowMapper;
 
 
     public PGOrganisationRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGMapper<Organisation> mapper
+            final PGMapper<Organisation> rowMapper
     ) {
         this.dbInterface = dbInterface;
-        this.mapper = mapper;
+        this.rowMapper = rowMapper;
         log.setLevel(logLevel);
     }
 
@@ -30,7 +30,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
             var st = conn.prepareStatement("SELECT * from organisations WHERE id=? LIMIT 1");
             st.setInt(1, id);
             return st;
-        }, mapper::fromResulSet);
+        }, rowMapper::fromResulSet);
     }
 
     /**
@@ -45,22 +45,17 @@ public class PGOrganisationRepository implements OrganisationRepository {
             var st = conn.prepareStatement("SELECT * from organisations WHERE name=?");
             st.setString(1, name);
             return st;
-        }, mapper::fromResulSet);
+        }, rowMapper::fromResulSet);
     }
 
     @Override
     public List<Organisation> findAll() {
-        return dbInterface.queryMany(conn ->
-                        conn.prepareStatement("SELECT * FROM organisations"),
-                mapper::fromResulSet
-        );
+        return dbInterface.queryMany("SELECT * FROM organisations", rowMapper::fromResulSet);
     }
 
     @Override
     public long count() {
-        return dbInterface.queryCount(
-                conn -> conn.prepareStatement("SELECT count(id) from organisations")
-        );
+        return dbInterface.queryCount("SELECT count(id) from organisations");
     }
 
     @Override
