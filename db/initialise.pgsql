@@ -81,19 +81,14 @@ insert into roles (name)
     on conflict do nothing;
 
 insert into users
-        (username, password, firstName, lastName, organisation_id, accountstatus_id, role_id)
+        (id, username, password, firstName, lastName, organisation_id, accountstatus_id, role_id)
     values
-        ('admin', 'admin', 'Coyote', 'Jackson', 1, 1, 2),   -- 1
-        ('bu', '123', 'Blocked', 'User', 3, 2, 1),          -- 2
-        ('ba', '123', 'Blocked', 'Admin', 3, 2, 2),         -- 3
-
-        ('u4', '123', 'Frank', 'Takahashi', 2, 1, 1),       -- 4
-        ('u5', '123', 'Alice', 'Smith', 2, 1, 1),           -- 5
-        ('u6', '123', 'Jiří', 'Novák', 1, 1, 1),            -- 6
-        ('u7', '123', 'Marta', 'García', 2, 1, 1),          -- 7
-        ('u8', '123', 'Andrea', 'Rossi', 1, 1, 1),          -- 8
-        ('u9', '123', 'Jens', 'Hansen', 2, 1, 1),           -- 9
-        ('u10', '123', 'Piotr', 'Nowak', 4, 1, 1)           -- 10
+        (1, 'u1', '123', 'Frank', 'Takahashi', 2, 1, 1),
+        (2, 'u2', '123', 'Alice', 'Smith', 2, 1, 1),
+        (3, 'u3', '123', 'Jiří', 'Novák', 1, 1, 1),
+        (4, 'admin', 'admin', 'admin', 'amin', 1, 1, 2),
+        (5, 'bu', '123', 'Blocked', 'User', 3, 2, 1),
+        (6 , 'ba', '123', 'Blocked', 'Admin', 3, 2, 2)
     on conflict do nothing;
 
 insert into auction_status (name)
@@ -105,52 +100,27 @@ insert into auction_status (name)
 insert into auctions
         (id, seller_id, symbol, quantity, price, status_id, createdAt, closedAt)
     values
-        (1, 4, 'A', 1, 100.13, 1, now() at time zone 'utc', null),     
-        (2, 4, 'B', 1, 100.13, 1, now() at time zone 'utc', null),     
-        (3, 4, 'C', 1, 100.13, 1, now() at time zone 'utc', null),   
-
-        (4, 5, 'ZA', 1, 200.13, 1, now() at time zone 'utc', null),    
-        (5, 5, 'ZB', 1, 200.13, 1, now() at time zone 'utc', null),    
-        
-        (6, 6, 'ZC', 1, 200.13, 1, now() at time zone 'utc', null),    
-        
-        (7, 8, 'ZD', 1, 200.13, 1, now() at time zone 'utc', null),    
-        (8, 8, 'Zr', 1, 200.13, 1, now() at time zone 'utc', null),    
-
-        (9, 5, 'ZA', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
-        (10, 5, 'ZB', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),   
-
-        (11, 8, 'ZC', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),    
-        (12, 8, 'hK', 1, 200.13, 2, now() at time zone 'utc', now() at time zone 'utc'),
-
-        (13, 10, 'ODDITY', 23, 101.101, 1, now() at time zone 'utc', null);
-
+        -- open auction with single unit
+        (1, 1, 'A', 1, 1.000, 1, now() at time zone 'utc', null),
+        -- closed auction with single unit
+        (2, 1, 'A', 1, 1.000, 2, now() at time zone 'utc', now() at time zone 'utc'),
+        -- open auction with multiple units
+        (3, 1, 'B', 2, 1.000, 1, now() at time zone 'utc', null),
+        -- open auction, no bids (keep empty)
+        (5, 1, 'C', 1, 1.000, 1, now() at time zone 'utc', null),
+        -- closed auction, no bids (keep empty)
+        (6, 1, 'C', 1, 1.000, 1, now() at time zone 'utc', now() at time zone 'utc');
 
 insert into bids
         (auction_id, bidder_id, amount, createdAt)
     values
-        (1, 10, 100.17, (now() at time zone 'utc')),
-        (1, 9, 100.17, (now() at time zone 'utc')),
-        
-        (2, 10, 100.17, (now() at time zone 'utc')),
-        (2, 9, 100.17, (now() at time zone 'utc')),
-        
-        (3, 10, 100.17, (now() at time zone 'utc')),
-        (3, 9, 100.17, (now() at time zone 'utc')),
-        
-        (4, 10, 200.17, (now() at time zone 'utc')),
-        (4, 9, 200.17, (now() at time zone 'utc')),
-        
-        (5, 10, 200.17, (now() at time zone 'utc')),
-        (5, 9, 200.17, (now() at time zone 'utc')),
-        
-        (6, 10, 200.17, (now() at time zone 'utc')),
-        (6, 9, 200.17, (now() at time zone 'utc')),
-        
-        (9, 4, 200.17, (now() at time zone 'utc')),
+        -- auction 1: u1 wins
+        (1, 2, 1.001, now() at time zone 'utc'),
+        (1, 3, 1.000, now() at time zone 'utc'),
+        -- auction 2: u1 wins
+        (2, 2, 1.001, now() at time zone 'utc'),
+        (2, 3, 1.000, now() at time zone 'utc'),
+        -- auction 3: u1 wins
+        (3, 2, 2.001, now() at time zone 'utc'),
+        (3, 3, 2.000, now() at time zone 'utc');
 
-        (11, 10, 200.17, (now() at time zone 'utc')),
-        (11, 8, 200.17, (now() at time zone 'utc'));
-        
-        
-        
