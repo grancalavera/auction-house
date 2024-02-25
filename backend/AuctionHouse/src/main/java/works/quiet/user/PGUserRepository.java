@@ -54,11 +54,7 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public boolean exists(final int id) {
-        return dbInterface.queryExists(conn -> {
-            var st = conn.prepareStatement("SELECT id FROM users WHERE id=?");
-            st.setInt(1, id);
-            return st;
-        });
+        return dbInterface.queryExists("SELECT id FROM users WHERE id=?", new Object[]{id});
     }
 
     @Override

@@ -42,7 +42,7 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public Optional<Auction> findById(final int id) {
-        return dbInterface.rawQuery(conn -> {
+        return dbInterface.rawQuery_deprecated(conn -> {
             var st = conn.prepareStatement(auctionsQuery + " WHERE auction.id=? LIMIT 1");
             st.setInt(1, id);
             return st;
@@ -104,7 +104,7 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
-        return dbInterface.rawQuery(conn -> {
+        return dbInterface.rawQuery_deprecated(conn -> {
                     var st = conn.prepareStatement(auctionsQuery + " WHERE auction.sellerId=?");
                     st.setInt(1, sellerId);
                     return st;
@@ -115,7 +115,7 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
-        return dbInterface.rawQ(
+        return dbInterface.rawQuery(
                 // the comparison with NULL is "required" because an illegal state is representable:
                 // status can be CLOSED and the auction can have a closedAt timestamp.
                 auctionsQuery + " WHERE sellerId!=? AND statusId=? AND closedAt IS NULL",
@@ -125,7 +125,7 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
-        return dbInterface.rawQuery(conn -> {
+        return dbInterface.rawQuery_deprecated(conn -> {
                     var st = conn.prepareStatement("SELECT * FROM auctions WHERE sellerId=? AND id=?");
                     st.setInt(1, sellerId);
                     st.setInt(2, auctionId);

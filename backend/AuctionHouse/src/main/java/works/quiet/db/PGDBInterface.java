@@ -25,7 +25,7 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public <T> T rawQuery(
+    public <T> T rawQuery_deprecated(
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
             final FunctionThrows<ResultSet, T, Exception> resultSetMapper
     ) {
@@ -45,9 +45,8 @@ public class PGDBInterface implements DBInterface {
 
 
     @Override
-    public <T> T rawQ(
-            @Language("PostgreSQL")
-            final String query,
+    public <T> T rawQuery(
+            @Language("PostgreSQL") final String query,
             final Object[] values,
             final FunctionThrows<ResultSet, T, Exception> resultSetMapper
     ) {
@@ -82,7 +81,7 @@ public class PGDBInterface implements DBInterface {
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
     ) {
-        return rawQuery(query, resultSet -> {
+        return rawQuery_deprecated(query, resultSet -> {
             var result = new ArrayList<T>();
             while (resultSet.next()) {
                 var row = rowMapper.apply(resultSet);
@@ -97,19 +96,17 @@ public class PGDBInterface implements DBInterface {
             final FunctionThrows<Connection, PreparedStatement, Exception> query,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
     ) {
-        return rawQuery(query, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
+        return rawQuery_deprecated(query, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
     }
 
     @Override
-    public boolean queryExists(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        return queryOne(query,
-                rs -> rs.next() ? Optional.of(rs.getInt("id")) : Optional.empty()
-        ).isPresent();
+    public boolean queryExists(@Language("PostgreSQL") final String query, final Object[] values) {
+        return rawQuery(query, values, ResultSet::next);
     }
 
     @Override
     public long queryCount(final FunctionThrows<Connection, PreparedStatement, Exception> query) {
-        return rawQuery(query, rs -> rs.next() ? rs.getLong("count") : 0);
+        return rawQuery_deprecated(query, rs -> rs.next() ? rs.getLong("count") : 0);
     }
 
     @Override

@@ -11,8 +11,9 @@ import java.util.Optional;
 
 public interface DBInterface {
 
-    <T> T rawQ(
-            @Language("PostgreSQL") String query,
+    <T> T rawQuery(
+            @Language("PostgreSQL")
+            String query,
             Object[] values,
             FunctionThrows<ResultSet, T, Exception> resultSetMapper
     );
@@ -27,16 +28,31 @@ public interface DBInterface {
             FunctionThrows<ResultSet, T, Exception> rowMapper
     );
 
-    <T> T rawQuery(
+    @SuppressWarnings("checkstyle:MethodName")
+    <T> T rawQuery_deprecated(
             FunctionThrows<Connection, PreparedStatement, Exception> query,
             FunctionThrows<ResultSet, T, Exception> resultSetMapper
     );
 
-    boolean queryExists(FunctionThrows<Connection, PreparedStatement, Exception> query);
+    boolean queryExists(
+            @Language("PostgreSQL")
+            String query,
+            Object[] values
+    );
 
-    long queryCount(FunctionThrows<Connection, PreparedStatement, Exception> query);
+    long queryCount(
+            FunctionThrows<Connection, PreparedStatement, Exception> query
+    );
 
-    int upsert(String tableName, boolean omitId, String[] fields, Object[] values);
+    int upsert(
+            String tableName,
+            boolean omitId,
+            String[] fields,
+            Object[] values
+    );
 
-    void delete(String tableName, int id);
+    void delete(
+            String tableName,
+            int id
+    );
 }
