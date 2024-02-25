@@ -2,7 +2,7 @@ package works.quiet.user;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
-import works.quiet.db.PGRowMapper;
+import works.quiet.db.PGMapper;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.logging.Level;
 @Log
 public class PGUserRepository implements UserRepository {
     private final DBInterface dbInterface;
-    private final PGRowMapper<User> rowMapper;
+    private final PGMapper<User> rowMapper;
 
     private final String usersQuery = "SELECT"
             + " u.id,"
@@ -32,7 +32,7 @@ public class PGUserRepository implements UserRepository {
     public PGUserRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGRowMapper<User> rowMapper
+            final PGMapper<User> rowMapper
     ) {
         this.dbInterface = dbInterface;
         this.rowMapper = rowMapper;

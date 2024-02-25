@@ -2,7 +2,7 @@ package works.quiet.reference;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
-import works.quiet.db.PGRowMapper;
+import works.quiet.db.PGMapper;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,13 +11,13 @@ import java.util.logging.Level;
 @Log
 public class PGOrganisationRepository implements OrganisationRepository {
     private final DBInterface dbInterface;
-    private final PGRowMapper<Organisation> mapper;
+    private final PGMapper<Organisation> mapper;
 
 
     public PGOrganisationRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGRowMapper<Organisation> mapper
+            final PGMapper<Organisation> mapper
     ) {
         this.dbInterface = dbInterface;
         this.mapper = mapper;

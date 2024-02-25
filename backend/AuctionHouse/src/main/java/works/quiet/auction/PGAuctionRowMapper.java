@@ -1,13 +1,13 @@
 package works.quiet.auction;
 
 import lombok.extern.java.Log;
-import works.quiet.db.PGRowMapper;
+import works.quiet.db.PGMapper;
 
 import java.sql.ResultSet;
 import java.util.logging.Level;
 
 @Log
-public class PGAuctionRowMapper implements PGRowMapper<Auction> {
+public class PGAuctionRowMapper implements PGMapper<Auction> {
 
     public PGAuctionRowMapper(final Level logLevel) {
         log.setLevel(logLevel);

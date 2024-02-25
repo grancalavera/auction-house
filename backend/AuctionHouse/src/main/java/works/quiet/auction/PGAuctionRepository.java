@@ -2,42 +2,54 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
-import works.quiet.db.PGRowMapper;
+import works.quiet.db.PGMapper;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
 public class PGAuctionRepository implements AuctionRepository {
     private final DBInterface dbInterface;
-    private final PGRowMapper<Auction> auctionRowMapper;
-    private final PGRowMapper<Bid> bidRowMapper;
-
+    private final PGMapper<List<Auction>> auctionRawQueryMapper;
+    private final String auctionsQuery = "SELECT"
+            + " auction.id,"
+            + " auction.sellerId,"
+            + " auction.symbol,"
+            + " auction.quantity,"
+            + " auction.price,"
+            + " auction.statusId,"
+            + " auction.createdAt,"
+            + " auction.closedAt,"
+            + " bid.id as bid_id,"
+            + " bid.auctionId as bid_auctionId,"
+            + " bid.bidderId as bid_bidderId,"
+            + " bid.amount as bid_amount,"
+            + " bid.createdAt as bid_createdAt"
+            + " FROM auctions auction"
+            + " LEFT JOIN bids bid ON bid.auctionId = auction.id";
 
     public PGAuctionRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGRowMapper<Auction> auctionRowMapper,
-            final PGRowMapper<Bid> bidRowMapper
+            final PGMapper<List<Auction>> auctionRawQueryMapper
     ) {
         this.dbInterface = dbInterface;
-        this.auctionRowMapper = auctionRowMapper;
-        this.bidRowMapper = bidRowMapper;
+        this.auctionRawQueryMapper = auctionRawQueryMapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public Optional<Auction> findById(final int id) {
-        return dbInterface.queryOne(conn -> {
-            var st = conn.prepareStatement("SELECT * from auctions WHERE id=? LIMIT 1");
+        return dbInterface.rawQuery(conn -> {
+            var st = conn.prepareStatement(auctionsQuery + " WHERE auction.id=? LIMIT 1");
             st.setInt(1, id);
             return st;
-        }, auctionRowMapper::fromResulSet);
+        }, rs -> {
+            var result = auctionRawQueryMapper.fromResulSet(rs);
+            return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+        });
     }
 
     @Override
@@ -93,80 +105,42 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
         return dbInterface.rawQuery(conn -> {
-                    var st = conn.prepareStatement("SELECT"
-                            + " auction.id,"
-                            + " auction.sellerId,"
-                            + " auction.symbol,"
-                            + " auction.quantity,"
-                            + " auction.price,"
-                            + " auction.statusId,"
-                            + " auction.createdAt,"
-                            + " auction.closedAt,"
-                            + " bid.id as bid_id,"
-                            + " bid.auctionId as bid_auctionId,"
-                            + " bid.bidderId as bid_bidderId,"
-                            + " bid.amount as bid_amount,"
-                            + " bid.createdAt as bid_createdAt"
-                            + " FROM auctions auction"
-                            + " LEFT JOIN bids bid ON bid.auctionId = auction.id"
-                            + " WHERE auction.sellerId=?");
-
+                    var st = conn.prepareStatement(auctionsQuery + " WHERE auction.sellerId=?");
                     st.setInt(1, sellerId);
                     return st;
                 },
-                rs -> {
-                    Map<Integer, Auction> result = new HashMap<>();
-
-                    while (rs.next()) {
-                        var auctionId = rs.getInt("id");
-                        Auction row;
-
-                        if (result.containsKey(auctionId)) {
-                            row = result.get(auctionId);
-                        } else {
-                            row = auctionRowMapper.fromResulSet(rs);
-                            result.put(auctionId, row);
-                        }
-
-                        // all bid-related columns use the "bid_" prefix
-                        if (rs.getInt("bid_id") == 0) {
-                            break;
-                        }
-
-                        var bid = bidRowMapper.fromResulSet("bid_", rs);
-                        row.getBids().add(bid);
-                    }
-
-                    return new ArrayList<>(result.values());
-                }
+                auctionRawQueryMapper::fromResulSet
         );
     }
 
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
-        return dbInterface.queryMany(conn -> {
+        return dbInterface.rawQuery(conn -> {
                     var st = conn.prepareStatement(
                             // the comparison with NULL is "require" because an illegal state is representable:
                             // status can be CLOSED and the auction can have a closedAt timestamp.
-                            "SELECT * FROM auctions WHERE sellerId!=? AND statusId=? AND closedAt IS NULL"
+                            auctionsQuery + " WHERE sellerId!=? AND statusId=? AND closedAt IS NULL"
                     );
                     st.setInt(1, bidderId);
                     st.setInt(2, AuctionStatus.OPEN.getId());
                     return st;
                 },
-                auctionRowMapper::fromResulSet
+                auctionRawQueryMapper::fromResulSet
         );
     }
 
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
-        return dbInterface.queryOne(conn -> {
+        return dbInterface.rawQuery(conn -> {
                     var st = conn.prepareStatement("SELECT * FROM auctions WHERE sellerId=? AND id=?");
                     st.setInt(1, sellerId);
                     st.setInt(2, auctionId);
                     return st;
                 },
-                auctionRowMapper::fromResulSet
+                rs -> {
+                    var result = auctionRawQueryMapper.fromResulSet(rs);
+                    return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
+                }
         );
     }
 }
