@@ -43,12 +43,10 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public Optional<Auction> findById(final int id) {
         return dbInterface.rawQuery(
+                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst(),
                 auctionsQuery + " WHERE auction.id=? LIMIT 1",
-                new Object[]{id},
-                rs -> {
-                    var result = auctionRawQueryMapper.fromResulSet(rs);
-                    return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
-                });
+                id
+        );
     }
 
     @Override
@@ -72,16 +70,16 @@ public class PGAuctionRepository implements AuctionRepository {
 
         var id = dbInterface.upsert(
                 "INSERT INTO auctions"
-                + "(id, sellerid, symbol, quantity, price, statusid, createdat, closedat) "
-                + "values (?, ?, ?, ?, ?, ?, ?, ?)"
-                + "ON CONFLICT (id) DO UPDATE SET "
-                + "sellerid = excluded.sellerid,"
-                + "symbol = excluded.symbol,"
-                + "quantity = excluded.quantity,"
-                + "price = excluded.price,"
-                + "statusid = excluded.statusid,"
-                + "createdat = excluded.createdat,"
-                + "closedat = excluded.closedat",
+                        + "(id, sellerid, symbol, quantity, price, statusid, createdat, closedat) "
+                        + "values (?, ?, ?, ?, ?, ?, ?, ?)"
+                        + "ON CONFLICT (id) DO UPDATE SET "
+                        + "sellerid = excluded.sellerid,"
+                        + "symbol = excluded.symbol,"
+                        + "quantity = excluded.quantity,"
+                        + "price = excluded.price,"
+                        + "statusid = excluded.statusid,"
+                        + "createdat = excluded.createdat,"
+                        + "closedat = excluded.closedat",
                 new Object[]{
                         entity.getId(),
                         entity.getSellerId(),
@@ -114,26 +112,27 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
         return dbInterface.rawQuery(
+                auctionRawQueryMapper::fromResulSet,
                 auctionsQuery + " WHERE auction.sellerId=?",
-                new Object[]{sellerId},
-                auctionRawQueryMapper::fromResulSet
+                sellerId
         );
     }
 
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
         return dbInterface.rawQuery(
+                auctionRawQueryMapper::fromResulSet,
                 auctionsQuery + " WHERE sellerId!=? AND closedAt IS NULL",
-                new Object[]{bidderId},
-                auctionRawQueryMapper::fromResulSet);
+                bidderId
+        );
     }
 
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
         return dbInterface.rawQuery(
+                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst(),
                 auctionsQuery + " WHERE auction.sellerId=? AND auction.id=?",
-                new Object[]{sellerId, auctionId},
-                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst()
+                sellerId, auctionId
         );
     }
 }

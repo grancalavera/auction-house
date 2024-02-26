@@ -30,14 +30,6 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public <T> T rawQuery(
-            @Language("PostgreSQL") final String query,
-            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
-    ) {
-        return rawQuery(query, null, resultSetMapper);
-    }
-
-    @Override
     public <T> List<T> queryMany(final String query, final FunctionThrows<ResultSet, T, Exception> rowMapper) {
         return queryMany(query, null, rowMapper);
     }
@@ -48,14 +40,14 @@ public class PGDBInterface implements DBInterface {
             final Object[] values,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
     ) {
-        return rawQuery(query, values, resultSet -> {
+        return rawQuery(resultSet -> {
             var result = new ArrayList<T>();
             while (resultSet.next()) {
                 var row = rowMapper.apply(resultSet);
                 result.add(row);
             }
             return result;
-        });
+        }, query, values);
     }
 
     public <T> Optional<T> queryOne(
@@ -63,7 +55,11 @@ public class PGDBInterface implements DBInterface {
             final Object[] values,
             final FunctionThrows<ResultSet, T, Exception> rowMapper
     ) {
-        return rawQuery(query, values, rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty());
+        return rawQuery(
+                rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty(),
+                query,
+                values
+        );
     }
 
     @Override
@@ -76,9 +72,9 @@ public class PGDBInterface implements DBInterface {
 
     @Override
     public <T> T rawQuery(
+            final FunctionThrows<ResultSet, T, Exception> resultSetMapper,
             @Language("PostgreSQL") final String query,
-            final Object[] values,
-            final FunctionThrows<ResultSet, T, Exception> resultSetMapper
+            final Object... values
     ) {
         ResultSet resultSet = null;
 
@@ -87,7 +83,7 @@ public class PGDBInterface implements DBInterface {
         try (
                 var preparedStatement = conn.prepareStatement(query);
         ) {
-            if (values != null) {
+            if (values.length > 0) {
                 setStatementValues(preparedStatement, values);
             }
             resultSet = preparedStatement.executeQuery();
@@ -108,20 +104,24 @@ public class PGDBInterface implements DBInterface {
 
     @Override
     public boolean queryExists(@Language("PostgreSQL") final String query, final Object[] values) {
-        return rawQuery(query, values, ResultSet::next);
+        return rawQuery(
+                ResultSet::next,
+                query,
+                values
+        );
     }
 
     @Override
     public long queryCount(@Language("PostgreSQL") final String query) {
-        return rawQuery(query, rs -> rs.next() ? rs.getLong("count") : 0);
+        return rawQuery(rs -> rs.next() ? rs.getLong("count") : 0, query);
     }
 
     @Override
     public int nextVal(final String query) {
-        return rawQuery(query, rs -> {
+        return rawQuery(rs -> {
             rs.next();
             return rs.getInt("nextval");
-        });
+        }, query);
     }
 
     @Override

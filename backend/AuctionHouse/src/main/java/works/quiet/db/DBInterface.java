@@ -10,16 +10,10 @@ import java.util.Optional;
 public interface DBInterface {
 
     <T> T rawQuery(
+            FunctionThrows<ResultSet, T, Exception> resultSetMapper,
             @Language("PostgreSQL")
             String query,
-            Object[] values,
-            FunctionThrows<ResultSet, T, Exception> resultSetMapper
-    );
-
-    <T> T rawQuery(
-            @Language("PostgreSQL")
-            String query,
-            FunctionThrows<ResultSet, T, Exception> resultSetMapper
+            Object... values
     );
 
     <T> List<T> queryMany(
