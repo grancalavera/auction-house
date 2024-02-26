@@ -27,9 +27,9 @@ public class PGOrganisationRepository implements OrganisationRepository {
     @Override
     public Optional<Organisation> findById(final int id) {
         return dbInterface.queryOne(
+                rowMapper::fromResulSet,
                 "SELECT * from organisations WHERE id=? LIMIT 1",
-                new Object[]{id},
-                rowMapper::fromResulSet
+                id
         );
     }
 
@@ -42,15 +42,15 @@ public class PGOrganisationRepository implements OrganisationRepository {
     @Override
     public Optional<Organisation> findByName(final String name) {
         return dbInterface.queryOne(
+                rowMapper::fromResulSet,
                 "SELECT * from organisations WHERE name=?",
-                new Object[]{name},
-                rowMapper::fromResulSet
+                name
         );
     }
 
     @Override
     public List<Organisation> findAll() {
-        return dbInterface.queryMany("SELECT * FROM organisations", rowMapper::fromResulSet);
+        return dbInterface.queryMany(rowMapper::fromResulSet, "SELECT * FROM organisations");
     }
 
     @Override
@@ -60,7 +60,7 @@ public class PGOrganisationRepository implements OrganisationRepository {
 
     @Override
     public boolean exists(final int id) {
-        return dbInterface.queryExists("SELECT id FROM organisations WHERE id=?", new Object[]{id});
+        return dbInterface.queryExists("SELECT id FROM organisations WHERE id=?", id);
     }
 
     @Override
@@ -74,7 +74,9 @@ public class PGOrganisationRepository implements OrganisationRepository {
     }
 
     @Override
-    public int nextId() {
-        return 0;
+    public int generateId(final Organisation entity) {
+        return entity.getId() == 0
+                ? dbInterface.nextVal("SELECT nextval('organisations_id_seq')")
+                : entity.getId();
     }
 }

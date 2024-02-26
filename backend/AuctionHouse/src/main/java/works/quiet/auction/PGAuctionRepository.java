@@ -13,13 +13,13 @@ import java.util.logging.Level;
 public class PGAuctionRepository implements AuctionRepository {
     private final DBInterface dbInterface;
     private final PGMapper<List<Auction>> auctionRawQueryMapper;
+    private final PGMapper<Integer> upsertMapper;
     private final String auctionsQuery = "SELECT"
             + " auction.id,"
             + " auction.sellerId,"
             + " auction.symbol,"
             + " auction.quantity,"
             + " auction.price,"
-            + " auction.statusId,"
             + " auction.createdAt,"
             + " auction.closedAt,"
             + " bid.id as bid_id,"
@@ -33,22 +33,22 @@ public class PGAuctionRepository implements AuctionRepository {
     public PGAuctionRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGMapper<List<Auction>> auctionRawQueryMapper
+            final PGMapper<List<Auction>> auctionRawQueryMapper,
+            final PGMapper<Integer> upsertMapper
     ) {
         this.dbInterface = dbInterface;
         this.auctionRawQueryMapper = auctionRawQueryMapper;
+        this.upsertMapper = upsertMapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public Optional<Auction> findById(final int id) {
         return dbInterface.rawQuery(
+                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst(),
                 auctionsQuery + " WHERE auction.id=? LIMIT 1",
-                new Object[]{id},
-                rs -> {
-                    var result = auctionRawQueryMapper.fromResulSet(rs);
-                    return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
-                });
+                id
+        );
     }
 
     @Override
@@ -71,31 +71,26 @@ public class PGAuctionRepository implements AuctionRepository {
         var closedAt = entity.getClosedAt();
 
         var id = dbInterface.upsert(
+                upsertMapper::fromResulSet,
+
                 "INSERT INTO auctions"
-                + "(id, sellerid, symbol, quantity, price, statusid, createdat, closedat) "
-                + "values (?, ?, ?, ?, ?, ?, ?, ?)"
-                + "ON CONFLICT (id) DO UPDATE SET "
-                + "sellerid = excluded.sellerid,"
-                + "symbol = excluded.symbol,"
-                + "quantity = excluded.quantity,"
-                + "price = excluded.price,"
-                + "statusid = excluded.statusid,"
-                + "createdat = excluded.createdat,"
-                + "closedat = excluded.closedat",
-                new Object[]{
-                        entity.getId(),
-                        entity.getSellerId(),
-                        entity.getSymbol(),
-                        entity.getQuantity(),
-                        entity.getPrice(),
-                        entity.getStatus().getId(),
-                        Timestamp.from(entity.getCreatedAt()),
-                        closedAt == null ? null : Timestamp.from(entity.getClosedAt())
-                },
-                rs -> {
-                    rs.next();
-                    return rs.getInt("id");
-                }
+                        + "(id, sellerid, symbol, quantity, price, createdat, closedat)"
+                        + "values (?, ?, ?, ?, ?, ?, ?)"
+                        + "ON CONFLICT (id) DO UPDATE SET "
+                        + "sellerid = excluded.sellerid,"
+                        + "symbol = excluded.symbol,"
+                        + "quantity = excluded.quantity,"
+                        + "price = excluded.price,"
+                        + "createdat = excluded.createdat,"
+                        + "closedat = excluded.closedat",
+
+                generateId(entity),
+                entity.getSellerId(),
+                entity.getSymbol(),
+                entity.getQuantity(),
+                entity.getPrice(),
+                Timestamp.from(entity.getCreatedAt()),
+                closedAt == null ? null : Timestamp.from(entity.getClosedAt())
         );
 
         return entity.toBuilder().id(id).build();
@@ -107,33 +102,34 @@ public class PGAuctionRepository implements AuctionRepository {
     }
 
     @Override
-    public int nextId() {
-        return 0;
+    public int generateId(final Auction entity) {
+        return entity.getId() == 0 ? dbInterface.nextVal("SELECT nextval('auctions_id_seq')") : entity.getId();
     }
 
     @Override
     public List<Auction> listAuctionsBySellerId(final int sellerId) {
         return dbInterface.rawQuery(
+                auctionRawQueryMapper::fromResulSet,
                 auctionsQuery + " WHERE auction.sellerId=?",
-                new Object[]{sellerId},
-                auctionRawQueryMapper::fromResulSet
+                sellerId
         );
     }
 
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
         return dbInterface.rawQuery(
+                auctionRawQueryMapper::fromResulSet,
                 auctionsQuery + " WHERE sellerId!=? AND closedAt IS NULL",
-                new Object[]{bidderId},
-                auctionRawQueryMapper::fromResulSet);
+                bidderId
+        );
     }
 
     @Override
     public Optional<Auction> findAuctionBySellerIdAndAuctionId(final int sellerId, final int auctionId) {
         return dbInterface.rawQuery(
+                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst(),
                 auctionsQuery + " WHERE auction.sellerId=? AND auction.id=?",
-                new Object[]{sellerId, auctionId},
-                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst()
+                sellerId, auctionId
         );
     }
 }

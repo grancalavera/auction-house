@@ -36,6 +36,7 @@ import works.quiet.db.DBConnection;
 import works.quiet.db.DBInterface;
 import works.quiet.db.PGConnection;
 import works.quiet.db.PGDBInterface;
+import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.resources.Resources;
@@ -152,7 +153,8 @@ class AuctionHouse {
         var userRepository = new PGUserRepository(
                 logLevel,
                 dbInterface,
-                new PGUserMapper(logLevel)
+                new PGUserMapper(logLevel),
+                new PGUpsertMapper(logLevel)
         );
 
         return new AdminService(
@@ -171,15 +173,19 @@ class AuctionHouse {
             final DBInterface dbInterface
     ) {
 
+        var upsertMapper = new PGUpsertMapper(logLevel);
+
         var auctionRepository = new PGAuctionRepository(
                 logLevel,
                 dbInterface,
-                new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel))
+                new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel)),
+                upsertMapper
         );
 
         var bidRepository = new PGBidRepository(
                 logLevel,
-                dbInterface
+                dbInterface,
+                upsertMapper
         );
 
         return new AuctionService(logLevel, resources, auctionRepository, bidRepository);
