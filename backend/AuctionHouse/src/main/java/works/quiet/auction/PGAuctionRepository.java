@@ -123,10 +123,8 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
         return dbInterface.rawQuery(
-                // the comparison with NULL is "required" because an illegal state is representable:
-                // status can be CLOSED and the auction can have a closedAt timestamp.
-                auctionsQuery + " WHERE sellerId!=? AND statusId=? AND closedAt IS NULL",
-                new Object[]{bidderId, AuctionStatus.OPEN.getId()},
+                auctionsQuery + " WHERE sellerId!=? AND closedAt IS NULL",
+                new Object[]{bidderId},
                 auctionRawQueryMapper::fromResulSet);
     }
 
@@ -135,10 +133,7 @@ public class PGAuctionRepository implements AuctionRepository {
         return dbInterface.rawQuery(
                 auctionsQuery + " WHERE auction.sellerId=? AND auction.id=?",
                 new Object[]{sellerId, auctionId},
-                rs -> {
-                    var result = auctionRawQueryMapper.fromResulSet(rs);
-                    return result.isEmpty() ? Optional.empty() : Optional.of(result.getFirst());
-                }
+                rs -> auctionRawQueryMapper.fromResulSet(rs).stream().findFirst()
         );
     }
 }

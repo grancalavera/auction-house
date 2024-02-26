@@ -4,5 +4,4 @@ drop table if exists accountStatus cascade;
 drop table if exists roles cascade;
 drop table if exists bids cascade;
 drop table if exists auctions cascade;
-drop table if exists auctionStatus cascade;
 drop extension if exists citext cascade;

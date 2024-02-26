@@ -37,8 +37,12 @@ public class ScratchpadTest {
 
         BigInteger x = BigInteger.valueOf(1);
         int y = x.intValueExact();
+        var z = foo();
     }
 
+    private Object[] foo(final Object... values) {
+        return values;
+    }
 
     @Test
     void test() {

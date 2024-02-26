@@ -32,11 +32,6 @@ create table if not exists users (
     roleId int references roles(id) not null
 );
 
-create table if not exists auctionStatus (
-    id serial primary key,
-    name varchar(256) unique not null
-);
-
 create table if not exists auctions (
     id serial primary key,
     sellerId int references users(id) not null,
@@ -45,7 +40,6 @@ create table if not exists auctions (
     -- not that I know
     -- https://stackoverflow.com/a/224866
     price numeric(19, 4) not null,
-    statusId int references auctionStatus(id) not null,
     createdAt timestamp with time zone not null,
     closedAt timestamp with time zone
 );
@@ -91,25 +85,19 @@ insert into users
         ('ba', '123', 'Blocked', 'Admin', 3, 2, 2)
     on conflict do nothing;
 
-insert into auctionStatus (name)
-    values
-        ('OPEN'),
-        ('CLOSED')
-    on conflict do nothing;
-
 insert into auctions
-        (sellerId, symbol, quantity, price, statusId, createdAt, closedAt)
+        (sellerId, symbol, quantity, price, createdAt, closedAt)
     values
         -- open auction with single unit
-        (1, 'A', 1, 1.000, 1, now() at time zone 'utc', null),
+        (1, 'A', 1, 1.000, now() at time zone 'utc', null),
         -- closed auction with single unit
-        (1, 'A', 1, 1.000, 2, now() at time zone 'utc', now() at time zone 'utc'),
+        (1, 'A', 1, 1.000, now() at time zone 'utc', now() at time zone 'utc'),
         -- open auction with multiple units
-        (1, 'B', 2, 1.000, 1, now() at time zone 'utc', null),
+        (1, 'B', 2, 1.000, now() at time zone 'utc', null),
         -- open auction, no bids (keep empty)
-        (1, 'C', 1, 1.000, 1, now() at time zone 'utc', null),
+        (1, 'C', 1, 1.000, now() at time zone 'utc', null),
         -- closed auction, no bids (keep empty)
-        (1, 'C', 1, 1.000, 2, now() at time zone 'utc', now() at time zone 'utc');
+        (1, 'C', 1, 1.000, now() at time zone 'utc', now() at time zone 'utc');
 
 insert into bids
         (auctionId, bidderId, amount, createdAt)
