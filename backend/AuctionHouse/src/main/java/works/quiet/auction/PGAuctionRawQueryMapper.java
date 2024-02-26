@@ -32,17 +32,21 @@ public class PGAuctionRawQueryMapper implements PGMapper<List<Auction>> {
 
     @Override
     public List<Auction> fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
-        Map<Integer, Auction> result = new HashMap<>();
+        // A map and a list yes... a list to keep the order of the query, and a map to
+        // find auctions quickly and add more bids to them as the ResultSet is mapped.
+        Map<Integer, Auction> index = new HashMap<>();
+        ArrayList<Auction> result = new ArrayList<>();
 
         while (resultSet.next()) {
             var auctionId = resultSet.getInt("id");
             Auction row;
 
-            if (result.containsKey(auctionId)) {
-                row = result.get(auctionId);
+            if (index.containsKey(auctionId)) {
+                row = index.get(auctionId);
             } else {
                 row = auctionRowMapper.fromResulSet(resultSet);
-                result.put(auctionId, row);
+                result.add(row);
+                index.put(auctionId, row);
             }
 
             // all bid-related columns use the "bid_" prefix
@@ -54,6 +58,6 @@ public class PGAuctionRawQueryMapper implements PGMapper<List<Auction>> {
             row.getBids().add(bid);
         }
 
-        return new ArrayList<>(result.values());
+        return result;
     }
 }
