@@ -16,5 +16,5 @@ public interface Repository<T> {
 
     void delete(T entity);
 
-    int nextId();
+    int generateId(T entity);
 }

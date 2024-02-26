@@ -2,6 +2,7 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
+import works.quiet.db.PGMapper;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -12,11 +13,14 @@ import java.util.logging.Level;
 public class PGBidRepository implements BidRepository {
 
     private final DBInterface dbInterface;
+    private final PGMapper<Integer> upsertMapper;
 
     public PGBidRepository(
             final Level logLevel,
-            final DBInterface dbInterface
+            final DBInterface dbInterface,
+            final PGMapper<Integer> upsertMapper
     ) {
+        this.upsertMapper = upsertMapper;
         log.setLevel(logLevel);
         this.dbInterface = dbInterface;
     }
@@ -44,6 +48,8 @@ public class PGBidRepository implements BidRepository {
     @Override
     public Bid save(final Bid entity) {
         var id = dbInterface.upsert(
+                upsertMapper::fromResulSet,
+
                 "INSERT INTO bids"
                         + "(id, bidderId, auctionId, amount, createdAt)"
                         + "values (?, ?, ?, ?, ?)"
@@ -52,16 +58,12 @@ public class PGBidRepository implements BidRepository {
                         + "auctionId = excluded.auctionId,"
                         + "amount = excluded.amount,"
                         + "createdAt = excluded.createdAt",
-                new Object[]{
-                        entity.getId() == 0 ? nextId() : entity.getId(),
-                        entity.getBidderId(),
-                        entity.getAuctionId(),
-                        entity.getAmount(),
-                        Timestamp.from(entity.getCreatedAt())
-                }, rs -> {
-                    rs.next();
-                    return rs.getInt("id");
-                }
+
+                generateId(entity),
+                entity.getBidderId(),
+                entity.getAuctionId(),
+                entity.getAmount(),
+                Timestamp.from(entity.getCreatedAt())
         );
 
         return entity.toBuilder().id(id).build();
@@ -73,7 +75,7 @@ public class PGBidRepository implements BidRepository {
     }
 
     @Override
-    public int nextId() {
-        return dbInterface.nextVal("SELECT nextval('bids_id_seq')");
+    public int generateId(final Bid entity) {
+        return entity.getId() == 0 ? dbInterface.nextVal("SELECT nextval('bids_id_seq')") : entity.getId();
     }
 }

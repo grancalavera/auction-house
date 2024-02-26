@@ -17,42 +17,30 @@ public interface DBInterface {
     );
 
     <T> List<T> queryMany(
+            FunctionThrows<ResultSet, T, Exception> rowMapper,
             @Language("PostgreSQL")
             String query,
-            FunctionThrows<ResultSet, T, Exception> rowMapper
-    );
-
-    <T> List<T> queryMany(
-            @Language("PostgreSQL")
-            String query,
-            Object[] values,
-            FunctionThrows<ResultSet, T, Exception> rowMapper
+            Object... values
     );
 
     <T> Optional<T> queryOne(
+            FunctionThrows<ResultSet, T, Exception> rowMapper,
             @Language("PostgreSQL")
             String query,
-            Object[] values,
-            FunctionThrows<ResultSet, T, Exception> rowMapper
+            Object... values
     );
 
-    <T> Optional<T> queryOne(
-            @Language("PostgreSQL")
-            String query,
-            FunctionThrows<ResultSet, T, Exception> rowMapper
-    );
-
-    boolean queryExists(@Language("PostgreSQL") String query, Object[] values);
+    boolean queryExists(@Language("PostgreSQL") String query, Object... values);
 
     long queryCount(@Language("PostgreSQL") String query);
 
     int nextVal(@Language("PostgreSQL") String query);
 
     int upsert(
+            FunctionThrows<ResultSet, Integer, Exception> idMapper,
             @Language("PostgreSQL") String query,
-            Object[] values,
-            FunctionThrows<ResultSet, Integer, Exception> idMapper
+            Object... values
     );
 
-    void delete(@Language("PostgreSQL") String query, Object[] values);
+    void delete(@Language("PostgreSQL") String query, Object... values);
 }

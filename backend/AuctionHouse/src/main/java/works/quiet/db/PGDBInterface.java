@@ -30,15 +30,10 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public <T> List<T> queryMany(final String query, final FunctionThrows<ResultSet, T, Exception> rowMapper) {
-        return queryMany(query, null, rowMapper);
-    }
-
-    @Override
     public <T> List<T> queryMany(
+            final FunctionThrows<ResultSet, T, Exception> rowMapper,
             @Language("PostgreSQL") final String query,
-            final Object[] values,
-            final FunctionThrows<ResultSet, T, Exception> rowMapper
+            final Object... values
     ) {
         return rawQuery(resultSet -> {
             var result = new ArrayList<T>();
@@ -51,23 +46,15 @@ public class PGDBInterface implements DBInterface {
     }
 
     public <T> Optional<T> queryOne(
+            final FunctionThrows<ResultSet, T, Exception> rowMapper,
             @Language("PostgreSQL") final String query,
-            final Object[] values,
-            final FunctionThrows<ResultSet, T, Exception> rowMapper
+            final Object... values
     ) {
         return rawQuery(
                 rs -> rs.next() ? Optional.of(rowMapper.apply(rs)) : Optional.empty(),
                 query,
                 values
         );
-    }
-
-    @Override
-    public <T> Optional<T> queryOne(
-            @Language("PostgreSQL") final String query,
-            final FunctionThrows<ResultSet, T, Exception> rowMapper
-    ) {
-        return queryOne(query, null, rowMapper);
     }
 
     @Override
@@ -103,7 +90,7 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public boolean queryExists(@Language("PostgreSQL") final String query, final Object[] values) {
+    public boolean queryExists(@Language("PostgreSQL") final String query, final Object... values) {
         return rawQuery(
                 ResultSet::next,
                 query,
@@ -126,9 +113,9 @@ public class PGDBInterface implements DBInterface {
 
     @Override
     public int upsert(
+            final FunctionThrows<ResultSet, Integer, Exception> idMapper,
             @Language("PostgreSQL") final String query,
-            final Object[] values,
-            final FunctionThrows<ResultSet, Integer, Exception> idMapper
+            final Object... values
     ) {
         var conn = getUnsafeConnection();
         ResultSet resultSet = null;
@@ -154,7 +141,7 @@ public class PGDBInterface implements DBInterface {
     }
 
     @Override
-    public void delete(final String query, final Object[] values) {
+    public void delete(final String query, final Object... values) {
         var conn = getUnsafeConnection();
         try (var preparedStatement = conn.prepareStatement(query)) {
             if (values != null) {

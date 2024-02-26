@@ -12,6 +12,7 @@ import java.util.logging.Level;
 public class PGUserRepository implements UserRepository {
     private final DBInterface dbInterface;
     private final PGMapper<User> rowMapper;
+    private final PGMapper<Integer> upsertMapper;
 
     private final String usersQuery = "SELECT"
             + " u.id,"
@@ -31,17 +32,18 @@ public class PGUserRepository implements UserRepository {
     public PGUserRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGMapper<User> rowMapper
+            final PGMapper<User> rowMapper,
+            final PGMapper<Integer> upsertMapper
     ) {
         this.dbInterface = dbInterface;
         this.rowMapper = rowMapper;
+        this.upsertMapper = upsertMapper;
         log.setLevel(logLevel);
     }
 
     @Override
     public List<User> findAll() {
-        return dbInterface.queryMany(usersQuery + " ORDER BY id", rowMapper::fromResulSet
-        );
+        return dbInterface.queryMany(rowMapper::fromResulSet, usersQuery + " ORDER BY id");
     }
 
     @Override
@@ -51,39 +53,42 @@ public class PGUserRepository implements UserRepository {
 
     @Override
     public boolean exists(final int id) {
-        return dbInterface.queryExists("SELECT id FROM users WHERE id=?", new Object[]{id});
+        return dbInterface.queryExists("SELECT id FROM users WHERE id=?", id);
     }
 
     @Override
     public Optional<User> findWithCredentials(final String username, final String password) {
         return dbInterface.queryOne(
+                rowMapper::fromResulSet,
                 usersQuery + " WHERE u.username=? AND u.password=?",
-                new Object[]{username, password},
-                rowMapper::fromResulSet
+                username, password
         );
     }
 
     @Override
     public Optional<User> findByUsername(final String username) {
         return dbInterface.queryOne(
+                rowMapper::fromResulSet,
                 usersQuery + " WHERE u.username=?",
-                new Object[]{username},
-                rowMapper::fromResulSet
+                username
         );
     }
 
     @Override
     public Optional<User> findById(final int id) {
         return dbInterface.queryOne(
+                rowMapper::fromResulSet,
                 usersQuery + " WHERE u.id=?",
-                new Object[]{id},
-                rowMapper::fromResulSet
+                id
+
         );
     }
 
     @Override
     public User save(final User entity) {
         var id = dbInterface.upsert(
+                upsertMapper::fromResulSet,
+
                 "INSERT INTO users"
                         + "(id, username, password, firstName, lastName, organisationid, roleId, accountStatusId)"
                         + "values (?, ?, ?, ?, ?, ?, ?, ?)"
@@ -95,30 +100,27 @@ public class PGUserRepository implements UserRepository {
                         + "organisationId = excluded.organisationId,"
                         + "roleId = excluded.roleId,"
                         + "accountStatusId = excluded.accountStatusId",
-                new Object[]{
-                        entity.getId() == 0 ? nextId() : entity.getId(),
-                        entity.getUsername(),
-                        entity.getPassword(),
-                        entity.getFirstName(),
-                        entity.getLastName(),
-                        entity.getOrganisation().getId(),
-                        entity.getAccountStatus().getId(),
-                        entity.getRole().getId()
-                }, rs -> {
-                    rs.next();
-                    return rs.getInt("id");
-                });
+
+                generateId(entity),
+                entity.getUsername(),
+                entity.getPassword(),
+                entity.getFirstName(),
+                entity.getLastName(),
+                entity.getOrganisation().getId(),
+                entity.getAccountStatus().getId(),
+                entity.getRole().getId()
+        );
 
         return entity.toBuilder().id(id).build();
     }
 
     @Override
     public void delete(final User user) {
-        dbInterface.delete("DELETE FROM users WHERE id=?", new Object[]{user.getId()});
+        dbInterface.delete("DELETE FROM users WHERE id=?", user.getId());
     }
 
     @Override
-    public int nextId() {
-        return dbInterface.nextVal("SELECT nextval('users_id_seq')");
+    public int generateId(final User entity) {
+        return entity.getId() == 0 ? dbInterface.nextVal("SELECT nextval('users_id_seq')") : entity.getId();
     }
 }
