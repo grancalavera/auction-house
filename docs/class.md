@@ -102,10 +102,18 @@ class AuctionStatus {
 
 class Bid {
   int id
-  int auction_id
-  int bidder_id
+  int auctionId
+  int bidderId
   BigDecimal amount
   Instant timestamp
+}
+
+
+class FilledBid {
+  int id
+  int bidId
+  int auctionId
+  int quantity
 }
 ```
 
