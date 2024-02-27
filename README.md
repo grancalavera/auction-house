@@ -30,7 +30,11 @@
   - [lc] I'll process the results of the auction as a projection of the bids, so that I can have a single source of truth for the auction results.
 - [x] View a list of all of my auctions, including whether it is still open or has been closed
 - [x] as well as all bids on the auction so far.
-- [ ] For closed auctions, also see a summary of the auction result, which includes the total revenue, total sold quantity, and winning bid(s), as well as the closing time of the auction.
+- [ ] For closed auctions, also see a summary of the auction result, which includes:
+  - [ ] the total revenue
+  - [ ] total sold quantity
+  - [ ] and winning bid(s)
+  - [ ] as well as the closing time of the auction
 - [x] Bid on any open auctions, created by other users (users cannot bid on their own auctions).
   - [lc] should the bid be rejected if the seller is blocked?
   - [lc] should auctions for a blocked seller be closed?
