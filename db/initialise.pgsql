@@ -36,7 +36,7 @@ create table if not exists auctions (
     id serial primary key,
     sellerId int references users(id) not null,
     symbol varchar(256) not null,
-    quantity int not null,  
+    quantity int not null,
     -- not that I know
     -- https://stackoverflow.com/a/224866
     price numeric(19, 4) not null,
