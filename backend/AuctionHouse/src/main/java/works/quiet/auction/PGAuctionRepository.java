@@ -2,6 +2,7 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
+import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
 
 import java.sql.Timestamp;
@@ -14,6 +15,7 @@ public class PGAuctionRepository implements AuctionRepository {
     private final DBInterface dbInterface;
     private final PGMapper<List<Auction>> auctionRawQueryMapper;
     private final PGMapper<Integer> upsertMapper;
+    private final IdSource<Auction> idSource;
     private final String auctionsQuery = "SELECT"
             + " auction.id,"
             + " auction.sellerId,"
@@ -34,11 +36,13 @@ public class PGAuctionRepository implements AuctionRepository {
             final Level logLevel,
             final DBInterface dbInterface,
             final PGMapper<List<Auction>> auctionRawQueryMapper,
-            final PGMapper<Integer> upsertMapper
+            final PGMapper<Integer> upsertMapper,
+            final IdSource<Auction> idSource
     ) {
         this.dbInterface = dbInterface;
         this.auctionRawQueryMapper = auctionRawQueryMapper;
         this.upsertMapper = upsertMapper;
+        this.idSource = idSource;
         log.setLevel(logLevel);
     }
 
@@ -84,7 +88,7 @@ public class PGAuctionRepository implements AuctionRepository {
                         + "createdat = excluded.createdat,"
                         + "closedat = excluded.closedat",
 
-                generateId(entity),
+                idSource.generateId(entity),
                 entity.getSellerId(),
                 entity.getSymbol(),
                 entity.getQuantity(),
@@ -99,11 +103,6 @@ public class PGAuctionRepository implements AuctionRepository {
     @Override
     public void delete(final Auction entity) {
 
-    }
-
-    @Override
-    public int generateId(final Auction entity) {
-        return entity.getId() == 0 ? dbInterface.nextVal("SELECT nextval('auctions_id_seq')") : entity.getId();
     }
 
     @Override

@@ -3,9 +3,11 @@ package works.quiet;
 import lombok.extern.java.Log;
 import picocli.CommandLine;
 import works.quiet.auction.AuctionService;
+import works.quiet.auction.PGAuctionIdSource;
 import works.quiet.auction.PGAuctionRawQueryMapper;
 import works.quiet.auction.PGAuctionRepository;
 import works.quiet.auction.PGAuctionRowMapper;
+import works.quiet.auction.PGBidIdSource;
 import works.quiet.auction.PGBidRepository;
 import works.quiet.auction.PGBidRowMapper;
 import works.quiet.cli.AdminCommand;
@@ -42,6 +44,7 @@ import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
+import works.quiet.user.PGUserIdSource;
 import works.quiet.user.PGUserMapper;
 import works.quiet.user.PGUserRepository;
 import works.quiet.user.UserValidator;
@@ -147,14 +150,16 @@ class AuctionHouse {
         var organisationRepository = new PGOrganisationRepository(
                 logLevel,
                 dbInterface,
-                new PGOrganisationMapper()
+                new PGOrganisationMapper(logLevel),
+                new PGOrganisationIdSource(logLevel, dbInterface)
         );
 
         var userRepository = new PGUserRepository(
                 logLevel,
                 dbInterface,
                 new PGUserMapper(logLevel),
-                new PGUpsertMapper(logLevel)
+                new PGUpsertMapper(logLevel),
+                new PGUserIdSource(logLevel, dbInterface)
         );
 
         return new AdminService(
@@ -179,13 +184,15 @@ class AuctionHouse {
                 logLevel,
                 dbInterface,
                 new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel)),
-                upsertMapper
+                upsertMapper,
+                new PGAuctionIdSource(logLevel, dbInterface)
         );
 
         var bidRepository = new PGBidRepository(
                 logLevel,
                 dbInterface,
-                upsertMapper
+                upsertMapper,
+                new PGBidIdSource(logLevel, dbInterface)
         );
 
         return new AuctionService(logLevel, resources, auctionRepository, bidRepository);

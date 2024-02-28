@@ -2,6 +2,7 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
+import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
 
 import java.sql.Timestamp;
@@ -14,13 +15,16 @@ public class PGBidRepository implements BidRepository {
 
     private final DBInterface dbInterface;
     private final PGMapper<Integer> upsertMapper;
+    private final IdSource<Bid> idSource;
 
     public PGBidRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGMapper<Integer> upsertMapper
+            final PGMapper<Integer> upsertMapper,
+            final IdSource<Bid> idSource
     ) {
         this.upsertMapper = upsertMapper;
+        this.idSource = idSource;
         log.setLevel(logLevel);
         this.dbInterface = dbInterface;
     }
@@ -59,7 +63,7 @@ public class PGBidRepository implements BidRepository {
                         + "amount = excluded.amount,"
                         + "createdAt = excluded.createdAt",
 
-                generateId(entity),
+                idSource.generateId(entity),
                 entity.getBidderId(),
                 entity.getAuctionId(),
                 entity.getAmount(),
@@ -71,11 +75,5 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public void delete(final Bid entity) {
-
-    }
-
-    @Override
-    public int generateId(final Bid entity) {
-        return entity.getId() == 0 ? dbInterface.nextVal("SELECT nextval('bids_id_seq')") : entity.getId();
     }
 }

@@ -2,6 +2,7 @@ package works.quiet.user;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
+import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
 
 import java.util.List;
@@ -13,6 +14,7 @@ public class PGUserRepository implements UserRepository {
     private final DBInterface dbInterface;
     private final PGMapper<User> rowMapper;
     private final PGMapper<Integer> upsertMapper;
+    private final IdSource<User> idSource;
 
     private final String usersQuery = "SELECT"
             + " u.id,"
@@ -33,11 +35,13 @@ public class PGUserRepository implements UserRepository {
             final Level logLevel,
             final DBInterface dbInterface,
             final PGMapper<User> rowMapper,
-            final PGMapper<Integer> upsertMapper
+            final PGMapper<Integer> upsertMapper,
+            final IdSource<User> idSource
     ) {
         this.dbInterface = dbInterface;
         this.rowMapper = rowMapper;
         this.upsertMapper = upsertMapper;
+        this.idSource = idSource;
         log.setLevel(logLevel);
     }
 
@@ -101,7 +105,7 @@ public class PGUserRepository implements UserRepository {
                         + "roleId = excluded.roleId,"
                         + "accountStatusId = excluded.accountStatusId",
 
-                generateId(entity),
+                idSource.generateId(entity),
                 entity.getUsername(),
                 entity.getPassword(),
                 entity.getFirstName(),
@@ -117,10 +121,5 @@ public class PGUserRepository implements UserRepository {
     @Override
     public void delete(final User user) {
         dbInterface.delete("DELETE FROM users WHERE id=?", user.getId());
-    }
-
-    @Override
-    public int generateId(final User entity) {
-        return entity.getId() == 0 ? dbInterface.nextVal("SELECT nextval('users_id_seq')") : entity.getId();
     }
 }

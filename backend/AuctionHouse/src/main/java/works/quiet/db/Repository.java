@@ -15,6 +15,4 @@ public interface Repository<T> {
     T save(T entity);
 
     void delete(T entity);
-
-    int generateId(T entity);
 }
