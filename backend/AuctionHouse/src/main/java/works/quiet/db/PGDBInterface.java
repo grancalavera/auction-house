@@ -63,9 +63,8 @@ public class PGDBInterface implements DBInterface {
             @Language("PostgreSQL") final String query,
             final Object... values
     ) {
-        ResultSet resultSet = null;
-
         var conn = getUnsafeConnection();
+        ResultSet resultSet = null;
 
         try (
                 var preparedStatement = conn.prepareStatement(query);
@@ -155,7 +154,6 @@ public class PGDBInterface implements DBInterface {
 
     // https://stackoverflow.com/a/2563492
     // https://balusc.omnifaces.org/2008/07/dao-tutorial-data-layer.html
-    // will extract to somewhere later on...
     private void setStatementValues(final PreparedStatement st, final Object... values) throws SQLException {
         if (values == null) {
             return;
