@@ -109,12 +109,6 @@ class Bid {
 }
 
 
-class FilledBid {
-  int id
-  int bidId
-  int auctionId
-  int quantity
-}
 ```
 
 ```mermaid
@@ -126,8 +120,7 @@ class AuctionReport {
   int auctionId
   BigDecimal revenue
   int totalQuantitySold
-  Iterable~Bid~ winningBids
-  %% some other date type maybe
+  List~Bid~ bids
   Instant closingTime
 }
 
@@ -155,8 +148,8 @@ class AuctionHouse {
 classDiagram
 note for AdminPanel "There is always an implicit active user"
 class AdminPanel {
-  Iterable~User~ listUsers()
-  Iterable~Organisation~ listOrganisations()
+  List~User~ listUsers()
+  List~Organisation~ listOrganisations()
   Optional~User~ findUserById(int id)
   %% how do we enforce the user has an id?
   %% the builder should resolve the id if one is not given

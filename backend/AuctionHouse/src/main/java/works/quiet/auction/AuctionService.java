@@ -42,7 +42,7 @@ public class AuctionService {
                     bid.getAuctionId(), bid.getBidderId()));
         }
 
-        if (auction.getStatus() == AuctionStatus.CLOSED) {
+        if (auction.isClosed()) {
             throw new RuntimeException(resources.getFormattedString(
                     "errors.auctionIsClosed",
                     bid.getAuctionId()));
@@ -66,12 +66,11 @@ public class AuctionService {
                         resources.getFormattedString("errors.cannotCloseAuction", auctionId, user.getId())
                 ));
 
-        if (auction.getStatus() == AuctionStatus.CLOSED) {
+        if (auction.isClosed()) {
             throw new RuntimeException(resources.getFormattedString("errors.auctionAlreadyClosed", auctionId));
         }
 
         var closed = auction.toBuilder()
-                .status(AuctionStatus.CLOSED)
                 .closedAt(Instant.now())
                 .build();
 

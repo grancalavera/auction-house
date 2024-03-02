@@ -31,7 +31,6 @@ public class PGAuctionRowMapper implements PGMapper<Auction> {
                 .sellerId(resultSet.getInt(fieldPrefix + "sellerId"))
                 .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
                 .closedAt(closedAt == null ? null : closedAt.toInstant())
-                // AuctionStatus is derived from the auction closed date
-                .status(closedAt == null ? AuctionStatus.OPEN : AuctionStatus.CLOSED).build();
+                .build();
     }
 }

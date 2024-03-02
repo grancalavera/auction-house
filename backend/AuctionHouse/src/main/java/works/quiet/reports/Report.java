@@ -1,9 +1,10 @@
-package works.quiet.auction;
+package works.quiet.reports;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import works.quiet.auction.Bid;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,18 +15,15 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @Builder(toBuilder = true)
-public class Auction {
+public class Report {
     private int id;
-    private int sellerId;
-    private String symbol;
-    private int quantity;
-    private BigDecimal price;
+    private int auctionId;
+    private Instant auctionClosedAt;
+
+    @Builder.Default
+    private BigDecimal revenue = BigDecimal.valueOf(0);
+    @Builder.Default
+    private int soldQuantity = 0;
     @Builder.Default
     private List<Bid> bids = new ArrayList<>();
-    private Instant createdAt;
-    private Instant closedAt;
-
-    public boolean isClosed() {
-        return closedAt != null;
-    }
 }

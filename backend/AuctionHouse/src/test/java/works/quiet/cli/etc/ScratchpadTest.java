@@ -1,9 +1,13 @@
 package works.quiet.cli.etc;
 
 import org.junit.jupiter.api.Test;
+import works.quiet.auction.Auction;
+import works.quiet.auction.Bid;
 import works.quiet.user.User;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -84,5 +88,35 @@ public class ScratchpadTest {
         assertEquals("foo,bar", actual);
     }
 
+    @Test
+    void roundingModes() {
+        var a = BigDecimal.valueOf(1);
+        var b = BigDecimal.valueOf(4);
+        var c = a.divide(b, RoundingMode.DOWN);
+        var c1 = c.intValue();
 
+        var d = a.divide(b, RoundingMode.FLOOR);
+        var d2 = d.intValue();
+
+        assertEquals(c, d);
+    }
+
+    void bar() {
+        var auction = Auction.builder()
+                .sellerId(1)
+                .price(BigDecimal.valueOf(1))
+                .quantity(2)
+                .symbol("a")
+                .createdAt(Instant.ofEpochSecond(1))
+                .closedAt(Instant.ofEpochSecond(3))
+                .build();
+
+        var bid = Bid.builder()
+                .auctionId(auction.getId())
+                .amount(BigDecimal.valueOf(2))
+                .createdAt(Instant.ofEpochSecond(1))
+                .build();
+
+        auction.getBids().add(bid);
+    }
 }
