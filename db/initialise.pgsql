@@ -114,27 +114,25 @@ insert into users
 insert into auctions
         (sellerId, symbol, quantity, price, createdAt, closedAt)
     values
-        -- open auction with single unit
-        (1, 'A', 1, 1.000, now() at time zone 'utc', null),
-        -- closed auction with single unit
-        (1, 'A', 1, 1.000, now() at time zone 'utc', now() at time zone 'utc'),
-        -- open auction with multiple units
-        (1, 'B', 2, 1.000, now() at time zone 'utc', null),
-        -- open auction, no bids (keep empty)
-        (1, 'C', 1, 1.000, now() at time zone 'utc', null),
-        -- closed auction, no bids (keep empty)
-        (1, 'C', 1, 1.000, now() at time zone 'utc', now() at time zone 'utc');
+        (1, 'A', 1, 2.000, now() at time zone 'utc' - interval '10 hour', null),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null);
 
 insert into bids
         (auctionId, bidderId, amount, createdAt)
     values
-        -- auction 1: u1 wins
-        (1, 2, 1.001, now() at time zone 'utc'),
-        (1, 3, 1.000, now() at time zone 'utc'),
-        -- auction 2: u1 wins
-        (2, 2, 1.001, now() at time zone 'utc'),
-        (2, 3, 1.000, now() at time zone 'utc'),
-        -- auction 3: u1 wins
-        (3, 2, 2.001, now() at time zone 'utc'),
-        (3, 3, 2.000, now() at time zone 'utc');
+        -- 1: no bids 
+        -- 2: one bid below asking price
+        (2, 2, 2.000, now() at time zone 'utc'),
+        -- 3: one bid below asking price and one bid at asking price
+        (3, 2, 1.000, now() at time zone 'utc'),
+        (3, 3, 2.000, now() at time zone 'utc'),
+        -- 4: two bids at asking price placed at different times
+        (4, 2, 2.000, now() at time zone 'utc'),
+        (4, 3, 2.000, now() at time zone 'utc' - interval '1 hour'),
+        -- 5: one bid above asking price and one at asking price
+        (5, 2, 3.000, now() at time zone 'utc'),
+        (5, 3, 2.000, now() at time zone 'utc');
 

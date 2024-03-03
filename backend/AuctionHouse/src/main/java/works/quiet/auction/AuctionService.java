@@ -59,7 +59,7 @@ public class AuctionService {
         return auctionRepository.listOpenAuctionsForBidderId(bidder.getId());
     }
 
-    public void closeAuctionForUserByAuctionId(final User user, final int auctionId) {
+    public Auction closeAuctionForUserByAuctionId(final User user, final int auctionId) {
         var auction = auctionRepository
                 .findAuctionBySellerIdAndAuctionId(user.getId(), auctionId)
                 .orElseThrow(() -> new RuntimeException(
@@ -75,5 +75,6 @@ public class AuctionService {
                 .build();
 
         auctionRepository.save(closed);
+        return closed;
     }
 }

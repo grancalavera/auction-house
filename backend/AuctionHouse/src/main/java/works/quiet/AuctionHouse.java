@@ -41,6 +41,7 @@ import works.quiet.db.PGDBInterface;
 import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reports.ReportsService;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
@@ -83,6 +84,7 @@ class AuctionHouse {
         var resources = new Resources();
         var adminService = getAdminService(logLevel, resources, dbInterface);
         var auctionService = getAuctionService(logLevel, resources, dbInterface);
+        var reportsService = new ReportsService(logLevel, resources);
 
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());
@@ -115,7 +117,7 @@ class AuctionHouse {
         auctionCommand.addSubcommand("list-open",
                 new ListOpenAuctionsCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("close",
-                new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
+                new CloseAuctionCommand(logLevel, resources, adminService, auctionService, reportsService));
         auctionCommand.addSubcommand("bid",
                 new PlaceBidCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
