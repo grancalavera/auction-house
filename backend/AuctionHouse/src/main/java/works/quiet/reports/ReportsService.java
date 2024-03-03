@@ -27,6 +27,7 @@ public class ReportsService {
         }
 
         var winningBids = new ArrayList<Bid>();
+        var loosingBids = new ArrayList<Bid>();
         var atomicSoldQuantity = new AtomicInteger(0);
 
         auction.getBids().stream()
@@ -43,11 +44,8 @@ public class ReportsService {
                 .forEach(bid -> {
                     var availableQuantity = auction.getQuantity() - atomicSoldQuantity.get();
 
-                    if (availableQuantity == 0) {
-                        return;
-                    }
-
-                    if (auction.getPrice().compareTo(bid.getAmount()) > 0) {
+                    if (availableQuantity == 0 || auction.getPrice().compareTo(bid.getAmount()) > 0) {
+                        loosingBids.add(bid);
                         return;
                     }
 
@@ -60,11 +58,11 @@ public class ReportsService {
         var revenue = auction.getPrice().multiply(BigDecimal.valueOf(soldQuantity));
 
         return Report.builder()
-                .auctionClosedAt(auction.getClosedAt())
                 .auctionId(auction.getId())
                 .revenue(revenue)
                 .soldQuantity(soldQuantity)
-                .bids(winningBids)
+                .winningBids(winningBids)
+                .loosingBids(loosingBids)
                 .build();
     }
 }

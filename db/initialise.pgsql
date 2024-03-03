@@ -21,6 +21,11 @@ create table if not exists roles (
     name varchar(256) unique not null
 );
 
+create table if not exists executionResult (
+    id serial primary key,
+    name varchar(256) unique not null
+);
+
 create table if not exists users (
     id serial primary key,
     username varchar(256) unique not null,
@@ -54,6 +59,21 @@ create table if not exists bids (
     createdAt timestamp with time zone not null
 );
 
+create table if not exists reports (
+    auctionId int references auctions(id) not null primary key,
+    revenue numeric(19, 4) not null,
+    soldQuantity int not null
+);
+
+create table if not exists executions (
+    auctionId int references auctions(id) not null,
+    bidId int references bids(id) not null,
+    bidderId int references users(id) not null,
+    result int references executionResult(id) not null,
+    primary key (auctionId, bidId)
+);
+
+
 insert into organisations (name)
     values
         ('Auction House Solutions Inc.'),
@@ -73,6 +93,12 @@ insert into roles (name)
         ('USER'),
         ('ADMIN')
     on conflict do nothing;
+
+insert into executionResult (name)
+    values
+        ('LOOSER'),
+        ('WINNER')
+    on conflict do nothing;    
 
 insert into users
         (username, password, firstName, lastName, organisationId, accountStatusId, roleId)

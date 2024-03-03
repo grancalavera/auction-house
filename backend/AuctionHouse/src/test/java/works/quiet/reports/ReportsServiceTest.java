@@ -26,7 +26,7 @@ class ReportsServiceTest {
         int auctionId = 1;
         Instant closedAt = Instant.ofEpochSecond(10);
         auctionBuilder = Auction.builder().id(auctionId).closedAt(closedAt);
-        reportBuilder = Report.builder().auctionId(auctionId).auctionClosedAt(closedAt);
+        reportBuilder = Report.builder().auctionId(auctionId);
         resources = new Resources();
         service = new ReportsService(Level.OFF, resources);
     }
@@ -53,8 +53,10 @@ class ReportsServiceTest {
     @DisplayName("Should create an empty report for an auction with bids below asking price")
     void bidsBelowAskingPrice() {
         var auction = auctionBuilder.price(BigDecimal.valueOf(2)).build();
-        auction.getBids().add(Bid.builder().amount(BigDecimal.valueOf(1)).build());
+        var bid = Bid.builder().amount(BigDecimal.valueOf(1)).build();
+        auction.getBids().add(bid);
         var expectedReport = reportBuilder.build();
+        expectedReport.getLoosingBids().add(bid);
         var actualReport = service.createReport(auction);
         assertEquals(expectedReport, actualReport);
     }
@@ -77,36 +79,7 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getBids().add(bidBuilder.build());
-
-        var actualReport = service.createReport(auction);
-
-        assertEquals(expectedReport, actualReport);
-    }
-
-    @Test
-    @DisplayName("Should add only the winning bids to the report")
-    void addWinningBids() {
-        var price = BigDecimal.valueOf(2);
-        var halfPrice = BigDecimal.valueOf(1);
-        var quantity = 1;
-
-        var auction = auctionBuilder.price(price)
-                .quantity(quantity)
-                .build();
-
-        var winningBid = Bid.builder().amount(price).build();
-        var loosingBid = Bid.builder().amount(halfPrice).build();
-
-        auction.getBids().add(winningBid);
-        auction.getBids().add(loosingBid);
-
-        var expectedReport = reportBuilder
-                .revenue(price)
-                .soldQuantity(quantity)
-                .build();
-
-        expectedReport.getBids().add(winningBid);
+        expectedReport.getWinningBids().add(bidBuilder.build());
 
         var actualReport = service.createReport(auction);
 
@@ -132,7 +105,7 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getBids().add(bid);
+        expectedReport.getWinningBids().add(bid);
 
         var actualReport = service.createReport(auction);
 
@@ -167,7 +140,8 @@ class ReportsServiceTest {
                 .revenue(price)
                 .soldQuantity(quantity)
                 .build();
-        expectedReport.getBids().add(bid1);
+        expectedReport.getWinningBids().add(bid1);
+        expectedReport.getLoosingBids().add(bid2);
 
         var actualReport = service.createReport(auction);
 
@@ -191,7 +165,7 @@ class ReportsServiceTest {
                 .revenue(price)
                 .soldQuantity(quantity)
                 .build();
-        expectedReport.getBids().add(bid);
+        expectedReport.getWinningBids().add(bid);
 
         var actualReport = service.createReport(auction);
 
@@ -216,8 +190,8 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getBids().add(higherBid);
-        expectedReport.getBids().add(lowerBid);
+        expectedReport.getWinningBids().add(higherBid);
+        expectedReport.getWinningBids().add(lowerBid);
 
         var actualReport = service.createReport(auction);
 
@@ -245,9 +219,9 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getBids().add(bid3);
-        expectedReport.getBids().add(bid2);
-        expectedReport.getBids().add(bid1);
+        expectedReport.getWinningBids().add(bid3);
+        expectedReport.getWinningBids().add(bid2);
+        expectedReport.getWinningBids().add(bid1);
 
         var actualReport = service.createReport(auction);
 
@@ -291,9 +265,9 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getBids().add(bid3);
-        expectedReport.getBids().add(bid2);
-        expectedReport.getBids().add(bid1);
+        expectedReport.getWinningBids().add(bid3);
+        expectedReport.getWinningBids().add(bid2);
+        expectedReport.getWinningBids().add(bid1);
 
         var actualReport = service.createReport(auction);
 
