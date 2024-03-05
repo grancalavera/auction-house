@@ -33,13 +33,9 @@ public class ReportsService {
         auction.getBids().stream()
                 .sorted((a, b) -> {
                     var byAmountDesc = b.getAmount().compareTo(a.getAmount());
-
-                    if (byAmountDesc != 0) {
-                        return byAmountDesc;
-                    }
-
-                    return a.getCreatedAt().compareTo(b.getCreatedAt());
-
+                    return byAmountDesc == 0
+                            ? a.getCreatedAt().compareTo(b.getCreatedAt())
+                            : byAmountDesc;
                 })
                 .forEach(bid -> {
                     var availableQuantity = auction.getQuantity() - atomicSoldQuantity.get();

@@ -36,3 +36,5 @@
   - [ ] as well as the closing time of the auction (this comes from the auction itself, no need to add it to the report).
 - [x] Bid on any open auctions, created by other users (users cannot bid on their own auctions).
 - [ ] Retrieve the details of all my winning or losing bids from any auctions I participated in.
+  - [ ] For winning and loosing bids is enough to query the execution results junction table
+  - [ ] For "pending" bids, we need to query the junction for bids not in that table.

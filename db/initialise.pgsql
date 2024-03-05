@@ -21,7 +21,7 @@ create table if not exists roles (
     name varchar(256) unique not null
 );
 
-create table if not exists executionResult (
+create table if not exists executionStatus (
     id serial primary key,
     name varchar(256) unique not null
 );
@@ -65,11 +65,11 @@ create table if not exists reports (
     soldQuantity int not null
 );
 
-create table if not exists executions (
+create table if not exists execution (
     auctionId int references auctions(id) not null,
     bidId int references bids(id) not null,
     bidderId int references users(id) not null,
-    result int references executionResult(id) not null,
+    status int references executionStatus(id) not null,
     primary key (auctionId, bidId)
 );
 
@@ -94,10 +94,10 @@ insert into roles (name)
         ('ADMIN')
     on conflict do nothing;
 
-insert into executionResult (name)
+insert into executionStatus (name)
     values
-        ('LOOSER'),
-        ('WINNER')
+        ('NOT_FILLED'),
+        ('FILLED')
     on conflict do nothing;    
 
 insert into users
