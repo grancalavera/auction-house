@@ -41,6 +41,8 @@ import works.quiet.db.PGDBInterface;
 import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reports.PGReportIdSource;
+import works.quiet.reports.PGReportRepository;
 import works.quiet.reports.ReportsService;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
@@ -84,7 +86,15 @@ class AuctionHouse {
         var resources = new Resources();
         var adminService = getAdminService(logLevel, resources, dbInterface);
         var auctionService = getAuctionService(logLevel, resources, dbInterface);
-        var reportsService = new ReportsService(logLevel, resources);
+        var reportIdSource = new PGReportIdSource(logLevel, dbInterface);
+        var reportRepository = new PGReportRepository(
+                logLevel,
+                resources,
+                dbInterface,
+                new PGUpsertMapper(logLevel),
+                reportIdSource
+        );
+        var reportsService = new ReportsService(logLevel, resources, reportRepository);
 
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());

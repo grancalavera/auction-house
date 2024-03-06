@@ -60,7 +60,8 @@ create table if not exists bids (
 );
 
 create table if not exists reports (
-    auctionId int references auctions(id) not null primary key,
+    id serial primary key,
+    auctionId int references auctions(id) unique not null,
     revenue numeric(19, 4) not null,
     soldQuantity int not null
 );

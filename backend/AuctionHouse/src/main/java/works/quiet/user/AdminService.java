@@ -96,8 +96,7 @@ public class AdminService {
     public User createUser(final User user) {
         userValidator.validate(user);
         var created = userRepository.save(user);
-        var id = created.getId();
-        log.info("created user with id=" + id);
+        log.info("created user with id=" + created.getId());
         return created;
     }
 

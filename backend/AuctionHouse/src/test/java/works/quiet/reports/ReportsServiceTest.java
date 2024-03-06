@@ -13,6 +13,7 @@ import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 class ReportsServiceTest {
     private ReportsService service;
@@ -28,7 +29,7 @@ class ReportsServiceTest {
         auctionBuilder = Auction.builder().id(auctionId).closedAt(closedAt);
         reportBuilder = Report.builder().auctionId(auctionId);
         resources = new Resources();
-        service = new ReportsService(Level.OFF, resources);
+        service = new ReportsService(Level.OFF, resources, mock());
     }
 
     @Test
