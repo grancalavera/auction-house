@@ -152,6 +152,24 @@ public class PGDBInterface implements DBInterface {
         }
     }
 
+    @Override
+    public void beginTransaction() {
+        try {
+            getUnsafeConnection().setAutoCommit(false);
+        } catch (final SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void commitTransaction() {
+        try {
+            getUnsafeConnection().commit();
+        } catch (final SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     // https://stackoverflow.com/a/2563492
     // https://balusc.omnifaces.org/2008/07/dao-tutorial-data-layer.html
     private void setStatementValues(final PreparedStatement st, final Object... values) throws SQLException {

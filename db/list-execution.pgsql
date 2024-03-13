@@ -1,1 +1,1 @@
-select * from execution;
+select * from executions;

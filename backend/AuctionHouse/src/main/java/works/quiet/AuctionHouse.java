@@ -41,6 +41,7 @@ import works.quiet.db.PGDBInterface;
 import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reports.ExecutionRepository;
 import works.quiet.reports.PGReportIdSource;
 import works.quiet.reports.PGReportRepository;
 import works.quiet.reports.ReportsService;
@@ -94,7 +95,13 @@ class AuctionHouse {
                 new PGUpsertMapper(logLevel),
                 reportIdSource
         );
-        var reportsService = new ReportsService(logLevel, resources, reportRepository);
+        var reportsService = new ReportsService(
+                logLevel,
+                resources,
+                dbInterface,
+                reportRepository,
+                new ExecutionRepository(logLevel, resources, dbInterface)
+        );
 
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());

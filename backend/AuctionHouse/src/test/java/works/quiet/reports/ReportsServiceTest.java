@@ -29,7 +29,7 @@ class ReportsServiceTest {
         auctionBuilder = Auction.builder().id(auctionId).closedAt(closedAt);
         reportBuilder = Report.builder().auctionId(auctionId);
         resources = new Resources();
-        service = new ReportsService(Level.OFF, resources, mock());
+        service = new ReportsService(Level.OFF, resources, mock(), mock(), mock());
     }
 
     @Test

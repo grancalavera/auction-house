@@ -66,7 +66,7 @@ create table if not exists reports (
     soldQuantity int not null
 );
 
-create table if not exists execution (
+create table if not exists executions  (
     auctionId int references auctions(id) not null,
     bidId int references bids(id) not null,
     bidderId int references users(id) not null,
@@ -99,7 +99,7 @@ insert into executionStatus (name)
     values
         ('NOT_FILLED'),
         ('FILLED')
-    on conflict do nothing;    
+    on conflict do nothing;
 
 insert into users
         (username, password, firstName, lastName, organisationId, accountStatusId, roleId)
@@ -124,7 +124,7 @@ insert into auctions
 insert into bids
         (auctionId, bidderId, amount, createdAt)
     values
-        -- 1: no bids 
+        -- 1: no bids
         -- 2: one bid below asking price
         (2, 2, 2.000, now() at time zone 'utc'),
         -- 3: one bid below asking price and one bid at asking price

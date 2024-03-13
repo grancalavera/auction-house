@@ -72,6 +72,7 @@ public class PGReportRepository implements Repository<Report> {
                 entity.getRevenue(),
                 entity.getSoldQuantity()
         );
+
         return entity.toBuilder().id(id).build();
     }
 

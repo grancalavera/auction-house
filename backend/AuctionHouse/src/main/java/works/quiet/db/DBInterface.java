@@ -43,4 +43,7 @@ public interface DBInterface {
     );
 
     void delete(@Language("PostgreSQL") String query, Object... values);
+
+    void beginTransaction();
+    void commitTransaction();
 }

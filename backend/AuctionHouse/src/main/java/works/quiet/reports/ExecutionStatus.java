@@ -1,5 +1,8 @@
 package works.quiet.reports;
 
+import lombok.Getter;
+
+@Getter
 public enum ExecutionStatus {
     NOT_FILLED(1),
     FILLED(2);
