@@ -66,14 +66,13 @@ create table if not exists reports (
     soldQuantity int not null
 );
 
-create table if not exists executions  (
+create table if not exists executions (
     auctionId int references auctions(id) not null,
     bidId int references bids(id) not null,
     bidderId int references users(id) not null,
     status int references executionStatus(id) not null,
     primary key (auctionId, bidId)
 );
-
 
 insert into organisations (name)
     values

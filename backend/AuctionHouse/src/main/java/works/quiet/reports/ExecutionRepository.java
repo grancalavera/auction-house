@@ -21,7 +21,7 @@ public class ExecutionRepository {
         log.setLevel(logLevel);
     }
 
-    void saveExecution(final Execution execution) {
+   public void saveExecution(final Execution execution) {
         dbInterface.upsert(
                 rs -> 0,
                 "INSERT INTO executions"

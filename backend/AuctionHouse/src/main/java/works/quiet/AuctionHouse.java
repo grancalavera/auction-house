@@ -44,7 +44,6 @@ import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.reports.ExecutionRepository;
 import works.quiet.reports.PGReportIdSource;
 import works.quiet.reports.PGReportRepository;
-import works.quiet.reports.ReportsService;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
@@ -83,25 +82,9 @@ class AuctionHouse {
         );
 
         var dbInterface = new PGDBInterface(logLevel, connection);
-
         var resources = new Resources();
         var adminService = getAdminService(logLevel, resources, dbInterface);
         var auctionService = getAuctionService(logLevel, resources, dbInterface);
-        var reportIdSource = new PGReportIdSource(logLevel, dbInterface);
-        var reportRepository = new PGReportRepository(
-                logLevel,
-                resources,
-                dbInterface,
-                new PGUpsertMapper(logLevel),
-                reportIdSource
-        );
-        var reportsService = new ReportsService(
-                logLevel,
-                resources,
-                dbInterface,
-                reportRepository,
-                new ExecutionRepository(logLevel, resources, dbInterface)
-        );
 
         // main command
         CommandLine mainCommand = new CommandLine(new MainCommand());
@@ -134,7 +117,7 @@ class AuctionHouse {
         auctionCommand.addSubcommand("list-open",
                 new ListOpenAuctionsCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("close",
-                new CloseAuctionCommand(logLevel, resources, adminService, auctionService, reportsService));
+                new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("bid",
                 new PlaceBidCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("help", new CommandLine.HelpCommand());
@@ -199,21 +182,35 @@ class AuctionHouse {
 
         var upsertMapper = new PGUpsertMapper(logLevel);
 
-        var auctionRepository = new PGAuctionRepository(
+        return new AuctionService(
                 logLevel,
+                resources,
                 dbInterface,
-                new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel)),
-                upsertMapper,
-                new PGAuctionIdSource(logLevel, dbInterface)
+                new PGAuctionRepository(
+                        logLevel,
+                        dbInterface,
+                        new PGAuctionRawQueryMapper(
+                                logLevel,
+                                new PGAuctionRowMapper(logLevel),
+                                new PGBidRowMapper(logLevel)
+                        ),
+                        upsertMapper,
+                        new PGAuctionIdSource(logLevel, dbInterface)
+                ),
+                new PGBidRepository(
+                        logLevel,
+                        dbInterface,
+                        upsertMapper,
+                        new PGBidIdSource(logLevel, dbInterface)
+                ),
+                new PGReportRepository(
+                        logLevel,
+                        resources,
+                        dbInterface,
+                        new PGUpsertMapper(logLevel),
+                        new PGReportIdSource(logLevel, dbInterface)
+                ),
+                new ExecutionRepository(logLevel, resources, dbInterface)
         );
-
-        var bidRepository = new PGBidRepository(
-                logLevel,
-                dbInterface,
-                upsertMapper,
-                new PGBidIdSource(logLevel, dbInterface)
-        );
-
-        return new AuctionService(logLevel, resources, auctionRepository, bidRepository);
     }
 }

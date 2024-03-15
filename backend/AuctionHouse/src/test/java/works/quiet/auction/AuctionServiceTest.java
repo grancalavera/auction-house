@@ -1,22 +1,21 @@
-package works.quiet.reports;
+package works.quiet.auction;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import works.quiet.auction.Auction;
-import works.quiet.auction.Bid;
+import works.quiet.reports.Execution;
+import works.quiet.reports.Report;
 import works.quiet.resources.Resources;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.logging.Level;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-class ReportsServiceTest {
-    private ReportsService service;
+class AuctionServiceTest {
+    private AuctionService service;
     private Resources resources;
 
     private Auction.AuctionBuilder auctionBuilder;
@@ -29,7 +28,15 @@ class ReportsServiceTest {
         auctionBuilder = Auction.builder().id(auctionId).closedAt(closedAt);
         reportBuilder = Report.builder().auctionId(auctionId);
         resources = new Resources();
-        service = new ReportsService(Level.OFF, resources, mock(), mock(), mock());
+        service = new AuctionService(
+                mock(),
+                resources,
+                mock(),
+                mock(),
+                mock(),
+                mock(),
+                mock()
+        );
     }
 
     @Test
@@ -57,7 +64,7 @@ class ReportsServiceTest {
         var bid = Bid.builder().amount(BigDecimal.valueOf(1)).build();
         auction.getBids().add(bid);
         var expectedReport = reportBuilder.build();
-        expectedReport.getLoosingBids().add(bid);
+        expectedReport.getExecutions().add(Execution.fromBidNotFilled(bid));
         var actualReport = service.createReport(auction);
         assertEquals(expectedReport, actualReport);
     }
@@ -80,7 +87,7 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getWinningBids().add(bidBuilder.build());
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bidBuilder.build()));
 
         var actualReport = service.createReport(auction);
 
@@ -106,7 +113,7 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getWinningBids().add(bid);
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid));
 
         var actualReport = service.createReport(auction);
 
@@ -141,8 +148,9 @@ class ReportsServiceTest {
                 .revenue(price)
                 .soldQuantity(quantity)
                 .build();
-        expectedReport.getWinningBids().add(bid1);
-        expectedReport.getLoosingBids().add(bid2);
+
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid1));
+        expectedReport.getExecutions().add(Execution.fromBidNotFilled(bid2));
 
         var actualReport = service.createReport(auction);
 
@@ -166,7 +174,7 @@ class ReportsServiceTest {
                 .revenue(price)
                 .soldQuantity(quantity)
                 .build();
-        expectedReport.getWinningBids().add(bid);
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid));
 
         var actualReport = service.createReport(auction);
 
@@ -191,8 +199,8 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getWinningBids().add(higherBid);
-        expectedReport.getWinningBids().add(lowerBid);
+        expectedReport.getExecutions().add(Execution.fromBidFilled(higherBid));
+        expectedReport.getExecutions().add(Execution.fromBidFilled(lowerBid));
 
         var actualReport = service.createReport(auction);
 
@@ -220,9 +228,9 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getWinningBids().add(bid3);
-        expectedReport.getWinningBids().add(bid2);
-        expectedReport.getWinningBids().add(bid1);
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid3));
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid2));
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid1));
 
         var actualReport = service.createReport(auction);
 
@@ -266,12 +274,13 @@ class ReportsServiceTest {
                 .soldQuantity(quantity)
                 .build();
 
-        expectedReport.getWinningBids().add(bid3);
-        expectedReport.getWinningBids().add(bid2);
-        expectedReport.getWinningBids().add(bid1);
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid3));
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid2));
+        expectedReport.getExecutions().add(Execution.fromBidFilled(bid1));
 
         var actualReport = service.createReport(auction);
 
         assertEquals(expectedReport, actualReport);
     }
+
 }
