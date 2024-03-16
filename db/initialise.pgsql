@@ -21,7 +21,7 @@ create table if not exists roles (
     name varchar(256) unique not null
 );
 
-create table if not exists executionStatus (
+create table if not exists bidStatus (
     id serial primary key,
     name varchar(256) unique not null
 );
@@ -56,7 +56,8 @@ create table if not exists bids (
     amount numeric(19, 4) not null,
     -- https://stackoverflow.com/a/42779109
     -- https://stackoverflow.com/a/6627999
-    createdAt timestamp with time zone not null
+    createdAt timestamp with time zone not null,
+    status int references bidStatus(id) not null
 );
 
 create table if not exists reports (
@@ -64,14 +65,6 @@ create table if not exists reports (
     auctionId int references auctions(id) unique not null,
     revenue numeric(19, 4) not null,
     soldQuantity int not null
-);
-
-create table if not exists executions (
-    auctionId int references auctions(id) not null,
-    bidId int references bids(id) not null,
-    bidderId int references users(id) not null,
-    status int references executionStatus(id) not null,
-    primary key (auctionId, bidId)
 );
 
 insert into organisations (name)
@@ -94,8 +87,9 @@ insert into roles (name)
         ('ADMIN')
     on conflict do nothing;
 
-insert into executionStatus (name)
+insert into bidStatus (name)
     values
+        ('PLACED'),
         ('NOT_FILLED'),
         ('FILLED')
     on conflict do nothing;
@@ -121,18 +115,18 @@ insert into auctions
         (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null);
 
 insert into bids
-        (auctionId, bidderId, amount, createdAt)
+        (auctionId, bidderId, amount, createdAt, status)
     values
         -- 1: no bids
         -- 2: one bid below asking price
-        (2, 2, 2.000, now() at time zone 'utc'),
+        (2, 2, 2.000, now() at time zone 'utc', 1),
         -- 3: one bid below asking price and one bid at asking price
-        (3, 2, 1.000, now() at time zone 'utc'),
-        (3, 3, 2.000, now() at time zone 'utc'),
+        (3, 2, 1.000, now() at time zone 'utc', 1),
+        (3, 3, 2.000, now() at time zone 'utc', 1),
         -- 4: two bids at asking price placed at different times
-        (4, 2, 2.000, now() at time zone 'utc'),
-        (4, 3, 2.000, now() at time zone 'utc' - interval '1 hour'),
+        (4, 2, 2.000, now() at time zone 'utc', 1),
+        (4, 3, 2.000, now() at time zone 'utc' - interval '1 hour', 1),
         -- 5: one bid above asking price and one at asking price
-        (5, 2, 3.000, now() at time zone 'utc'),
-        (5, 3, 2.000, now() at time zone 'utc');
+        (5, 2, 3.000, now() at time zone 'utc', 1),
+        (5, 3, 2.000, now() at time zone 'utc', 1);
 

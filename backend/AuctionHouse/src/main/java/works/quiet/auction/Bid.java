@@ -18,4 +18,14 @@ public class Bid {
     private int auctionId;
     private BigDecimal amount;
     private Instant createdAt;
+    @Builder.Default
+    private BidStatus status = BidStatus.PLACED;
+
+    public Bid toFilled() {
+        return this.toBuilder().status(BidStatus.FILLED).build();
+    }
+
+    public Bid toNotFilled() {
+        return this.toBuilder().status(BidStatus.NOT_FILLED).build();
+    }
 }

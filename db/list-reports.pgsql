@@ -5,12 +5,12 @@ select
   r.revenue,
   r.soldQuantity,
   u.username as bidder,
-  e.bidId,
-  s.name as executionStatus
+  e.id as bidId,
+  s.name as bidStatus
 from reports r
-  left join executions e on r.auctionId = e.auctionId
+  left join bids e on r.auctionId = e.auctionId
   left join users u on e.bidderId = u.id
-  left join executionStatus s on e.status = s.id
+  left join bidStatus s on e.status = s.id
   left join auctions a on r.auctionId = a.id
 order by r.auctionId
 

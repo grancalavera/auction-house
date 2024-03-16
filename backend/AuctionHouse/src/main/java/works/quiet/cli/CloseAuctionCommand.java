@@ -29,14 +29,9 @@ public class CloseAuctionCommand extends CommandWithAdminAndAuction {
     public void run() {
         adminService.assertIsNotBlocked();
         adminService.assertIsUser();
-
         var user = adminService.getCurrentUser();
-        var auction = auctionService.closeAuctionForUserByAuctionId(user, auctionId);
-        // var report = reportsService.createReport(auction);
-        // var savedReport = reportsService.saveReport(report);
-
+        auctionService.closeAuctionForUserByAuctionId(user, auctionId);
         var out = spec.commandLine().getOut();
         out.println(resources.getFormattedString("messages.auctionClosed", auctionId));
-        // out.println(savedReport);
     }
 }

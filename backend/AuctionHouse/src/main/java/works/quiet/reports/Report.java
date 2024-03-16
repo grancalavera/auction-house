@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import works.quiet.auction.Bid;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -22,5 +23,5 @@ public class Report {
     @Builder.Default
     private int soldQuantity = 0;
     @Builder.Default
-    private List<Execution> executions = new ArrayList<>();
+    private List<Bid> bids = new ArrayList<>();
 }

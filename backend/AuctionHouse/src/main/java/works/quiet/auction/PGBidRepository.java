@@ -55,19 +55,21 @@ public class PGBidRepository implements BidRepository {
                 upsertMapper::fromResulSet,
 
                 "INSERT INTO bids"
-                        + "(id, bidderId, auctionId, amount, createdAt)"
-                        + "values (?, ?, ?, ?, ?)"
+                        + "(id, bidderId, auctionId, amount, createdAt, status)"
+                        + "values (?, ?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
                         + "bidderId = excluded.bidderId,"
                         + "auctionId = excluded.auctionId,"
                         + "amount = excluded.amount,"
-                        + "createdAt = excluded.createdAt",
+                        + "createdAt = excluded.createdAt,"
+                        + "status = excluded.status",
 
                 idSource.generateId(entity),
                 entity.getBidderId(),
                 entity.getAuctionId(),
                 entity.getAmount(),
-                Timestamp.from(entity.getCreatedAt())
+                Timestamp.from(entity.getCreatedAt()),
+                entity.getStatus().getId()
         );
 
         return entity.toBuilder().id(id).build();

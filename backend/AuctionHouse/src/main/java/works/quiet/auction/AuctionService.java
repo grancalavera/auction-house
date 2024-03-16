@@ -3,8 +3,6 @@ package works.quiet.auction;
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.Repository;
-import works.quiet.reports.Execution;
-import works.quiet.reports.ExecutionRepository;
 import works.quiet.reports.Report;
 import works.quiet.resources.Resources;
 import works.quiet.user.User;
@@ -25,7 +23,6 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
     private final Repository<Report> reportRepository;
-    private final ExecutionRepository executionRepository;
 
     public AuctionService(
             final Level logLevel,
@@ -33,15 +30,14 @@ public class AuctionService {
             final DBInterface dbInterface,
             final AuctionRepository auctionRepository,
             final BidRepository bidRepository,
-            final Repository<Report> reportRepository,
-            final ExecutionRepository executionRepository
+            final Repository<Report> reportRepository
     ) {
+        log.setLevel(logLevel);
+
         this.resources = resources;
         this.bidRepository = bidRepository;
         this.dbInterface = dbInterface;
         this.reportRepository = reportRepository;
-        this.executionRepository = executionRepository;
-        log.setLevel(logLevel);
         this.auctionRepository = auctionRepository;
     }
 
@@ -69,6 +65,13 @@ public class AuctionService {
         return bidRepository.save(bid);
     }
 
+    public Dashboard getDashboardForUser(final User user) {
+        return Dashboard.builder()
+                .myAuctions(this.listAuctionsForUser(user))
+                .openAuctions(this.listOpenAuctionsForBidder(user))
+                .build();
+    }
+
     public List<Auction> listAuctionsForUser(final User user) {
         return auctionRepository.listAuctionsBySellerId(user.getId());
     }
@@ -77,7 +80,7 @@ public class AuctionService {
         return auctionRepository.listOpenAuctionsForBidderId(bidder.getId());
     }
 
-    public Report closeAuctionForUserByAuctionId(final User user, final int auctionId) {
+    public void closeAuctionForUserByAuctionId(final User user, final int auctionId) {
         var auction = auctionRepository
                 .findAuctionBySellerIdAndAuctionId(user.getId(), auctionId)
                 .orElseThrow(() -> new RuntimeException(
@@ -94,10 +97,8 @@ public class AuctionService {
         auctionRepository.save(closed);
         var report = this.createReport(closed);
         reportRepository.save(report);
-        report.getExecutions().forEach(executionRepository::saveExecution);
+        report.getBids().forEach(bidRepository::save);
         dbInterface.commitTransaction();
-
-        return report;
     }
 
     public Report createReport(final Auction auction) {
@@ -106,7 +107,7 @@ public class AuctionService {
         }
 
         var atomicSoldQuantity = new AtomicInteger(0);
-        var executions = new ArrayList<Execution>();
+        var bids = new ArrayList<Bid>();
 
         auction.getBids().stream()
                 .sorted((a, b) -> {
@@ -119,13 +120,13 @@ public class AuctionService {
                     var availableQuantity = auction.getQuantity() - atomicSoldQuantity.get();
 
                     if (availableQuantity == 0 || auction.getPrice().compareTo(bid.getAmount()) > 0) {
-                        executions.add(Execution.fromBidNotFilled(bid));
+                        bids.add(bid.toNotFilled());
                         return;
                     }
 
                     var sold = bid.getAmount().divide(auction.getPrice(), RoundingMode.FLOOR).intValue();
                     atomicSoldQuantity.addAndGet(Math.min(availableQuantity, sold));
-                    executions.add(Execution.fromBidFilled(bid));
+                    bids.add(bid.toFilled());
                 });
 
         var soldQuantity = atomicSoldQuantity.get();
@@ -135,7 +136,7 @@ public class AuctionService {
                 .auctionId(auction.getId())
                 .revenue(revenue)
                 .soldQuantity(soldQuantity)
-                .executions(executions)
+                .bids(bids)
                 .build();
     }
 }

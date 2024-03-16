@@ -21,8 +21,7 @@ import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
-import works.quiet.cli.ListMyAuctionsCommand;
-import works.quiet.cli.ListOpenAuctionsCommand;
+import works.quiet.cli.ShowDashboardCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
@@ -41,7 +40,6 @@ import works.quiet.db.PGDBInterface;
 import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
-import works.quiet.reports.ExecutionRepository;
 import works.quiet.reports.PGReportIdSource;
 import works.quiet.reports.PGReportRepository;
 import works.quiet.resources.Resources;
@@ -112,10 +110,8 @@ class AuctionHouse {
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
         auctionCommand.addSubcommand("create",
                 new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
-        auctionCommand.addSubcommand("list-mine",
-                new ListMyAuctionsCommand(logLevel, resources, adminService, auctionService));
-        auctionCommand.addSubcommand("list-open",
-                new ListOpenAuctionsCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("show-dashboard",
+                new ShowDashboardCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("close",
                 new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("bid",
@@ -209,8 +205,7 @@ class AuctionHouse {
                         dbInterface,
                         new PGUpsertMapper(logLevel),
                         new PGReportIdSource(logLevel, dbInterface)
-                ),
-                new ExecutionRepository(logLevel, resources, dbInterface)
+                )
         );
     }
 }
