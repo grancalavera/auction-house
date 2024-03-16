@@ -4,32 +4,35 @@ import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
-import works.quiet.db.Repository;
 import works.quiet.resources.Resources;
+import works.quiet.user.User;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
-public class PGReportRepository implements Repository<Report> {
+public class PGReportRepository implements ReportRepository {
 
     private final Resources resources;
     private final DBInterface dbInterface;
 
     private final PGMapper<Integer> upsertMapper;
     private final IdSource<Report> idSource;
+    private final PGMapper<List<Report>> reportRawQueryMapper;
 
     public PGReportRepository(
             final Level logLevel,
             final Resources resources,
             final DBInterface dbInterface,
+            final IdSource<Report> idSource,
             final PGMapper<Integer> upsertMapper,
-            final IdSource<Report> idSource
+            final PGMapper<List<Report>> reportRawQueryMapper
     ) {
         this.dbInterface = dbInterface;
         this.upsertMapper = upsertMapper;
         this.idSource = idSource;
+        this.reportRawQueryMapper = reportRawQueryMapper;
         log.setLevel(logLevel);
         this.resources = resources;
     }
@@ -60,12 +63,12 @@ public class PGReportRepository implements Repository<Report> {
                 upsertMapper::fromResulSet,
 
                 "INSERT INTO reports"
-                + "(id, auctionid, revenue, soldquantity) "
-                + "values (?, ?, ?, ?)"
-                + "ON CONFLICT (id) DO UPDATE SET "
-                + "auctionid = excluded.auctionid,"
-                + "revenue = excluded.revenue,"
-                + "soldquantity = excluded.soldquantity",
+                        + "(id, auctionid, revenue, soldquantity) "
+                        + "values (?, ?, ?, ?)"
+                        + "ON CONFLICT (id) DO UPDATE SET "
+                        + "auctionid = excluded.auctionid,"
+                        + "revenue = excluded.revenue,"
+                        + "soldquantity = excluded.soldquantity",
 
                 idSource.generateId(entity),
                 entity.getAuctionId(),
@@ -79,5 +82,10 @@ public class PGReportRepository implements Repository<Report> {
     @Override
     public void delete(final Report entity) {
 
+    }
+
+    @Override
+    public List<Report> findReportsForUser(final User user) {
+        return null;
     }
 }

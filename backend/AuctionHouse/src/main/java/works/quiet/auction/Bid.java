@@ -22,10 +22,10 @@ public class Bid {
     private BidStatus status = BidStatus.PLACED;
 
     public Bid toFilled() {
-        return this.toBuilder().status(BidStatus.FILLED).build();
+        return toBuilder().status(BidStatus.FILLED).build();
     }
 
     public Bid toNotFilled() {
-        return this.toBuilder().status(BidStatus.NOT_FILLED).build();
+        return toBuilder().status(BidStatus.NOT_FILLED).build();
     }
 }

@@ -21,7 +21,6 @@ import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
-import works.quiet.cli.ShowDashboardCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
@@ -30,6 +29,7 @@ import works.quiet.cli.MainCommand;
 import works.quiet.cli.PlaceBidCommand;
 import works.quiet.cli.PrintExceptionMessageHandler;
 import works.quiet.cli.ShowConfigCommand;
+import works.quiet.cli.ShowDashboardCommand;
 import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
@@ -41,7 +41,9 @@ import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.reports.PGReportIdSource;
+import works.quiet.reports.PGReportRawQueryMapper;
 import works.quiet.reports.PGReportRepository;
+import works.quiet.reports.PGReportRowMapper;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
@@ -177,6 +179,7 @@ class AuctionHouse {
     ) {
 
         var upsertMapper = new PGUpsertMapper(logLevel);
+        var bidRowMapper = new PGBidRowMapper(logLevel);
 
         return new AuctionService(
                 logLevel,
@@ -185,11 +188,7 @@ class AuctionHouse {
                 new PGAuctionRepository(
                         logLevel,
                         dbInterface,
-                        new PGAuctionRawQueryMapper(
-                                logLevel,
-                                new PGAuctionRowMapper(logLevel),
-                                new PGBidRowMapper(logLevel)
-                        ),
+                        new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), bidRowMapper),
                         upsertMapper,
                         new PGAuctionIdSource(logLevel, dbInterface)
                 ),
@@ -203,8 +202,9 @@ class AuctionHouse {
                         logLevel,
                         resources,
                         dbInterface,
+                        new PGReportIdSource(logLevel, dbInterface),
                         new PGUpsertMapper(logLevel),
-                        new PGReportIdSource(logLevel, dbInterface)
+                        new PGReportRawQueryMapper(logLevel, new PGReportRowMapper(), bidRowMapper)
                 )
         );
     }

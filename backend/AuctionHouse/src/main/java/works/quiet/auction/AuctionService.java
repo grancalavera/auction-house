@@ -92,10 +92,10 @@ public class AuctionService {
         }
 
         var closed = auction.toBuilder().closedAt(Instant.now()).build();
+        var report = this.createReport(closed);
 
         dbInterface.beginTransaction();
         auctionRepository.save(closed);
-        var report = this.createReport(closed);
         reportRepository.save(report);
         report.getBids().forEach(bidRepository::save);
         dbInterface.commitTransaction();
