@@ -3,11 +3,10 @@ select
   r.auctionId,
   r.revenue,
   r.soldQuantity,
-  u.username as bidder,
-  e.id as bidId
+  e.id as execution_id,
+  e.bidId as execution_bidid,
+  e.filledQuantity as execution_filledquantity
 from reports r
-  left join bids e on r.auctionId = e.auctionId
-  left join users u on e.bidderId = u.id
-  left join auctions a on r.auctionId = a.id
+  left join executions e on r.auctionId = e.auctionId
 order by r.auctionId
 

@@ -11,4 +11,4 @@ select
     b.createdAt as bid_createdAt
 from auctions a
     left join bids b on b.auctionId = a.id
-order by a.id, b.amount desc, b.createdAt desc;    
+order by a.id, b.amount desc, b.createdAt asc;    

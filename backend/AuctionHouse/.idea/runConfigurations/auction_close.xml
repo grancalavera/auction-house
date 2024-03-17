@@ -20,7 +20,7 @@
         <list>
           <option value="run" />
           <option value="--args" />
-          <option value="&quot;auction close 3&quot;" />
+          <option value="&quot;auction close 1&quot;" />
         </list>
       </option>
       <option name="vmOptions" />
