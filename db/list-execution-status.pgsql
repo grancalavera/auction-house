@@ -1,1 +1,1 @@
-select * from bidStatus;
+select * from executionStatus;

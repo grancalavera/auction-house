@@ -20,9 +20,6 @@ public class PGAuctionRowMapper implements PGMapper<Auction> {
 
     @Override
     public Auction fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
-
-        var closedAt = resultSet.getTimestamp(fieldPrefix + "closedAt");
-
         return Auction.builder()
                 .id(resultSet.getInt(fieldPrefix + "id"))
                 .symbol(resultSet.getString(fieldPrefix + "symbol"))
@@ -30,7 +27,6 @@ public class PGAuctionRowMapper implements PGMapper<Auction> {
                 .price(resultSet.getBigDecimal(fieldPrefix + "price"))
                 .sellerId(resultSet.getInt(fieldPrefix + "sellerId"))
                 .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
-                .closedAt(closedAt == null ? null : closedAt.toInstant())
                 .build();
     }
 }

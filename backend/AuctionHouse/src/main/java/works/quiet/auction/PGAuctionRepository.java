@@ -23,7 +23,6 @@ public class PGAuctionRepository implements AuctionRepository {
             + " auction.quantity,"
             + " auction.price,"
             + " auction.createdAt,"
-            + " auction.closedAt,"
             + " bid.id as bid_id,"
             + " bid.auctionId as bid_auctionId,"
             + " bid.bidderId as bid_bidderId,"
@@ -72,29 +71,25 @@ public class PGAuctionRepository implements AuctionRepository {
 
     @Override
     public Auction save(final Auction entity) {
-        var closedAt = entity.getClosedAt();
-
         var id = dbInterface.upsert(
                 upsertMapper::fromResulSet,
 
                 "INSERT INTO auctions"
-                        + "(id, sellerid, symbol, quantity, price, createdat, closedat)"
-                        + "values (?, ?, ?, ?, ?, ?, ?)"
+                        + "(id, sellerid, symbol, quantity, price, createdat)"
+                        + "values (?, ?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
                         + "sellerid = excluded.sellerid,"
                         + "symbol = excluded.symbol,"
                         + "quantity = excluded.quantity,"
                         + "price = excluded.price,"
-                        + "createdat = excluded.createdat,"
-                        + "closedat = excluded.closedat",
+                        + "createdat = excluded.createdat",
 
                 idSource.generateId(entity),
                 entity.getSellerId(),
                 entity.getSymbol(),
                 entity.getQuantity(),
                 entity.getPrice(),
-                Timestamp.from(entity.getCreatedAt()),
-                closedAt == null ? null : Timestamp.from(entity.getClosedAt())
+                Timestamp.from(entity.getCreatedAt())
         );
 
         return entity.toBuilder().id(id).build();
@@ -118,7 +113,9 @@ public class PGAuctionRepository implements AuctionRepository {
     public List<Auction> listOpenAuctionsForBidderId(final int bidderId) {
         return dbInterface.rawQuery(
                 auctionRawQueryMapper::fromResulSet,
-                auctionsQuery + " WHERE sellerId!=? AND closedAt IS NULL",
+                // write this in terms of reports
+                auctionsQuery + " WHERE sellerId!=?",
+                // auctionsQuery + " WHERE sellerId!=? AND closedAt IS NULL",
                 bidderId
         );
     }

@@ -21,11 +21,6 @@ create table if not exists roles (
     name varchar(256) unique not null
 );
 
-create table if not exists bidStatus (
-    id serial primary key,
-    name varchar(256) unique not null
-);
-
 create table if not exists users (
     id serial primary key,
     username varchar(256) unique not null,
@@ -45,8 +40,7 @@ create table if not exists auctions (
     -- not that I know
     -- https://stackoverflow.com/a/224866
     price numeric(19, 4) not null,
-    createdAt timestamp with time zone not null,
-    closedAt timestamp with time zone
+    createdAt timestamp with time zone not null
 );
 
 create table if not exists bids (
@@ -56,15 +50,27 @@ create table if not exists bids (
     amount numeric(19, 4) not null,
     -- https://stackoverflow.com/a/42779109
     -- https://stackoverflow.com/a/6627999
-    createdAt timestamp with time zone not null,
-    status int references bidStatus(id) not null
+    createdAt timestamp with time zone not null
 );
 
 create table if not exists reports (
     id serial primary key,
     auctionId int references auctions(id) unique not null,
     revenue numeric(19, 4) not null,
-    soldQuantity int not null
+    soldQuantity int not null,
+    createdAt timestamp with time zone not null
+);
+
+create table if not exists executionStatus (
+    id serial primary key,
+    name varchar(256) unique not null
+);
+
+create table if not exists executions (
+    id serial primary key,
+    bidId int references bids(id) not null,
+    filledQuantity int not null,
+    statusId int references executionStatus(id) not null
 );
 
 insert into organisations (name)
@@ -87,9 +93,8 @@ insert into roles (name)
         ('ADMIN')
     on conflict do nothing;
 
-insert into bidStatus (name)
+insert into executionStatus (name)
     values
-        ('PLACED'),
         ('NOT_FILLED'),
         ('FILLED')
     on conflict do nothing;
@@ -106,27 +111,27 @@ insert into users
     on conflict do nothing;
 
 insert into auctions
-        (sellerId, symbol, quantity, price, createdAt, closedAt)
+        (sellerId, symbol, quantity, price, createdAt)
     values
-        (1, 'A', 1, 2.000, now() at time zone 'utc' - interval '10 hour', null),
-        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null),
-        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null),
-        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null),
-        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour', null);
+        (1, 'A', 1, 2.000, now() at time zone 'utc' - interval '10 hour'),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour');
 
 insert into bids
-        (auctionId, bidderId, amount, createdAt, status)
+        (auctionId, bidderId, amount, createdAt)
     values
         -- 1: no bids
         -- 2: one bid below asking price
-        (2, 2, 2.000, now() at time zone 'utc', 1),
+        (2, 2, 2.000, now() at time zone 'utc'),
         -- 3: one bid below asking price and one bid at asking price
-        (3, 2, 1.000, now() at time zone 'utc', 1),
-        (3, 3, 2.000, now() at time zone 'utc', 1),
+        (3, 2, 1.000, now() at time zone 'utc'),
+        (3, 3, 2.000, now() at time zone 'utc'),
         -- 4: two bids at asking price placed at different times
-        (4, 2, 2.000, now() at time zone 'utc', 1),
-        (4, 3, 2.000, now() at time zone 'utc' - interval '1 hour', 1),
+        (4, 2, 2.000, now() at time zone 'utc'),
+        (4, 3, 2.000, now() at time zone 'utc' - interval '1 hour'),
         -- 5: one bid above asking price and one at asking price
-        (5, 2, 3.000, now() at time zone 'utc', 1),
-        (5, 3, 2.000, now() at time zone 'utc', 1);
+        (5, 2, 3.000, now() at time zone 'utc'),
+        (5, 3, 2.000, now() at time zone 'utc');
 

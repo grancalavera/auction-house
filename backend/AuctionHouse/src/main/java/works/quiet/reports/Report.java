@@ -7,6 +7,7 @@ import lombok.ToString;
 import works.quiet.auction.Bid;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,7 @@ import java.util.List;
 public class Report {
     private int id;
     private int auctionId;
+    private Instant createdAt;
 
     @Builder.Default
     private BigDecimal revenue = BigDecimal.valueOf(0);

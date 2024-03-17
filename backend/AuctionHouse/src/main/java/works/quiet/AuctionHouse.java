@@ -52,6 +52,7 @@ import works.quiet.user.PGUserMapper;
 import works.quiet.user.PGUserRepository;
 import works.quiet.user.UserValidator;
 
+import java.time.Instant;
 import java.util.logging.Level;
 
 @Log
@@ -205,7 +206,8 @@ class AuctionHouse {
                         new PGReportIdSource(logLevel, dbInterface),
                         new PGUpsertMapper(logLevel),
                         new PGReportRawQueryMapper(logLevel, new PGReportRowMapper(), bidRowMapper)
-                )
+                ),
+                Instant::now
         );
     }
 }
