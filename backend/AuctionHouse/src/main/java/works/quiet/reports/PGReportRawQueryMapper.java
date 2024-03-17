@@ -56,9 +56,9 @@ public class PGReportRawQueryMapper implements PGMapper<List<Report>> {
             if (resultSet.getInt("bid_id") == 0) {
                 break;
             }
-
-            var bid = bidRowMapper.fromResulSet("bid_", resultSet);
-            row.getBids().add(bid);
+            // map executions instead
+            // var bid = bidRowMapper.fromResulSet("bid_", resultSet);
+            // row.getExecutions().add(bid);
         }
 
         return result;

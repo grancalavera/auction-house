@@ -7,6 +7,7 @@ import works.quiet.db.PGMapper;
 import works.quiet.resources.Resources;
 import works.quiet.user.User;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
@@ -63,17 +64,19 @@ public class PGReportRepository implements ReportRepository {
                 upsertMapper::fromResulSet,
 
                 "INSERT INTO reports"
-                        + "(id, auctionid, revenue, soldquantity) "
-                        + "values (?, ?, ?, ?)"
+                        + "(id, auctionid, revenue, soldquantity, createdat) "
+                        + "values (?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
                         + "auctionid = excluded.auctionid,"
                         + "revenue = excluded.revenue,"
-                        + "soldquantity = excluded.soldquantity",
+                        + "soldquantity = excluded.soldquantity,"
+                        + "createdAt = excluded.createdAt",
 
                 idSource.generateId(entity),
                 entity.getAuctionId(),
                 entity.getRevenue(),
-                entity.getSoldQuantity()
+                entity.getSoldQuantity(),
+                Timestamp.from(entity.getCreatedAt())
         );
 
         return entity.toBuilder().id(id).build();
@@ -87,5 +90,15 @@ public class PGReportRepository implements ReportRepository {
     @Override
     public List<Report> findReportsForUser(final User user) {
         return null;
+    }
+
+    @Override
+    public Optional<Report> findReportByAuctionId(final int auctionId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean existsByAuctionId(final int auctionId) {
+        return dbInterface.queryExists("SELECT id from reports WHERE auctionId=?", auctionId);
     }
 }

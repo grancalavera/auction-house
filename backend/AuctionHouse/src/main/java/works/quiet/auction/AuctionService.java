@@ -2,8 +2,9 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
-import works.quiet.db.Repository;
+import works.quiet.reports.Execution;
 import works.quiet.reports.Report;
+import works.quiet.reports.ReportRepository;
 import works.quiet.resources.Resources;
 import works.quiet.user.User;
 
@@ -23,7 +24,7 @@ public class AuctionService {
     private final DBInterface dbInterface;
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
-    private final Repository<Report> reportRepository;
+    private final ReportRepository reportRepository;
     private final Callable<Instant> now;
 
     public AuctionService(
@@ -32,7 +33,7 @@ public class AuctionService {
             final DBInterface dbInterface,
             final AuctionRepository auctionRepository,
             final BidRepository bidRepository,
-            final Repository<Report> reportRepository,
+            final ReportRepository reportRepository,
             final Callable<Instant> now
     ) {
         this.now = now;
@@ -85,32 +86,35 @@ public class AuctionService {
         return auctionRepository.listOpenAuctionsForBidderId(bidder.getId());
     }
 
+    public boolean isAuctionClosedByAuctionId(final int auctionId) {
+        return reportRepository.existsByAuctionId(auctionId);
+    }
+
     public void closeAuctionForUserByAuctionId(final User user, final int auctionId) {
+
         var auction = auctionRepository
                 .findAuctionBySellerIdAndAuctionId(user.getId(), auctionId)
                 .orElseThrow(() -> new RuntimeException(
                         resources.getFormattedString("errors.cannotCloseAuction", auctionId, user.getId())
                 ));
 
-        // instead go to the DB and check if there's a report for this auction, if there is one it means is closed
+        var alreadyClosed = reportRepository.existsByAuctionId(auctionId);
 
-        // if (auction.isClosed()) {
-        //     throw new RuntimeException(resources.getFormattedString("errors.auctionAlreadyClosed", auctionId));
-        // }
+        if (alreadyClosed) {
+            throw new RuntimeException(resources.getFormattedString("errors.auctionAlreadyClosed", auctionId));
+        }
 
-        // var closed = auction.toBuilder().closedAt(Instant.now()).build();
-        // var report = this.createReport(closed);
+        var report = this.createReport(auction);
 
         dbInterface.beginTransaction();
-        // auctionRepository.save(closed);
-        // reportRepository.save(report);
+        reportRepository.save(report);
         // report.getBids().forEach(bidRepository::save);
         dbInterface.commitTransaction();
     }
 
     public Report createReport(final Auction auction) {
         var atomicSoldQuantity = new AtomicInteger(0);
-        var bids = new ArrayList<Bid>();
+        var executions = new ArrayList<Execution>();
 
         auction.getBids().stream()
                 .sorted((a, b) -> {
@@ -123,15 +127,14 @@ public class AuctionService {
                     var availableQuantity = auction.getQuantity() - atomicSoldQuantity.get();
 
                     if (availableQuantity == 0 || auction.getPrice().compareTo(bid.getAmount()) > 0) {
-                        // create an execution instead
-                        // bids.add(bid.toNotFilled());
+                        executions.add(Execution.ofBid(bid));
                         return;
                     }
 
-                    var sold = bid.getAmount().divide(auction.getPrice(), RoundingMode.FLOOR).intValue();
-                    atomicSoldQuantity.addAndGet(Math.min(availableQuantity, sold));
-                    // create an execution instead
-                    // bids.add(bid.toFilled());
+                    var wanted = bid.getAmount().divide(auction.getPrice(), RoundingMode.FLOOR).intValue();
+                    var filledQuantity = Math.min(availableQuantity, wanted);
+                    atomicSoldQuantity.addAndGet(filledQuantity);
+                    executions.add(Execution.ofBid(bid, filledQuantity));
                 });
 
         var soldQuantity = atomicSoldQuantity.get();
@@ -142,7 +145,7 @@ public class AuctionService {
                 .auctionId(auction.getId())
                 .revenue(revenue)
                 .soldQuantity(soldQuantity)
-                .bids(bids)
+                .executions(executions)
                 .build();
     }
 
