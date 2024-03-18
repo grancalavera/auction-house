@@ -40,6 +40,8 @@ import works.quiet.db.PGDBInterface;
 import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reports.PGExecutionIdSource;
+import works.quiet.reports.PGExecutionRepository;
 import works.quiet.reports.PGReportIdSource;
 import works.quiet.reports.PGReportRawQueryMapper;
 import works.quiet.reports.PGReportRepository;
@@ -206,6 +208,12 @@ class AuctionHouse {
                         new PGReportIdSource(logLevel, dbInterface),
                         new PGUpsertMapper(logLevel),
                         new PGReportRawQueryMapper(logLevel, new PGReportRowMapper(), bidRowMapper)
+                ),
+                new PGExecutionRepository(
+                        logLevel,
+                        dbInterface,
+                        upsertMapper,
+                        new PGExecutionIdSource(logLevel, dbInterface)
                 ),
                 Instant::now
         );

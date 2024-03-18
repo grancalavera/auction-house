@@ -36,6 +36,7 @@ class AuctionServiceTest {
                 mock(),
                 mock(),
                 mock(),
+                mock(),
                 () -> createdAt
         );
     }

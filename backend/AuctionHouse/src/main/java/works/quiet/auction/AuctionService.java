@@ -2,6 +2,7 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
+import works.quiet.db.Repository;
 import works.quiet.reports.Execution;
 import works.quiet.reports.Report;
 import works.quiet.reports.ReportRepository;
@@ -25,8 +26,10 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
     private final ReportRepository reportRepository;
+    private final Repository<Execution> executionRepository;
     private final Callable<Instant> now;
 
+    @SuppressWarnings("checkstyle:ParameterNumber")
     public AuctionService(
             final Level logLevel,
             final Resources resources,
@@ -34,8 +37,10 @@ public class AuctionService {
             final AuctionRepository auctionRepository,
             final BidRepository bidRepository,
             final ReportRepository reportRepository,
+            final Repository<Execution> executionRepository,
             final Callable<Instant> now
     ) {
+        this.executionRepository = executionRepository;
         this.now = now;
         log.setLevel(logLevel);
 
@@ -61,12 +66,12 @@ public class AuctionService {
                     bid.getAuctionId(), bid.getBidderId()));
         }
 
-        // instead go to the DB and check if there's a report for this auction, if there is one it means is closed
-        // if (auction.isClosed()) {
-        //     throw new RuntimeException(resources.getFormattedString(
-        //             "errors.auctionIsClosed",
-        //             bid.getAuctionId()));
-        // }
+        var alreadyClosed = reportRepository.existsByAuctionId(auction.getId());
+        if (alreadyClosed) {
+            throw new RuntimeException(resources.getFormattedString(
+                    "errors.auctionIsClosed",
+                    bid.getAuctionId()));
+        }
 
         return bidRepository.save(bid);
     }
@@ -108,7 +113,7 @@ public class AuctionService {
 
         dbInterface.beginTransaction();
         reportRepository.save(report);
-        // report.getBids().forEach(bidRepository::save);
+        report.getExecutions().forEach(executionRepository::save);
         dbInterface.commitTransaction();
     }
 
