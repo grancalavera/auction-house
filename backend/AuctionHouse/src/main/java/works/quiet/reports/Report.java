@@ -17,6 +17,7 @@ import java.util.List;
 public class Report {
     private int id;
     private int auctionId;
+    private int sellerId;
     private Instant createdAt;
 
     @Builder.Default

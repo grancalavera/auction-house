@@ -1,7 +1,6 @@
 package works.quiet.reports;
 
 import lombok.extern.java.Log;
-import works.quiet.auction.Bid;
 import works.quiet.db.PGMapper;
 
 import java.sql.ResultSet;
@@ -15,16 +14,16 @@ import java.util.logging.Level;
 public class PGReportRawQueryMapper implements PGMapper<List<Report>> {
 
     private final PGMapper<Report> reportRowMapper;
-    private final PGMapper<Bid> bidRowMapper;
+    private final PGMapper<Execution> executionRowMapper;
 
 
     public PGReportRawQueryMapper(
             final Level logLevel,
             final PGMapper<Report> reportRowMapper,
-            final PGMapper<Bid> bidRowMapper
+            final PGMapper<Execution> executionRowMapper
     ) {
         this.reportRowMapper = reportRowMapper;
-        this.bidRowMapper = bidRowMapper;
+        this.executionRowMapper = executionRowMapper;
         log.setLevel(logLevel);
     }
 
@@ -52,13 +51,13 @@ public class PGReportRawQueryMapper implements PGMapper<List<Report>> {
                 index.put(auctionId, row);
             }
 
-            // all bid-related columns use the "bid_" prefix
-            if (resultSet.getInt("bid_id") == 0) {
+            // all execution-related columns use the "execution_" prefix
+            if (resultSet.getInt("execution_id") == 0) {
                 break;
             }
-            // map executions instead
-            // var bid = bidRowMapper.fromResulSet("bid_", resultSet);
-            // row.getExecutions().add(bid);
+
+            var execution = executionRowMapper.fromResulSet("execution_", resultSet);
+            row.getExecutions().add(execution);
         }
 
         return result;

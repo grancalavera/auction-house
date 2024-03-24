@@ -56,6 +56,8 @@ create table if not exists bids (
 create table if not exists reports (
     id serial primary key,
     auctionId int references auctions(id) unique not null,
+    sellerId int references users(id) not null,
+    
     revenue numeric(19, 4) not null,
     soldQuantity int not null,
     createdAt timestamp with time zone not null
@@ -63,9 +65,10 @@ create table if not exists reports (
 
 create table if not exists executions (
     id serial primary key,
+    bidId int references bids(id) unique not null,
+
     auctionId int references auctions(id) not null,
-    -- only this needs to be unique as a bid can only be executed once
-    bidId int references bids(id) not null,
+    bidderId int references users(id) not null,
     filledQuantity int not null
 );
 
@@ -138,7 +141,6 @@ insert into bids
         (5, 2, 3.000, now() at time zone 'utc'),
         -- 7
         (5, 3, 2.000, now() at time zone 'utc'),
-
         -- 8
         (6, 2, 5.000, now() at time zone 'utc'),
         -- 9
@@ -150,14 +152,14 @@ insert into bids
 
 
 insert into reports
-        (auctionId, revenue, soldQuantity, createdAt)        
+        (auctionId, revenue, soldQuantity, createdAt, sellerId)        
     values
-        (6, 6.000, 3, now() at time zone 'utc');
+        (6, 6.000, 3, now() at time zone 'utc', 1);
 
 insert into executions
-        (auctionId, bidId, filledQuantity)
+        (auctionId, bidId, bidderId, filledQuantity)
     values
-        (6, 8, 2),
-        (6, 10, 1),
-        (6, 9, 0),
-        (6, 11, 0);
+        (6, 8, 2, 2),
+        (6, 10, 3, 1),
+        (6, 9, 3, 0),
+        (6, 11, 2, 0);

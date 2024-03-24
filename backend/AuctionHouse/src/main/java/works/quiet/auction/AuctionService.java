@@ -2,8 +2,8 @@ package works.quiet.auction;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
-import works.quiet.db.Repository;
 import works.quiet.reports.Execution;
+import works.quiet.reports.ExecutionRepository;
 import works.quiet.reports.Report;
 import works.quiet.reports.ReportRepository;
 import works.quiet.resources.Resources;
@@ -26,7 +26,7 @@ public class AuctionService {
     private final AuctionRepository auctionRepository;
     private final BidRepository bidRepository;
     private final ReportRepository reportRepository;
-    private final Repository<Execution> executionRepository;
+    private final ExecutionRepository executionRepository;
     private final Callable<Instant> now;
 
     @SuppressWarnings("checkstyle:ParameterNumber")
@@ -37,7 +37,7 @@ public class AuctionService {
             final AuctionRepository auctionRepository,
             final BidRepository bidRepository,
             final ReportRepository reportRepository,
-            final Repository<Execution> executionRepository,
+            final ExecutionRepository executionRepository,
             final Callable<Instant> now
     ) {
         this.executionRepository = executionRepository;
@@ -78,8 +78,11 @@ public class AuctionService {
 
     public Dashboard getDashboardForUser(final User user) {
         return Dashboard.builder()
-                .myAuctions(this.listAuctionsForUser(user))
-                .openAuctions(this.listOpenAuctionsForBidder(user))
+                .myAuctions(listAuctionsForUser(user))
+                .openAuctions(listOpenAuctionsForBidder(user))
+                .myReports(reportRepository.findAllBySellerId(user.getId()))
+                .myExecutions(executionRepository.findAllByBidderId(user.getId()))
+                .myBids(bidRepository.findAllByBidderId(user.getId()))
                 .build();
     }
 
@@ -89,10 +92,6 @@ public class AuctionService {
 
     public List<Auction> listOpenAuctionsForBidder(final User bidder) {
         return auctionRepository.listOpenAuctionsForBidderId(bidder.getId());
-    }
-
-    public boolean isAuctionClosedByAuctionId(final int auctionId) {
-        return reportRepository.existsByAuctionId(auctionId);
     }
 
     public void closeAuctionForUserByAuctionId(final User user, final int auctionId) {
@@ -146,8 +145,9 @@ public class AuctionService {
         var revenue = auction.getPrice().multiply(BigDecimal.valueOf(soldQuantity));
 
         return Report.builder()
-                .createdAt(unsafeNow())
                 .auctionId(auction.getId())
+                .sellerId(auction.getSellerId())
+                .createdAt(unsafeNow())
                 .revenue(revenue)
                 .soldQuantity(soldQuantity)
                 .executions(executions)

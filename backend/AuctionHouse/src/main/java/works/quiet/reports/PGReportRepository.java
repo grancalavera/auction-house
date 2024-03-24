@@ -5,7 +5,6 @@ import works.quiet.db.DBInterface;
 import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
 import works.quiet.resources.Resources;
-import works.quiet.user.User;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -64,8 +63,8 @@ public class PGReportRepository implements ReportRepository {
                 upsertMapper::fromResulSet,
 
                 "INSERT INTO reports"
-                        + "(id, auctionid, revenue, soldquantity, createdat) "
-                        + "values (?, ?, ?, ?, ?)"
+                        + "(id, auctionid, revenue, soldquantity, createdat, sellerid) "
+                        + "values (?, ?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
                         + "auctionid = excluded.auctionid,"
                         + "revenue = excluded.revenue,"
@@ -76,7 +75,8 @@ public class PGReportRepository implements ReportRepository {
                 entity.getAuctionId(),
                 entity.getRevenue(),
                 entity.getSoldQuantity(),
-                Timestamp.from(entity.getCreatedAt())
+                Timestamp.from(entity.getCreatedAt()),
+                entity.getSellerId()
         );
 
         return entity.toBuilder().id(id).build();
@@ -88,13 +88,28 @@ public class PGReportRepository implements ReportRepository {
     }
 
     @Override
-    public List<Report> findReportsForUser(final User user) {
-        return null;
-    }
+    public List<Report> findAllBySellerId(final int sellerId) {
+        return dbInterface.rawQuery(
+                reportRawQueryMapper::fromResulSet,
+                "SELECT "
+                        + "report.id,"
+                        + "report.auctionId,"
+                        + "report.revenue,"
+                        + "report.soldQuantity,"
+                        + "report.createdAt,"
+                        + "report.sellerid,"
 
-    @Override
-    public Optional<Report> findReportByAuctionId(final int auctionId) {
-        return Optional.empty();
+                        + "execution.id as execution_id,"
+                        + "execution.auctionId as execution_auctionId,"
+                        + "execution.bidId as execution_bidId,"
+                        + "execution.bidderId as execution_bidderId,"
+                        + "execution.filledQuantity as execution_filledQuantity "
+
+                        + "FROM reports report "
+                        + "JOIN executions execution on execution.auctionId = report.auctionId "
+                        + "WHERE report.sellerid = ?",
+                sellerId
+        );
     }
 
     @Override

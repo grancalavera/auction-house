@@ -42,6 +42,7 @@ import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
 import works.quiet.reports.PGExecutionIdSource;
 import works.quiet.reports.PGExecutionRepository;
+import works.quiet.reports.PGExecutionRowMapper;
 import works.quiet.reports.PGReportIdSource;
 import works.quiet.reports.PGReportRawQueryMapper;
 import works.quiet.reports.PGReportRepository;
@@ -183,6 +184,7 @@ class AuctionHouse {
 
         var upsertMapper = new PGUpsertMapper(logLevel);
         var bidRowMapper = new PGBidRowMapper(logLevel);
+        var executionRowMapper = new PGExecutionRowMapper();
 
         return new AuctionService(
                 logLevel,
@@ -199,7 +201,8 @@ class AuctionHouse {
                         logLevel,
                         dbInterface,
                         upsertMapper,
-                        new PGBidIdSource(logLevel, dbInterface)
+                        new PGBidIdSource(logLevel, dbInterface),
+                        new PGBidRowMapper(logLevel)
                 ),
                 new PGReportRepository(
                         logLevel,
@@ -207,13 +210,14 @@ class AuctionHouse {
                         dbInterface,
                         new PGReportIdSource(logLevel, dbInterface),
                         new PGUpsertMapper(logLevel),
-                        new PGReportRawQueryMapper(logLevel, new PGReportRowMapper(), bidRowMapper)
+                        new PGReportRawQueryMapper(logLevel, new PGReportRowMapper(), executionRowMapper)
                 ),
                 new PGExecutionRepository(
                         logLevel,
                         dbInterface,
                         upsertMapper,
-                        new PGExecutionIdSource(logLevel, dbInterface)
+                        new PGExecutionIdSource(logLevel, dbInterface),
+                        executionRowMapper
                 ),
                 Instant::now
         );

@@ -17,14 +17,18 @@ public class PGBidRepository implements BidRepository {
     private final PGMapper<Integer> upsertMapper;
     private final IdSource<Bid> idSource;
 
+    private final PGMapper<Bid> rowMapper;
+
     public PGBidRepository(
             final Level logLevel,
             final DBInterface dbInterface,
             final PGMapper<Integer> upsertMapper,
-            final IdSource<Bid> idSource
+            final IdSource<Bid> idSource,
+            final PGMapper<Bid> rowMapper
     ) {
         this.upsertMapper = upsertMapper;
         this.idSource = idSource;
+        this.rowMapper = rowMapper;
         log.setLevel(logLevel);
         this.dbInterface = dbInterface;
     }
@@ -75,5 +79,14 @@ public class PGBidRepository implements BidRepository {
 
     @Override
     public void delete(final Bid entity) {
+    }
+
+    @Override
+    public List<Bid> findAllByBidderId(final int bidderId) {
+        return dbInterface.queryMany(
+                rowMapper::fromResulSet,
+                "SELECT * from bids WHERE bidderid=?",
+                bidderId
+        );
     }
 }

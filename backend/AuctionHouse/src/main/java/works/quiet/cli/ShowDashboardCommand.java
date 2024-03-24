@@ -31,13 +31,21 @@ public class ShowDashboardCommand extends CommandWithAdminAndAuction {
         out.println("My Auctions:");
         dashboard.getMyAuctions().forEach(out::println);
         out.println();
+
         out.println("Open Auctions:");
         dashboard.getOpenAuctions().forEach(out::println);
         out.println();
+
         out.println("My Reports:");
         dashboard.getMyReports().forEach(out::println);
         out.println();
+
         out.println("My Bids:");
         dashboard.getMyBids().forEach(out::println);
+        out.println();
+
+        out.println("My Executions:");
+        dashboard.getMyExecutions().forEach(out::println);
+        out.println();
     }
 }

@@ -14,6 +14,7 @@ public class Execution {
     private int id;
     private int auctionId;
     private int bidId;
+    private int bidderId;
     @Builder.Default
     private int filledQuantity = 0;
 
@@ -24,6 +25,7 @@ public class Execution {
         return Execution.builder()
                 .bidId(bid.getId())
                 .auctionId(bid.getAuctionId())
+                .bidderId(bid.getBidderId())
                 .filledQuantity(filledQuantity)
                 .build();
     }

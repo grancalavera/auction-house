@@ -4,28 +4,30 @@ import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
-import works.quiet.db.Repository;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
-public class PGExecutionRepository implements Repository<Execution> {
+  public class PGExecutionRepository implements ExecutionRepository {
 
     private final DBInterface dbInterface;
     private final PGMapper<Integer> upsertMapper;
     private final IdSource<Execution> idSource;
+    private final PGMapper<Execution> rowMapper;
 
     public PGExecutionRepository(
             final Level logLevel,
             final DBInterface dbInterface,
             final PGMapper<Integer> upsertMapper,
-            final IdSource<Execution> idSource
+            final IdSource<Execution> idSource,
+            final PGMapper<Execution> rowMapper
     ) {
         this.dbInterface = dbInterface;
         this.upsertMapper = upsertMapper;
         this.idSource = idSource;
+        this.rowMapper = rowMapper;
     }
 
     @Override
@@ -53,8 +55,8 @@ public class PGExecutionRepository implements Repository<Execution> {
         var id = dbInterface.upsert(
                 upsertMapper::fromResulSet,
                 "INSERT INTO executions"
-                        + "(id, auctionid, bidid, filledquantity) "
-                        + "values (?, ?, ?, ?)"
+                        + "(id, auctionid, bidid, bidderid, filledquantity) "
+                        + "values (?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
                         + "auctionid = excluded.auctionid,"
                         + "bidid = excluded.bidid,"
@@ -62,6 +64,7 @@ public class PGExecutionRepository implements Repository<Execution> {
                 idSource.generateId(entity),
                 entity.getAuctionId(),
                 entity.getBidId(),
+                entity.getBidderId(),
                 entity.getFilledQuantity()
         );
 
@@ -71,5 +74,14 @@ public class PGExecutionRepository implements Repository<Execution> {
     @Override
     public void delete(final Execution entity) {
 
+    }
+
+    @Override
+    public List<Execution> findAllByBidderId(final int bidderId) {
+        return dbInterface.queryMany(
+                rowMapper::fromResulSet,
+                "SELECT * FROM  executions WHERE bidderid=?",
+                bidderId
+        );
     }
 }

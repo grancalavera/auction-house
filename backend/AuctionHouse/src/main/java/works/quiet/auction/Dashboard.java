@@ -2,6 +2,7 @@ package works.quiet.auction;
 
 import lombok.Builder;
 import lombok.Getter;
+import works.quiet.reports.Execution;
 import works.quiet.reports.Report;
 
 import java.util.ArrayList;
@@ -18,4 +19,6 @@ public class Dashboard {
     private List<Report> myReports = new ArrayList<>();
     @Builder.Default
     private List<Bid> myBids = new ArrayList<>();
+    @Builder.Default
+    private List<Execution> myExecutions = new ArrayList<>();
 }

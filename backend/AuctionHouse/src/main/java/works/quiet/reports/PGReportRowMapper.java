@@ -12,6 +12,12 @@ public class PGReportRowMapper implements PGMapper<Report> {
 
     @Override
     public Report fromResulSet(final String fieldPrefix, final ResultSet resultSet) throws Exception {
-        return null;
+        return Report.builder()
+                .id(resultSet.getInt(fieldPrefix + "id"))
+                .sellerId(resultSet.getInt(fieldPrefix + "sellerId"))
+                .createdAt(resultSet.getTimestamp(fieldPrefix + "createdAt").toInstant())
+                .revenue(resultSet.getBigDecimal(fieldPrefix + "revenue"))
+                .auctionId(resultSet.getInt(fieldPrefix + "auctionId"))
+                .build();
     }
 }
