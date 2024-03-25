@@ -1,4 +1,4 @@
-package works.quiet.auction;
+package works.quiet.reports;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -14,13 +14,16 @@ import java.util.List;
 @EqualsAndHashCode
 @ToString
 @Builder(toBuilder = true)
-public class Auction {
+public class Report {
     private int id;
+    private int auctionId;
     private int sellerId;
-    private String symbol;
-    private int quantity;
-    private BigDecimal price;
-    @Builder.Default
-    private List<Bid> bids = new ArrayList<>();
     private Instant createdAt;
+
+    @Builder.Default
+    private BigDecimal revenue = BigDecimal.valueOf(0);
+    @Builder.Default
+    private int soldQuantity = 0;
+    @Builder.Default
+    private List<Execution> executions = new ArrayList<>();
 }

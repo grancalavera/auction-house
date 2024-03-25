@@ -24,15 +24,17 @@
 
 - [x] Create an auction, with a symbol, non-negative quantity, and a minimum accepted price for the auction, which has to be a positive value. After an auction has been created it is automatically open for bidding.
 - [x] Close an open auction created by myself (but not auctions created by other users):
-  - [ ] The bids with the best prices are selected to fulfil the auction, in descending order.
-  - [ ] Bids can be partially filled if total bids exceed the quantity available.
-  - [ ] Ties between matching bids are broken by submission time (i.e. earlier bids win).
-  - [lc] I'll process the results of the auction as a projection of the bids, so that I can have a single source of truth for the auction results.
+  - [x] The bids with the best prices are selected to fulfil the auction, in descending order.
+  - [x] Bids can be partially filled if total bids exceed the quantity available.
+  - [x] Ties between matching bids are broken by submission time (i.e. earlier bids win).
 - [x] View a list of all of my auctions, including whether it is still open or has been closed
 - [x] as well as all bids on the auction so far.
-- [ ] For closed auctions, also see a summary of the auction result, which includes the total revenue, total sold quantity, and winning bid(s), as well as the closing time of the auction.
+- [x] For closed auctions, also see a summary of the auction result, which includes:
+  - [x] the total revenue
+  - [x] total sold quantity
+  - [x] and winning bid(s)
+  - [x] as well as the closing time of the auction
 - [x] Bid on any open auctions, created by other users (users cannot bid on their own auctions).
-  - [lc] should the bid be rejected if the seller is blocked?
-  - [lc] should auctions for a blocked seller be closed?
-  - [lc] do we need another state for the auction, like "blocked"? or "cancelled"?
-- [ ] Retrieve the details of all my winning or losing bids from any auctions I participated in.
+- [x] Retrieve the details of all my winning or losing bids from any auctions I participated in.
+  - [x] For winning and loosing bids is enough to query the execution results junction table
+  - [x] For "pending" bids, we need to query the junction for bids not in that table.

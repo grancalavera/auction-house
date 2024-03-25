@@ -14,12 +14,14 @@ import java.util.logging.Level;
 )
 public class CloseAuctionCommand extends CommandWithAdminAndAuction {
 
+
     @CommandLine.Parameters(paramLabel = "AUCTION_ID", description = "The auction id to close.")
     private int auctionId;
 
     public CloseAuctionCommand(
             final Level logLevel,
-            final Resources resources, final AdminService adminService, final AuctionService auctionService) {
+            final Resources resources, final AdminService adminService, final AuctionService auctionService
+    ) {
         super(logLevel, resources, adminService, auctionService);
     }
 
@@ -29,6 +31,7 @@ public class CloseAuctionCommand extends CommandWithAdminAndAuction {
         adminService.assertIsUser();
         var user = adminService.getCurrentUser();
         auctionService.closeAuctionForUserByAuctionId(user, auctionId);
-        spec.commandLine().getOut().println(resources.getFormattedString("messages.auctionClosed", auctionId));
+        var out = spec.commandLine().getOut();
+        out.println(resources.getFormattedString("messages.auctionClosed", auctionId));
     }
 }

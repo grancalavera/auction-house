@@ -1,51 +1,48 @@
-package works.quiet.auction;
+package works.quiet.reports;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
 import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
 
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 
 @Log
-public class PGBidRepository implements BidRepository {
+  public class PGExecutionRepository implements ExecutionRepository {
 
     private final DBInterface dbInterface;
     private final PGMapper<Integer> upsertMapper;
-    private final IdSource<Bid> idSource;
+    private final IdSource<Execution> idSource;
+    private final PGMapper<Execution> rowMapper;
 
-    private final PGMapper<Bid> rowMapper;
-
-    public PGBidRepository(
+    public PGExecutionRepository(
             final Level logLevel,
             final DBInterface dbInterface,
             final PGMapper<Integer> upsertMapper,
-            final IdSource<Bid> idSource,
-            final PGMapper<Bid> rowMapper
+            final IdSource<Execution> idSource,
+            final PGMapper<Execution> rowMapper
     ) {
+        this.dbInterface = dbInterface;
         this.upsertMapper = upsertMapper;
         this.idSource = idSource;
         this.rowMapper = rowMapper;
-        log.setLevel(logLevel);
-        this.dbInterface = dbInterface;
     }
 
     @Override
-    public Optional<Bid> findById(final int id) {
+    public Optional<Execution> findById(final int id) {
         return Optional.empty();
     }
 
     @Override
-    public List<Bid> findAll() {
+    public List<Execution> findAll() {
         return null;
     }
 
     @Override
     public long count() {
-        return dbInterface.queryCount("SELECT count(id) from bids");
+        return 0;
     }
 
     @Override
@@ -54,38 +51,36 @@ public class PGBidRepository implements BidRepository {
     }
 
     @Override
-    public Bid save(final Bid entity) {
+    public Execution save(final Execution entity) {
         var id = dbInterface.upsert(
                 upsertMapper::fromResulSet,
-
-                "INSERT INTO bids"
-                        + "(id, bidderId, auctionId, amount, createdAt)"
+                "INSERT INTO executions"
+                        + "(id, auctionid, bidid, bidderid, filledquantity) "
                         + "values (?, ?, ?, ?, ?)"
                         + "ON CONFLICT (id) DO UPDATE SET "
-                        + "bidderId = excluded.bidderId,"
-                        + "auctionId = excluded.auctionId,"
-                        + "amount = excluded.amount,"
-                        + "createdAt = excluded.createdAt",
-
+                        + "auctionid = excluded.auctionid,"
+                        + "bidid = excluded.bidid,"
+                        + "filledquantity = excluded.filledquantity",
                 idSource.generateId(entity),
-                entity.getBidderId(),
                 entity.getAuctionId(),
-                entity.getAmount(),
-                Timestamp.from(entity.getCreatedAt())
+                entity.getBidId(),
+                entity.getBidderId(),
+                entity.getFilledQuantity()
         );
 
         return entity.toBuilder().id(id).build();
     }
 
     @Override
-    public void delete(final Bid entity) {
+    public void delete(final Execution entity) {
+
     }
 
     @Override
-    public List<Bid> findAllByBidderId(final int bidderId) {
+    public List<Execution> findAllByBidderId(final int bidderId) {
         return dbInterface.queryMany(
                 rowMapper::fromResulSet,
-                "SELECT * from bids WHERE bidderid=?",
+                "SELECT * FROM  executions WHERE bidderid=?",
                 bidderId
         );
     }

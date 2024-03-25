@@ -2,6 +2,7 @@ package works.quiet.reference;
 
 import lombok.extern.java.Log;
 import works.quiet.db.DBInterface;
+import works.quiet.db.IdSource;
 import works.quiet.db.PGMapper;
 
 import java.util.List;
@@ -12,15 +13,18 @@ import java.util.logging.Level;
 public class PGOrganisationRepository implements OrganisationRepository {
     private final DBInterface dbInterface;
     private final PGMapper<Organisation> rowMapper;
+    private final IdSource<Organisation> idSource;
 
 
     public PGOrganisationRepository(
             final Level logLevel,
             final DBInterface dbInterface,
-            final PGMapper<Organisation> rowMapper
+            final PGMapper<Organisation> rowMapper,
+            final IdSource<Organisation> idSource
     ) {
         this.dbInterface = dbInterface;
         this.rowMapper = rowMapper;
+        this.idSource = idSource;
         log.setLevel(logLevel);
     }
 
@@ -73,10 +77,5 @@ public class PGOrganisationRepository implements OrganisationRepository {
         throw new RuntimeException("Not Implemented");
     }
 
-    @Override
-    public int generateId(final Organisation entity) {
-        return entity.getId() == 0
-                ? dbInterface.nextVal("SELECT nextval('organisations_id_seq')")
-                : entity.getId();
-    }
+
 }

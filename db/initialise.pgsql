@@ -40,8 +40,7 @@ create table if not exists auctions (
     -- not that I know
     -- https://stackoverflow.com/a/224866
     price numeric(19, 4) not null,
-    createdAt timestamp with time zone not null,
-    closedAt timestamp with time zone
+    createdAt timestamp with time zone not null
 );
 
 create table if not exists bids (
@@ -52,6 +51,25 @@ create table if not exists bids (
     -- https://stackoverflow.com/a/42779109
     -- https://stackoverflow.com/a/6627999
     createdAt timestamp with time zone not null
+);
+
+create table if not exists reports (
+    id serial primary key,
+    auctionId int references auctions(id) unique not null,
+    sellerId int references users(id) not null,
+    
+    revenue numeric(19, 4) not null,
+    soldQuantity int not null,
+    createdAt timestamp with time zone not null
+);
+
+create table if not exists executions (
+    id serial primary key,
+    bidId int references bids(id) unique not null,
+
+    auctionId int references auctions(id) not null,
+    bidderId int references users(id) not null,
+    filledQuantity int not null
 );
 
 insert into organisations (name)
@@ -86,29 +104,62 @@ insert into users
     on conflict do nothing;
 
 insert into auctions
-        (sellerId, symbol, quantity, price, createdAt, closedAt)
+        (sellerId, symbol, quantity, price, createdAt)
     values
-        -- open auction with single unit
-        (1, 'A', 1, 1.000, now() at time zone 'utc', null),
-        -- closed auction with single unit
-        (1, 'A', 1, 1.000, now() at time zone 'utc', now() at time zone 'utc'),
-        -- open auction with multiple units
-        (1, 'B', 2, 1.000, now() at time zone 'utc', null),
-        -- open auction, no bids (keep empty)
-        (1, 'C', 1, 1.000, now() at time zone 'utc', null),
-        -- closed auction, no bids (keep empty)
-        (1, 'C', 1, 1.000, now() at time zone 'utc', now() at time zone 'utc');
+        -- 1
+        (1, 'A', 1, 2.000, now() at time zone 'utc' - interval '10 hour'),
+        -- 2
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        -- 3    
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        -- 4
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        -- 5
+        (1, 'A', 1, 2.000, now() at time zone 'utc'  - interval '10 hour'),
+        -- 6
+        (1, 'A', 3, 2.000, now() at time zone 'utc'  - interval '10 hour');
 
 insert into bids
         (auctionId, bidderId, amount, createdAt)
     values
-        -- auction 1: u1 wins
-        (1, 2, 1.001, now() at time zone 'utc'),
-        (1, 3, 1.000, now() at time zone 'utc'),
-        -- auction 2: u1 wins
-        (2, 2, 1.001, now() at time zone 'utc'),
-        (2, 3, 1.000, now() at time zone 'utc'),
-        -- auction 3: u1 wins
-        (3, 2, 2.001, now() at time zone 'utc'),
-        (3, 3, 2.000, now() at time zone 'utc');
+        -- 1: no bids
+        -- 2: one bid below asking price
+        -- 1
+        (2, 2, 2.000, now() at time zone 'utc'),
+        -- 3: one bid below asking price and one bid at asking price
+        -- 2
+        (3, 2, 1.000, now() at time zone 'utc'),
+        -- 3
+        (3, 3, 2.000, now() at time zone 'utc'),
+        -- 4: two bids at asking price placed at different times
+        -- 4
+        (4, 2, 2.000, now() at time zone 'utc'),
+        -- 5
+        (4, 3, 2.000, now() at time zone 'utc' - interval '1 hour'),
+        -- 5: one bid above asking price and one at asking price
+        -- 6
+        (5, 2, 3.000, now() at time zone 'utc'),
+        -- 7
+        (5, 3, 2.000, now() at time zone 'utc'),
+        -- 8
+        (6, 2, 5.000, now() at time zone 'utc'),
+        -- 9
+        (6, 3, 2.000, now() at time zone 'utc'),
+        -- 10
+        (6, 3, 2.000, now() at time zone 'utc' - interval '1 hour'),
+        -- 11
+        (6, 2, 1.000, now() at time zone 'utc');
 
+
+insert into reports
+        (auctionId, revenue, soldQuantity, createdAt, sellerId)        
+    values
+        (6, 6.000, 3, now() at time zone 'utc', 1);
+
+insert into executions
+        (auctionId, bidId, bidderId, filledQuantity)
+    values
+        (6, 8, 2, 2),
+        (6, 10, 3, 1),
+        (6, 9, 3, 0),
+        (6, 11, 2, 0);

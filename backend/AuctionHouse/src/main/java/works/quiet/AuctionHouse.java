@@ -3,9 +3,11 @@ package works.quiet;
 import lombok.extern.java.Log;
 import picocli.CommandLine;
 import works.quiet.auction.AuctionService;
+import works.quiet.auction.PGAuctionIdSource;
 import works.quiet.auction.PGAuctionRawQueryMapper;
 import works.quiet.auction.PGAuctionRepository;
 import works.quiet.auction.PGAuctionRowMapper;
+import works.quiet.auction.PGBidIdSource;
 import works.quiet.auction.PGBidRepository;
 import works.quiet.auction.PGBidRowMapper;
 import works.quiet.cli.AdminCommand;
@@ -19,8 +21,6 @@ import works.quiet.cli.CreateAuctionCommand;
 import works.quiet.cli.CreateUserCommand;
 import works.quiet.cli.DeleteUserCommand;
 import works.quiet.cli.FindUserCommand;
-import works.quiet.cli.ListMyAuctionsCommand;
-import works.quiet.cli.ListOpenAuctionsCommand;
 import works.quiet.cli.ListOrganisationsCommand;
 import works.quiet.cli.ListUsersCommand;
 import works.quiet.cli.LoginCommand;
@@ -29,6 +29,7 @@ import works.quiet.cli.MainCommand;
 import works.quiet.cli.PlaceBidCommand;
 import works.quiet.cli.PrintExceptionMessageHandler;
 import works.quiet.cli.ShowConfigCommand;
+import works.quiet.cli.ShowDashboardCommand;
 import works.quiet.cli.UnblockUserCommand;
 import works.quiet.cli.UpdateUserCommand;
 import works.quiet.cli.WhoAmICommand;
@@ -39,13 +40,22 @@ import works.quiet.db.PGDBInterface;
 import works.quiet.db.PGUpsertMapper;
 import works.quiet.reference.PGOrganisationMapper;
 import works.quiet.reference.PGOrganisationRepository;
+import works.quiet.reports.PGExecutionIdSource;
+import works.quiet.reports.PGExecutionRepository;
+import works.quiet.reports.PGExecutionRowMapper;
+import works.quiet.reports.PGReportIdSource;
+import works.quiet.reports.PGReportRawQueryMapper;
+import works.quiet.reports.PGReportRepository;
+import works.quiet.reports.PGReportRowMapper;
 import works.quiet.resources.Resources;
 import works.quiet.user.AdminService;
 import works.quiet.user.FileSystemSession;
+import works.quiet.user.PGUserIdSource;
 import works.quiet.user.PGUserMapper;
 import works.quiet.user.PGUserRepository;
 import works.quiet.user.UserValidator;
 
+import java.time.Instant;
 import java.util.logging.Level;
 
 @Log
@@ -76,7 +86,6 @@ class AuctionHouse {
         );
 
         var dbInterface = new PGDBInterface(logLevel, connection);
-
         var resources = new Resources();
         var adminService = getAdminService(logLevel, resources, dbInterface);
         var auctionService = getAuctionService(logLevel, resources, dbInterface);
@@ -107,10 +116,8 @@ class AuctionHouse {
         CommandLine auctionCommand = new CommandLine(new AuctionCommand());
         auctionCommand.addSubcommand("create",
                 new CreateAuctionCommand(logLevel, resources, adminService, auctionService));
-        auctionCommand.addSubcommand("list-mine",
-                new ListMyAuctionsCommand(logLevel, resources, adminService, auctionService));
-        auctionCommand.addSubcommand("list-open",
-                new ListOpenAuctionsCommand(logLevel, resources, adminService, auctionService));
+        auctionCommand.addSubcommand("show-dashboard",
+                new ShowDashboardCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("close",
                 new CloseAuctionCommand(logLevel, resources, adminService, auctionService));
         auctionCommand.addSubcommand("bid",
@@ -147,14 +154,16 @@ class AuctionHouse {
         var organisationRepository = new PGOrganisationRepository(
                 logLevel,
                 dbInterface,
-                new PGOrganisationMapper()
+                new PGOrganisationMapper(logLevel),
+                new PGOrganisationIdSource(logLevel, dbInterface)
         );
 
         var userRepository = new PGUserRepository(
                 logLevel,
                 dbInterface,
                 new PGUserMapper(logLevel),
-                new PGUpsertMapper(logLevel)
+                new PGUpsertMapper(logLevel),
+                new PGUserIdSource(logLevel, dbInterface)
         );
 
         return new AdminService(
@@ -174,20 +183,43 @@ class AuctionHouse {
     ) {
 
         var upsertMapper = new PGUpsertMapper(logLevel);
+        var bidRowMapper = new PGBidRowMapper(logLevel);
+        var executionRowMapper = new PGExecutionRowMapper();
 
-        var auctionRepository = new PGAuctionRepository(
+        return new AuctionService(
                 logLevel,
+                resources,
                 dbInterface,
-                new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), new PGBidRowMapper(logLevel)),
-                upsertMapper
+                new PGAuctionRepository(
+                        logLevel,
+                        dbInterface,
+                        new PGAuctionRawQueryMapper(logLevel, new PGAuctionRowMapper(logLevel), bidRowMapper),
+                        upsertMapper,
+                        new PGAuctionIdSource(logLevel, dbInterface)
+                ),
+                new PGBidRepository(
+                        logLevel,
+                        dbInterface,
+                        upsertMapper,
+                        new PGBidIdSource(logLevel, dbInterface),
+                        new PGBidRowMapper(logLevel)
+                ),
+                new PGReportRepository(
+                        logLevel,
+                        resources,
+                        dbInterface,
+                        new PGReportIdSource(logLevel, dbInterface),
+                        new PGUpsertMapper(logLevel),
+                        new PGReportRawQueryMapper(logLevel, new PGReportRowMapper(), executionRowMapper)
+                ),
+                new PGExecutionRepository(
+                        logLevel,
+                        dbInterface,
+                        upsertMapper,
+                        new PGExecutionIdSource(logLevel, dbInterface),
+                        executionRowMapper
+                ),
+                Instant::now
         );
-
-        var bidRepository = new PGBidRepository(
-                logLevel,
-                dbInterface,
-                upsertMapper
-        );
-
-        return new AuctionService(logLevel, resources, auctionRepository, bidRepository);
     }
 }
